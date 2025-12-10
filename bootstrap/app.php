@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
+            'activity.log' => \App\Http\Middleware\ActivityLogger::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
