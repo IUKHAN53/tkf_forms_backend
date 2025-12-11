@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('community_barriers', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+            $table->date('date');
+            $table->string('venue');
+            $table->string('uc');
+            $table->string('district');
+            $table->string('fix_site');
+            $table->string('outreach');
+            $table->string('community'); // Pathan, Punjabi, Sindhi, etc.
+            $table->string('group_type'); // Teachers, Shopkeepers, etc.
+            $table->integer('participants_males');
+            $table->integer('participants_females');
+            $table->string('facilitator_tkf');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('community_barriers');
+    }
+};

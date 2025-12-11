@@ -75,6 +75,42 @@
             </div>
         </div>
     @endif
+
+    @if($submission->participants->count() > 0)
+        <div class="card full-width">
+            <h3 class="card-title">Participants ({{ $submission->participants->count() }})</h3>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Sr. No</th>
+                            <th>Name</th>
+                            <th>Title/Designation</th>
+                            <th>Occupation</th>
+                            <th>Address</th>
+                            <th>Contact No</th>
+                            <th>CNIC</th>
+                            <th>Gender</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($submission->participants as $participant)
+                            <tr>
+                                <td>{{ $participant->sr_no }}</td>
+                                <td>{{ $participant->name }}</td>
+                                <td>{{ $participant->title_designation ?? '-' }}</td>
+                                <td>{{ $participant->occupation ?? '-' }}</td>
+                                <td>{{ $participant->address ?? '-' }}</td>
+                                <td>{{ $participant->contact_no ?? '-' }}</td>
+                                <td>{{ $participant->cnic ?? '-' }}</td>
+                                <td>{{ $participant->gender ?? '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 </div>
 
 <style>

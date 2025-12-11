@@ -16,10 +16,12 @@ class Form extends Model
         'description',
         'version',
         'is_active',
+        'has_participants',
     ];
 
     protected $casts = [
         'is_active' => 'bool',
+        'has_participants' => 'bool',
     ];
 
     public function fields(): HasMany

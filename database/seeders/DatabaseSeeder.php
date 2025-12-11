@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         $user = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
+            'phone' => '03001234567',
             'password' => Hash::make('password'),
         ]);
 
@@ -80,5 +81,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         collect($fields)->each(fn (array $field) => FormField::create($field + ['form_id' => $form->id]));
+
+        $this->call([
+            OutreachSitesSeeder::class,
+        ]);
     }
 }

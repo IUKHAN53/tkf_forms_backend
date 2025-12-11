@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('forms', function (Blueprint $table) {
+        Schema::create('outreach_sites', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('version')->default('1.0');
-            $table->boolean('is_active')->default(true);
-            $table->boolean('has_participants')->default(false);
+            $table->string('district');
+            $table->string('union_council');
+            $table->string('fix_site');
+            $table->string('outreach_site')->nullable();
+            $table->string('coordinates')->nullable();
+            $table->text('comments')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('forms');
+        Schema::dropIfExists('outreach_sites');
     }
 };

@@ -55,6 +55,7 @@
 
             <div id="fieldsContainer">
                 @foreach($form->fields as $field)
+                    @php $hasOptions = in_array($field->type->value, ['select', 'radio', 'checkbox']); @endphp
                     <div class="field-item" data-existing="true">
                         <div class="field-header">
                             <span class="field-number"></span>
@@ -82,7 +83,7 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Type *</label>
-                                <select name="fields[{{ $loop->index }}][type]" class="form-input" required>
+                                <select name="fields[{{ $loop->index }}][type]" class="form-input field-type-select" required onchange="toggleOptionsEditor(this)">
                                     @foreach($fieldTypes as $type)
                                         <option value="{{ $type->value }}" @selected($field->type->value === $type->value)>{{ ucfirst($type->value) }}</option>
                                     @endforeach
@@ -100,6 +101,28 @@
                                     <span>Required</span>
                                 </label>
                             </div>
+                        </div>
+
+                        <!-- Options editor for select, radio, checkbox -->
+                        <div class="options-editor" style="{{ $hasOptions ? 'display:block;' : 'display:none;' }}">
+                            <label class="form-label">Options (value : label)</label>
+                            <div class="options-list">
+                                @if($field->options)
+                                    @foreach($field->options as $optIdx => $opt)
+                                        <div class="option-row">
+                                            <input type="text" name="fields[{{ $loop->parent->index }}][options][{{ $optIdx }}][value]" class="form-input" placeholder="Value" value="{{ $opt['value'] ?? '' }}" required>
+                                            <input type="text" name="fields[{{ $loop->parent->index }}][options][{{ $optIdx }}][label]" class="form-input" placeholder="Label" value="{{ $opt['label'] ?? '' }}" required>
+                                            <button type="button" class="btn-icon" onclick="removeOption(this)">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addOption(this, '{{ $loop->index }}')">+ Add Option</button>
                         </div>
                     </div>
                 @endforeach
@@ -240,6 +263,27 @@ code {
 .btn-icon:hover {
     opacity: 0.7;
 }
+
+.options-editor {
+    margin-top: var(--spacing-md);
+    padding-top: var(--spacing-md);
+    border-top: 1px dashed var(--color-border);
+}
+
+.options-list {
+    margin-bottom: var(--spacing-sm);
+}
+
+.option-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+}
+
+.option-row .form-input {
+    flex: 1;
+}
 </style>
 @endsection
 
@@ -300,7 +344,7 @@ function renderField(index) {
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Type *</label>
-                <select name="fields[${index}][type]" class="form-input" required>${options}</select>
+                <select name="fields[${index}][type]" class="form-input field-type-select" required onchange="toggleOptionsEditor(this)">${options}</select>
             </div>
 
             <div class="form-group">
@@ -315,6 +359,13 @@ function renderField(index) {
                 </label>
             </div>
         </div>
+
+        <!-- Options editor for select, radio, checkbox -->
+        <div class="options-editor" style="display: none;">
+            <label class="form-label">Options (value : label)</label>
+            <div class="options-list"></div>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="addOption(this, '${index}')">+ Add Option</button>
+        </div>
     </div>`;
 }
 
@@ -323,6 +374,50 @@ function updateFieldNumbers() {
         const badge = field.querySelector('.field-number');
         if (badge) badge.textContent = `Field ${index + 1}`;
     });
+}
+
+const typesWithOptions = ['select', 'radio', 'checkbox'];
+
+function toggleOptionsEditor(selectEl) {
+    const fieldItem = selectEl.closest('.field-item');
+    const optionsEditor = fieldItem.querySelector('.options-editor');
+    const selectedType = selectEl.value;
+
+    if (typesWithOptions.includes(selectedType)) {
+        optionsEditor.style.display = 'block';
+        // Add one option row if none exist
+        const optionsList = optionsEditor.querySelector('.options-list');
+        if (optionsList.children.length === 0) {
+            const fieldIdx = selectEl.name.match(/fields\[(\d+)\]/)[1];
+            addOption(optionsEditor.querySelector('button'), fieldIdx);
+        }
+    } else {
+        optionsEditor.style.display = 'none';
+    }
+}
+
+function addOption(button, fieldIdx) {
+    const optionsEditor = button.closest('.options-editor');
+    const optionsList = optionsEditor.querySelector('.options-list');
+    const optionIdx = optionsList.children.length;
+
+    const html = `
+        <div class="option-row">
+            <input type="text" name="fields[${fieldIdx}][options][${optionIdx}][value]" class="form-input" placeholder="Value" required>
+            <input type="text" name="fields[${fieldIdx}][options][${optionIdx}][label]" class="form-input" placeholder="Label" required>
+            <button type="button" class="btn-icon" onclick="removeOption(this)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>`;
+
+    optionsList.insertAdjacentHTML('beforeend', html);
+}
+
+function removeOption(button) {
+    button.closest('.option-row').remove();
 }
 
 updateFieldNumbers();

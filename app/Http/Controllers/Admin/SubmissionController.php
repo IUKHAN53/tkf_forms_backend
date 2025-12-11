@@ -24,7 +24,7 @@ class SubmissionController extends Controller
 
     public function show(FormSubmission $submission)
     {
-        $submission->load(['form.fields', 'user', 'media']);
+        $submission->load(['form.fields', 'user', 'media', 'participants']);
         return view('admin.submissions.show', compact('submission'));
     }
 
