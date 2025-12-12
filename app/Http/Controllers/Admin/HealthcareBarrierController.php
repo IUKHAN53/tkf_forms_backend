@@ -25,7 +25,25 @@ class HealthcareBarrierController extends Controller
 
         $healthcareBarriers = $query->paginate(15)->withQueryString();
 
-        return view('admin.core-forms.healthcare-barriers.index', compact('healthcareBarriers'));
+        // Prepare map data
+        $mapData = HealthcareBarrier::whereNotNull('lat')
+            ->whereNotNull('lon')
+            ->get()
+            ->map(function ($barrier) {
+                return [
+                    'lat' => (float) $barrier->lat,
+                    'lon' => (float) $barrier->lon,
+                    'popup' => "<strong>{$barrier->date}</strong><br>
+                                District: {$barrier->district}<br>
+                                UC: {$barrier->uc_name}<br>
+                                Facility: {$barrier->facility_name}<br>
+                                Group Type: {$barrier->group_type}"
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return view('admin.core-forms.healthcare-barriers.index', compact('healthcareBarriers', 'mapData'));
     }
 
     public function show(HealthcareBarrier $healthcareBarrier)

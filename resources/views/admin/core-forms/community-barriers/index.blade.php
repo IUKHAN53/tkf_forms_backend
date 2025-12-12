@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Community Barriers')
+@section('title', 'Community Explore Immunization Barriers')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,8 +8,8 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Community Barriers</h2>
-            <p class="text-muted">Manage community barrier identification records</p>
+            <h2>Community Explore Immunization Barriers</h2>
+            <p class="text-muted">Manage community immunization barrier identification records</p>
         </div>
         <div class="header-actions">
             <a href="{{ route('admin.community-barriers.template') }}" class="btn btn-outline">
@@ -38,6 +38,8 @@
             </button>
         </div>
     </div>
+
+    @include('admin.core-forms.partials.map', ['mapData' => $mapData])
 
     <div class="card-filters">
         <form action="{{ route('admin.community-barriers.index') }}" method="GET" class="search-form">

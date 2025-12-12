@@ -4,11 +4,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Admin Dashboard') - Community Lead Engagement</title>
+    <title>@yield('title', 'Admin Dashboard') - Community Led Engagement</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <!-- Leaflet.js for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
     
     @vite(['resources/css/admin.css', 'resources/js/app.js'])
     
@@ -265,7 +273,7 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <img src="{{ asset('images/epi-logo.png') }}" alt="EPI Logo" style="width: 36px; height: 36px; object-fit: contain;">
-                    <span class="logo-text">Community Lead Engagement</span>
+                    <span class="logo-text">Community Led Engagement</span>
                 </div>
             </div>
             
@@ -313,12 +321,17 @@
                             </li>
                             <li>
                                 <a href="{{ route('admin.community-barriers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.community-barriers.*') ? 'active' : '' }}">
-                                    <span>Community Barriers</span>
+                                    <span>Community Explore Immunization Barriers</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.healthcare-barriers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.healthcare-barriers.*') ? 'active' : '' }}">
-                                    <span>Healthcare Barriers</span>
+                                    <span>Healthcare Workers Explore Immunization Barriers</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('admin.outreach-sites.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.outreach-sites.*') ? 'active' : '' }}">
+                                    <span>Outreach Sites</span>
                                 </a>
                             </li>
                         </ul>

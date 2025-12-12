@@ -24,12 +24,12 @@ class ReligiousLeaderController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'date' => 'required|date',
+            'date' => 'required|string',
             'attached_hf' => 'required|string',
             'uc' => 'required|string',
             'district' => 'required|string',
             'outreach' => 'required|string',
-            'group_type' => 'required|string|in:Religious Leaders,Community Influencers',
+            'group_type' => 'required|string|in:Religious Leaders,Community Influencers,Both',
             'facilitator_tkf' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -40,8 +40,8 @@ class ReligiousLeaderController extends Controller
             'participants.*.name' => 'required|string',
             'participants.*.title_designation' => 'nullable|string',
             'participants.*.address' => 'nullable|string',
-            'participants.*.contact_no' => 'nullable|string',
-            'participants.*.cnic' => 'nullable|string',
+            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
+            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 

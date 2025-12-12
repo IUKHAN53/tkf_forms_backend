@@ -23,7 +23,7 @@ class HealthcareBarrierController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'date' => 'required|date',
+            'date' => 'required|string',
             'hfs' => 'required|string',
             'address' => 'required|string',
             'uc' => 'required|string',
@@ -38,9 +38,9 @@ class HealthcareBarrierController extends Controller
             'submitted_at' => 'nullable|date',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
-            'participants.*.title_designation' => 'nullable|string',
-            'participants.*.contact_no' => 'nullable|string',
-            'participants.*.cnic' => 'nullable|string',
+            'participants.*.designation' => 'nullable|string',
+            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
+            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 
@@ -57,7 +57,7 @@ class HealthcareBarrierController extends Controller
                 $record->participants()->create([
                     'sr_no' => $index + 1,
                     'name' => $participant['name'],
-                    'title_designation' => $participant['title_designation'] ?? null,
+                    'designation' => $participant['designation'] ?? null,
                     'contact_no' => $participant['contact_no'] ?? null,
                     'cnic' => $participant['cnic'] ?? null,
                     'gender' => $participant['gender'] ?? null,

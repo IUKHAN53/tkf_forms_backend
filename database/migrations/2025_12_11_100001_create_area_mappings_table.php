@@ -32,7 +32,6 @@ return new class extends Migration
             $table->integer('total_girls_under_2')->nullable();
             $table->string('major_ethnicity')->nullable();
             $table->string('major_languages')->nullable();
-            $table->text('existing_committees')->nullable();
             $table->string('nearest_phf')->nullable();
             $table->string('hf_incharge_name')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();

@@ -31,7 +31,7 @@ class HealthcareBarrier extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'datetime',
         'participants_males' => 'integer',
         'participants_females' => 'integer',
         'latitude' => 'float',

@@ -25,7 +25,101 @@ class DraftListController extends Controller
 
         $draftLists = $query->paginate(15)->withQueryString();
 
-        return view('admin.core-forms.draft-lists.index', compact('draftLists'));
+        // Prepare map data
+        $mapData = DraftList::whereNotNull('lat')
+            ->whereNotNull('lon')
+            ->get()
+            ->map(function ($draft) {
+                return [
+                    'lat' => (float) $draft->lat,
+                    'lon' => (float) $draft->lon,
+                    'popup' => "<strong>{$draft->child_name}</strong><br>
+                                District: {$draft->district}<br>
+                                UC: {$draft->uc_name}<br>
+                                Outreach: {$draft->outreach}<br>
+                                Type: {$draft->type}"
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return view('admin.core-forms.draft-lists.index', compact('draftLists', 'mapData'));
+    }
+
+    public function create()
+    {
+        return view('admin.core-forms.draft-lists.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'division' => 'required|string|max:255',
+            'district' => 'required|string|max:255',
+            'town' => 'required|string|max:255',
+            'uc' => 'required|string|max:255',
+            'outreach' => 'required|string|max:255',
+            'child_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'date_of_birth' => 'required|date',
+            'age_in_months' => 'required|integer|min:0',
+            'father_cnic' => 'nullable|string|max:255',
+            'house_number' => 'nullable|string|max:255',
+            'address' => 'required|string',
+            'guardian_phone' => 'nullable|string|max:255',
+            'type' => 'required|in:Zero Dose,Defaulter',
+            'missed_vaccines' => 'required|array|min:1',
+            'reasons_of_missing' => 'required|string|max:255',
+            'plan_for_coverage' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $validated['user_id'] = auth()->id();
+        $validated['submitted_at'] = now();
+        $validated['started_at'] = now();
+
+        DraftList::create($validated);
+
+        return redirect()->route('admin.draft-lists.index')
+            ->with('success', 'Draft list entry created successfully.');
+    }
+
+    public function edit(DraftList $draftList)
+    {
+        return view('admin.core-forms.draft-lists.edit', compact('draftList'));
+    }
+
+    public function update(Request $request, DraftList $draftList)
+    {
+        $validated = $request->validate([
+            'division' => 'required|string|max:255',
+            'district' => 'required|string|max:255',
+            'town' => 'required|string|max:255',
+            'uc' => 'required|string|max:255',
+            'outreach' => 'required|string|max:255',
+            'child_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'gender' => 'required|in:male,female',
+            'date_of_birth' => 'required|date',
+            'age_in_months' => 'required|integer|min:0',
+            'father_cnic' => 'nullable|string|max:255',
+            'house_number' => 'nullable|string|max:255',
+            'address' => 'required|string',
+            'guardian_phone' => 'nullable|string|max:255',
+            'type' => 'required|in:Zero Dose,Defaulter',
+            'missed_vaccines' => 'required|array|min:1',
+            'reasons_of_missing' => 'required|string|max:255',
+            'plan_for_coverage' => 'required|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ]);
+
+        $draftList->update($validated);
+
+        return redirect()->route('admin.draft-lists.index')
+            ->with('success', 'Draft list entry updated successfully.');
     }
 
     public function show(DraftList $draftList)
@@ -49,7 +143,7 @@ class DraftListController extends Controller
             'Content-Disposition' => 'attachment; filename="draft_lists_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['ID', 'District', 'UC Name', 'Vaccination Date', 'Child Name', 'Father Name', 'Age Months', 'Gender', 'Address', 'Vaccine Type', 'Dose Number', 'Vaccinator Name', 'Created At'];
+        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHETR CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERGE'];
 
         $callback = function () use ($draftLists, $columns) {
             $file = fopen('php://output', 'w');
@@ -57,19 +151,24 @@ class DraftListController extends Controller
 
             foreach ($draftLists as $item) {
                 fputcsv($file, [
-                    $item->id,
+                    $item->division,
                     $item->district,
-                    $item->uc_name,
-                    $item->vaccination_date,
+                    $item->town,
+                    $item->uc,
+                    $item->outreach,
                     $item->child_name,
                     $item->father_name,
-                    $item->age_months,
-                    $item->gender,
+                    ucfirst($item->gender),
+                    $item->date_of_birth?->format('Y-m-d'),
+                    $item->age_in_months,
+                    $item->father_cnic,
+                    $item->house_number,
                     $item->address,
-                    $item->vaccine_type,
-                    $item->dose_number,
-                    $item->vaccinator_name,
-                    $item->created_at,
+                    $item->guardian_phone,
+                    $item->type,
+                    is_array($item->missed_vaccines) ? implode(', ', $item->missed_vaccines) : $item->missed_vaccines,
+                    $item->reasons_of_missing,
+                    $item->plan_for_coverage,
                 ]);
             }
 
@@ -86,12 +185,12 @@ class DraftListController extends Controller
             'Content-Disposition' => 'attachment; filename="draft_lists_template.csv"',
         ];
 
-        $columns = ['district', 'uc_name', 'vaccination_date', 'child_name', 'father_name', 'age_months', 'gender', 'address', 'vaccine_type', 'dose_number', 'vaccinator_name'];
+        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHETR CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERGE'];
 
         $callback = function () use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
-            fputcsv($file, ['District Name', 'UC Name', '2025-01-15', 'Child Name', 'Father Name', '12', 'male', 'Address Here', 'OPV', '1', 'Vaccinator Name']);
+            fputcsv($file, ['Karachi', 'Karachi Central', 'Liaquatabad', 'UC-1', 'Outreach Site 1', 'Ali Ahmed', 'Ahmed Khan', 'Male', '2024-01-15', '12', '12345-1234567-1', 'House 123', 'Street 5, Block A', '03001234567', 'Zero Dose', 'BCG, OPV0, HepB', 'Refusal', 'Follow-up visit scheduled']);
             fclose($file);
         };
 
@@ -112,21 +211,34 @@ class DraftListController extends Controller
         $errors = [];
 
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 11) continue;
+            if (count($row) < 18 || empty($row[0])) continue;
 
             try {
+                // Parse missed vaccines from comma-separated string to array
+                $missedVaccines = !empty($row[15]) ? array_map('trim', explode(',', $row[15])) : [];
+                
                 DraftList::create([
-                    'district' => $row[0],
-                    'uc_name' => $row[1],
-                    'vaccination_date' => $row[2],
-                    'child_name' => $row[3],
-                    'father_name' => $row[4],
-                    'age_months' => (int) $row[5],
-                    'gender' => $row[6],
-                    'address' => $row[7],
-                    'vaccine_type' => $row[8],
-                    'dose_number' => (int) $row[9],
-                    'vaccinator_name' => $row[10],
+                    'division' => $row[0],
+                    'district' => $row[1],
+                    'town' => $row[2],
+                    'uc' => $row[3],
+                    'outreach' => $row[4],
+                    'child_name' => $row[5],
+                    'father_name' => $row[6],
+                    'gender' => strtolower($row[7]),
+                    'date_of_birth' => $row[8],
+                    'age_in_months' => (int) $row[9],
+                    'father_cnic' => $row[10],
+                    'house_number' => $row[11],
+                    'address' => $row[12],
+                    'guardian_phone' => $row[13],
+                    'type' => $row[14],
+                    'missed_vaccines' => $missedVaccines,
+                    'reasons_of_missing' => $row[16],
+                    'plan_for_coverage' => $row[17],
+                    'user_id' => auth()->id(),
+                    'submitted_at' => now(),
+                    'started_at' => now(),
                 ]);
                 $imported++;
             } catch (\Exception $e) {

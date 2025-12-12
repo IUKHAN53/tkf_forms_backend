@@ -25,7 +25,25 @@ class CommunityBarrierController extends Controller
 
         $communityBarriers = $query->paginate(15)->withQueryString();
 
-        return view('admin.core-forms.community-barriers.index', compact('communityBarriers'));
+        // Prepare map data
+        $mapData = CommunityBarrier::whereNotNull('lat')
+            ->whereNotNull('lon')
+            ->get()
+            ->map(function ($barrier) {
+                return [
+                    'lat' => (float) $barrier->lat,
+                    'lon' => (float) $barrier->lon,
+                    'popup' => "<strong>{$barrier->date}</strong><br>
+                                District: {$barrier->district}<br>
+                                UC: {$barrier->uc_name}<br>
+                                Venue: {$barrier->venue}<br>
+                                Group Type: {$barrier->group_type}"
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return view('admin.core-forms.community-barriers.index', compact('communityBarriers', 'mapData'));
     }
 
     public function show(CommunityBarrier $communityBarrier)

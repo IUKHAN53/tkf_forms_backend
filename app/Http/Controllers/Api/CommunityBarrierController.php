@@ -23,14 +23,16 @@ class CommunityBarrierController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'date' => 'required|date',
+            'date' => 'required|string',
             'venue' => 'required|string',
             'uc' => 'required|string',
             'district' => 'required|string',
             'fix_site' => 'required|string',
             'outreach' => 'required|string',
-            'community' => 'required|string|in:Pathan,Punjabi,Sindhi,Saraiki,Urdu speaking',
-            'group_type' => 'required|string|in:Teachers,Shopkeepers,Religious Leaders,Political Leaders,Mother in Laws,Mothers,Fathers,Father in Laws',
+            'community' => 'required|array|min:1',
+            'community.*' => 'required|string|in:Pathan,Punjabi,Sindhi,Saraiki,Urdu speaking',
+            'group_type' => 'required|array|min:1',
+            'group_type.*' => 'required|string|in:Teachers,Shopkeepers,Religious Leaders,Political Leaders,Mother in Laws,Mothers,Fathers,Father in Laws',
             'participants_males' => 'required|integer',
             'participants_females' => 'required|integer',
             'facilitator_tkf' => 'required|string',
@@ -43,8 +45,8 @@ class CommunityBarrierController extends Controller
             'participants.*.name' => 'required|string',
             'participants.*.occupation' => 'nullable|string',
             'participants.*.address' => 'nullable|string',
-            'participants.*.contact_no' => 'nullable|string',
-            'participants.*.cnic' => 'nullable|string',
+            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
+            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 

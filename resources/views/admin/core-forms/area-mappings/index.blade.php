@@ -40,6 +40,11 @@
         </div>
     </div>
 
+    <!-- Heat Map -->
+    <div class="map-container" style="margin-bottom: 24px;">
+        <div id="map" style="height: 400px; border-radius: 8px; overflow: hidden;"></div>
+    </div>
+
     <!-- Search -->
     <div class="card-filters">
         <form method="GET" class="search-form">
@@ -124,4 +129,49 @@
 </dialog>
 
 @include('admin.core-forms.partials.styles')
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize map centered on Karachi
+    const map = L.map('map').setView([24.8607, 67.0011], 11);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Get location data from Laravel
+    const locations = @json($mapData);
+    
+    // Prepare heat map data
+    const heatData = locations.map(loc => [loc.lat, loc.lon, 0.5]);
+    
+    // Add heat layer
+    if (heatData.length > 0) {
+        L.heatLayer(heatData, {
+            radius: 25,
+            blur: 15,
+            maxZoom: 17,
+            gradient: {
+                0.0: 'blue',
+                0.5: 'lime',
+                1.0: 'red'
+            }
+        }).addTo(map);
+        
+        // Add markers
+        locations.forEach(loc => {
+            L.marker([loc.lat, loc.lon])
+                .bindPopup(`
+                    <strong>${loc.area}</strong><br>
+                    District: ${loc.district}<br>
+                    UC: ${loc.uc}<br>
+                    Population: ${loc.population}
+                `)
+                .addTo(map);
+        });
+    }
+});
+</script>
 @endsection

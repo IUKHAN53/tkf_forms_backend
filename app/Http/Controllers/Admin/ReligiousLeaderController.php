@@ -25,7 +25,25 @@ class ReligiousLeaderController extends Controller
 
         $religiousLeaders = $query->paginate(15)->withQueryString();
 
-        return view('admin.core-forms.religious-leaders.index', compact('religiousLeaders'));
+        // Prepare map data
+        $mapData = ReligiousLeader::whereNotNull('lat')
+            ->whereNotNull('lon')
+            ->get()
+            ->map(function ($leader) {
+                return [
+                    'lat' => (float) $leader->lat,
+                    'lon' => (float) $leader->lon,
+                    'popup' => "<strong>{$leader->date}</strong><br>
+                                District: {$leader->district}<br>
+                                UC: {$leader->uc_name}<br>
+                                Group Type: {$leader->group_type}<br>
+                                Facilitator: {$leader->facilitator_tkf}"
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return view('admin.core-forms.religious-leaders.index', compact('religiousLeaders', 'mapData'));
     }
 
     public function show(ReligiousLeader $religiousLeader)

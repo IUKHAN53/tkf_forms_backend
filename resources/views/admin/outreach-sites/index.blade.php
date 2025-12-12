@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Draft Lists')
+@section('title', 'Outreach Sites')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,11 +8,11 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Draft Lists</h2>
-            <p class="text-muted">Manage draft list entries for refusals and newborns</p>
+            <h2>Outreach Sites</h2>
+            <p class="text-muted">Manage outreach sites for cascading dropdowns</p>
         </div>
         <div class="header-actions">
-            <a href="{{ route('admin.draft-lists.template') }}" class="btn btn-outline">
+            <a href="{{ route('admin.outreach-sites.template') }}" class="btn btn-outline">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="7 10 12 15 17 10"/>
@@ -20,7 +20,7 @@
                 </svg>
                 Download Template
             </a>
-            <a href="{{ route('admin.draft-lists.export') }}" class="btn btn-outline">
+            <a href="{{ route('admin.outreach-sites.export') }}" class="btn btn-outline">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -36,24 +36,22 @@
                 </svg>
                 Import CSV
             </button>
-            <a href="{{ route('admin.draft-lists.create') }}" class="btn btn-primary">
+            <a href="{{ route('admin.outreach-sites.create') }}" class="btn btn-primary">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="12" y1="5" x2="12" y2="19"/>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                 </svg>
-                Add Entry
+                Add Site
             </a>
         </div>
     </div>
 
-    @include('admin.core-forms.partials.map', ['mapData' => $mapData])
-
     <div class="card-filters">
-        <form action="{{ route('admin.draft-lists.index') }}" method="GET" class="search-form">
-            <input type="text" name="search" class="form-input" placeholder="Search by name, team, or area..." value="{{ request('search') }}">
+        <form action="{{ route('admin.outreach-sites.index') }}" method="GET" class="search-form">
+            <input type="text" name="search" class="form-input" placeholder="Search by district, UC, fix site, or outreach site..." value="{{ request('search') }}">
             <button type="submit" class="btn btn-primary">Search</button>
             @if(request('search'))
-                <a href="{{ route('admin.draft-lists.index') }}" class="btn btn-outline">Clear</a>
+                <a href="{{ route('admin.outreach-sites.index') }}" class="btn btn-outline">Clear</a>
             @endif
         </form>
     </div>
@@ -62,49 +60,33 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Form ID</th>
+                    <th>ID</th>
                     <th>District</th>
-                    <th>UC</th>
-                    <th>Child Name</th>
-                    <th>Father Name</th>
-                    <th>Type</th>
-                    <th>Age (Months)</th>
-                    <th>Gender</th>
-                    <th>Submitted By</th>
+                    <th>Union Council</th>
+                    <th>Fix Site</th>
+                    <th>Outreach Site</th>
+                    <th>Coordinates</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse($draftLists as $item)
+                @forelse($outreachSites as $site)
                     <tr>
-                        <td><code>{{ $item->unique_id }}</code></td>
-                        <td>{{ $item->district }}</td>
-                        <td>{{ $item->uc }}</td>
-                        <td>{{ $item->child_name }}</td>
-                        <td>{{ $item->father_name }}</td>
-                        <td>
-                            <span class="badge {{ $item->type === 'Zero Dose' ? 'badge-danger' : 'badge-warning' }}">
-                                {{ $item->type }}
-                            </span>
-                        </td>
-                        <td>{{ $item->age_in_months }}</td>
-                        <td>{{ ucfirst($item->gender) }}</td>
-                        <td>{{ $item->user->name ?? 'N/A' }}</td>
+                        <td><code>{{ $site->id }}</code></td>
+                        <td>{{ $site->district }}</td>
+                        <td>{{ $site->union_council }}</td>
+                        <td>{{ $site->fix_site }}</td>
+                        <td>{{ $site->outreach_site }}</td>
+                        <td>{{ $site->coordinates ?: 'N/A' }}</td>
                         <td>
                             <div class="action-buttons">
-                                <a href="{{ route('admin.draft-lists.show', $item) }}" class="btn-icon" title="View">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
-                                </a>
-                                <a href="{{ route('admin.draft-lists.edit', $item) }}" class="btn-icon" title="Edit">
+                                <a href="{{ route('admin.outreach-sites.edit', $site) }}" class="btn-icon" title="Edit">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </a>
-                                <form action="{{ route('admin.draft-lists.destroy', $item) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                <form action="{{ route('admin.outreach-sites.destroy', $site) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this outreach site?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn-icon" title="Delete">
@@ -119,35 +101,37 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="11" class="text-center text-muted">No draft list entries found</td>
+                        <td colspan="7" class="text-center">No outreach sites found</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    @if($draftLists->hasPages())
-        <div class="card-footer">
-            {{ $draftLists->links() }}
-        </div>
-    @endif
+    <div class="pagination-wrapper">
+        {{ $outreachSites->links() }}
+    </div>
 </div>
 
 <!-- Import Modal -->
-<dialog id="importModal" class="modal">
+<dialog id="importModal" class="import-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Import Draft Lists</h3>
-            <button type="button" class="modal-close" onclick="document.getElementById('importModal').close()">&times;</button>
+            <h3>Import Outreach Sites</h3>
+            <button type="button" onclick="document.getElementById('importModal').close()" class="close-btn">&times;</button>
         </div>
-        <form action="{{ route('admin.draft-lists.import') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.outreach-sites.import') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="modal-body">
-                <p class="mb-md text-muted">Upload a CSV file to import draft list entries. Download the template first to see the required format.</p>
-                <input type="file" name="file" accept=".csv" required class="form-input" style="width: 100%;">
+                <p>Upload a CSV file with the following columns:</p>
+                <code>district, union_council, fix_site, outreach_site, coordinates, comments</code>
+                <div class="form-group">
+                    <label class="form-label">Choose CSV File</label>
+                    <input type="file" name="file" accept=".csv" required class="form-input">
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('importModal').close()">Cancel</button>
+                <button type="button" onclick="document.getElementById('importModal').close()" class="btn btn-outline">Cancel</button>
                 <button type="submit" class="btn btn-primary">Import</button>
             </div>
         </form>

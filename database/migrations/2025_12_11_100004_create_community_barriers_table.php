@@ -12,14 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('unique_id')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->date('date');
+            $table->dateTime('date');
             $table->string('venue');
             $table->string('uc');
             $table->string('district');
             $table->string('fix_site');
             $table->string('outreach');
-            $table->string('community'); // Pathan, Punjabi, Sindhi, etc.
-            $table->string('group_type'); // Teachers, Shopkeepers, etc.
+            $table->json('community'); // Array: Pathan, Punjabi, Sindhi, Saraiki, Urdu speaking
+            $table->json('group_type'); // Array: Teachers, Shopkeepers, Religious Leaders, etc.
             $table->integer('participants_males');
             $table->integer('participants_females');
             $table->string('facilitator_tkf');

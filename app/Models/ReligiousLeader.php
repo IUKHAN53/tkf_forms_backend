@@ -30,7 +30,7 @@ class ReligiousLeader extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'datetime',
         'latitude' => 'float',
         'longitude' => 'float',
         'device_info' => 'array',

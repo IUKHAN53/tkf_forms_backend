@@ -25,7 +25,24 @@ class AreaMappingController extends Controller
 
         $mappings = $query->paginate(15)->withQueryString();
 
-        return view('admin.core-forms.area-mappings.index', compact('mappings'));
+        // Prepare map data
+        $mapData = AreaMapping::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get()
+            ->map(function ($mapping) {
+                return [
+                    'lat' => (float) $mapping->latitude,
+                    'lon' => (float) $mapping->longitude,
+                    'popup' => "<strong>{$mapping->area_name}</strong><br>
+                                District: {$mapping->district}<br>
+                                UC: {$mapping->uc_name}<br>
+                                Population: {$mapping->total_population}"
+                ];
+            })
+            ->values()
+            ->toArray();
+
+        return view('admin.core-forms.area-mappings.index', compact('mappings', 'mapData'));
     }
 
     public function show(AreaMapping $areaMapping)

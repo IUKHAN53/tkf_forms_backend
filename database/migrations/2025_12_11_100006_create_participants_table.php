@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('sr_no')->nullable();
             $table->string('name');
             $table->string('title_designation')->nullable();
+            $table->string('designation')->nullable();
             $table->string('occupation')->nullable();
             $table->text('address')->nullable();
             $table->string('contact_no')->nullable();

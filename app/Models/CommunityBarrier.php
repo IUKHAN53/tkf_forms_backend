@@ -34,7 +34,9 @@ class CommunityBarrier extends Model
     ];
 
     protected $casts = [
-        'date' => 'date',
+        'date' => 'datetime',
+        'community' => 'array',
+        'group_type' => 'array',
         'participants_males' => 'integer',
         'participants_females' => 'integer',
         'latitude' => 'float',

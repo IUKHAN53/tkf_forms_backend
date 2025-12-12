@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Healthcare Barrier Details')
+@section('title', 'Healthcare Workers Explore Immunization Barriers Details')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,7 +8,7 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Healthcare Barrier <code>{{ $healthcareBarrier->unique_id }}</code></h2>
+            <h2>Healthcare Workers Explore Immunization Barriers <code>{{ $healthcareBarrier->unique_id }}</code></h2>
             <p class="text-muted">Submitted on {{ $healthcareBarrier->created_at->format('M d, Y \a\t h:i A') }}</p>
         </div>
         <div class="header-actions">

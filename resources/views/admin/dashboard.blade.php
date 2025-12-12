@@ -5,46 +5,93 @@
 
 @section('content')
 <div class="dashboard-grid">
-    <!-- Stats Cards -->
+    <!-- Core Forms Stats Cards -->
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon bg-primary">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $stats['core_forms']['area_mappings'] }}</h3>
+                <p>Area Mappings</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
                 </svg>
             </div>
             <div class="stat-content">
-                <h3>{{ $stats['total_forms'] }}</h3>
-                <p>Total Forms</p>
+                <h3>{{ $stats['core_forms']['draft_lists'] }}</h3>
+                <p>Draft Lists</p>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon bg-success">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <polyline points="9 11 12 14 22 4"></polyline>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
             </div>
             <div class="stat-content">
-                <h3>{{ $stats['active_forms'] }}</h3>
-                <p>Active Forms</p>
+                <h3>{{ $stats['core_forms']['religious_leaders'] }}</h3>
+                <p>Religious Leaders</p>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon bg-info">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
                 </svg>
             </div>
             <div class="stat-content">
-                <h3>{{ $stats['total_submissions'] }}</h3>
-                <p>Total Submissions</p>
+                <h3>{{ $stats['core_forms']['community_barriers'] }}</h3>
+                <p>Community Barriers</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $stats['core_forms']['healthcare_barriers'] }}</h3>
+                <p>Healthcare Barriers</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+        <div class="card">
+            <div class="card-header">
+                <h2>Submissions Over Time (Last 30 Days)</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="submissionsChart" height="80"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>District-wise Distribution</h2>
+            </div>
+            <div class="card-body">
+                <canvas id="districtChart" height="80"></canvas>
             </div>
         </div>
     </div>
@@ -176,5 +223,127 @@
 .text-center {
     text-align: center;
 }
+
+.charts-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing-lg);
+}
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Submissions Over Time Chart
+    const submissionsData = @json($stats['submissions_over_time']);
+    const dates = Object.keys(submissionsData);
+    const areaData = dates.map(date => submissionsData[date].area_mappings);
+    const draftData = dates.map(date => submissionsData[date].draft_lists);
+    const religiousData = dates.map(date => submissionsData[date].religious_leaders);
+    const communityData = dates.map(date => submissionsData[date].community_barriers);
+    const healthcareData = dates.map(date => submissionsData[date].healthcare_barriers);
+
+    new Chart(document.getElementById('submissionsChart'), {
+        type: 'line',
+        data: {
+            labels: dates.map(date => new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+            datasets: [
+                {
+                    label: 'Area Mappings',
+                    data: areaData,
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Draft Lists',
+                    data: draftData,
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Religious Leaders',
+                    data: religiousData,
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Community Barriers',
+                    data: communityData,
+                    borderColor: '#ec4899',
+                    backgroundColor: 'rgba(236, 72, 153, 0.1)',
+                    tension: 0.4
+                },
+                {
+                    label: 'Healthcare Barriers',
+                    data: healthcareData,
+                    borderColor: '#14b8a6',
+                    backgroundColor: 'rgba(20, 184, 166, 0.1)',
+                    tension: 0.4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // District Distribution Chart
+    const districtData = @json($stats['district_distribution']);
+    const districts = Object.keys(districtData);
+    const counts = Object.values(districtData);
+
+    new Chart(document.getElementById('districtChart'), {
+        type: 'bar',
+        data: {
+            labels: districts,
+            datasets: [{
+                label: 'Submissions',
+                data: counts,
+                backgroundColor: [
+                    'rgba(99, 102, 241, 0.8)',
+                    'rgba(34, 197, 94, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(20, 184, 166, 0.8)',
+                    'rgba(234, 88, 12, 0.8)',
+                    'rgba(168, 85, 247, 0.8)',
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
 @endsection

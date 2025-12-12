@@ -39,6 +39,8 @@
         </div>
     </div>
 
+    @include('admin.core-forms.partials.map', ['mapData' => $mapData])
+
     <div class="card-filters">
         <form action="{{ route('admin.religious-leaders.index') }}" method="GET" class="search-form">
             <input type="text" name="search" class="form-input" placeholder="Search by name, mosque, or UC..." value="{{ request('search') }}">

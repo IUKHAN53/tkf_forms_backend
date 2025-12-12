@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Healthcare Barriers')
+@section('title', 'Healthcare Workers Explore Immunization Barriers')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,8 +8,8 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Healthcare Barriers</h2>
-            <p class="text-muted">Manage healthcare facility barrier records</p>
+            <h2>Healthcare Workers Explore Immunization Barriers</h2>
+            <p class="text-muted">Manage healthcare workers immunization barrier records</p>
         </div>
         <div class="header-actions">
             <a href="{{ route('admin.healthcare-barriers.template') }}" class="btn btn-outline">
@@ -38,6 +38,8 @@
             </button>
         </div>
     </div>
+
+    @include('admin.core-forms.partials.map', ['mapData' => $mapData])
 
     <div class="card-filters">
         <form action="{{ route('admin.healthcare-barriers.index') }}" method="GET" class="search-form">

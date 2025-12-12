@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('unique_id')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->date('date');
+            $table->dateTime('date');
             $table->string('attached_hf');
             $table->string('uc');
             $table->string('district');

@@ -18,6 +18,7 @@
                     <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
+                    <th>Phone</th>
                     <th>Created</th>
                     <th>Actions</th>
                 </tr>
@@ -28,6 +29,7 @@
                         <td><span class="badge badge-info">#{{ $user->id }}</span></td>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
+                        <td>{{ $user->phone ?? 'N/A' }}</td>
                         <td>{{ $user->created_at->format('M d, Y') }}</td>
                         <td>
                             <div class="action-buttons">
@@ -42,7 +44,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center text-secondary">No users found</td>
+                        <td colspan="6" class="text-center text-secondary">No users found</td>
                     </tr>
                 @endforelse
             </tbody>

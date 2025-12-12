@@ -42,7 +42,7 @@ Route::prefix('admin')->name('admin.')->middleware('activity.log')->group(functi
     Route::get('draft-lists/export', [DraftListController::class, 'export'])->name('draft-lists.export');
     Route::get('draft-lists/template', [DraftListController::class, 'template'])->name('draft-lists.template');
     Route::post('draft-lists/import', [DraftListController::class, 'import'])->name('draft-lists.import');
-    Route::resource('draft-lists', DraftListController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('draft-lists', DraftListController::class);
 
     // Core Forms - Religious Leaders
     Route::get('religious-leaders/export', [ReligiousLeaderController::class, 'export'])->name('religious-leaders.export');
@@ -61,4 +61,10 @@ Route::prefix('admin')->name('admin.')->middleware('activity.log')->group(functi
     Route::get('healthcare-barriers/template', [HealthcareBarrierController::class, 'template'])->name('healthcare-barriers.template');
     Route::post('healthcare-barriers/import', [HealthcareBarrierController::class, 'import'])->name('healthcare-barriers.import');
     Route::resource('healthcare-barriers', HealthcareBarrierController::class)->only(['index', 'show', 'destroy']);
+
+    // Outreach Sites Management
+    Route::get('outreach-sites/export', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'export'])->name('outreach-sites.export');
+    Route::get('outreach-sites/template', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'template'])->name('outreach-sites.template');
+    Route::post('outreach-sites/import', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'import'])->name('outreach-sites.import');
+    Route::resource('outreach-sites', \App\Http\Controllers\Admin\OutreachSiteController::class);
 });

@@ -33,7 +33,6 @@ class AreaMapping extends Model
         'total_girls_under_2',
         'major_ethnicity',
         'major_languages',
-        'existing_committees',
         'nearest_phf',
         'hf_incharge_name',
         'latitude',

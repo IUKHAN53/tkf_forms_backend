@@ -13,6 +13,7 @@ class Participant extends Model
         'sr_no',
         'name',
         'title_designation',
+        'designation',
         'occupation',
         'address',
         'contact_no',

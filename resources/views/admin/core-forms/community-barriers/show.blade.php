@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Community Barrier Details')
+@section('title', 'Community Explore Immunization Barriers Details')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,7 +8,7 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Community Barrier <code>{{ $communityBarrier->unique_id }}</code></h2>
+            <h2>Community Explore Immunization Barriers <code>{{ $communityBarrier->unique_id }}</code></h2>
             <p class="text-muted">Submitted on {{ $communityBarrier->created_at->format('M d, Y \a\t h:i A') }}</p>
         </div>
         <div class="header-actions">
@@ -52,11 +52,27 @@
         </div>
         <div class="detail-item">
             <label>Community</label>
-            <span>{{ $communityBarrier->community }}</span>
+            <span>
+                @if(is_array($communityBarrier->community))
+                    @foreach($communityBarrier->community as $comm)
+                        <span class="badge badge-info">{{ $comm }}</span>
+                    @endforeach
+                @else
+                    {{ $communityBarrier->community }}
+                @endif
+            </span>
         </div>
         <div class="detail-item">
             <label>Group Type</label>
-            <span class="badge badge-primary">{{ $communityBarrier->group_type }}</span>
+            <span>
+                @if(is_array($communityBarrier->group_type))
+                    @foreach($communityBarrier->group_type as $type)
+                        <span class="badge badge-primary">{{ $type }}</span>
+                    @endforeach
+                @else
+                    <span class="badge badge-primary">{{ $communityBarrier->group_type }}</span>
+                @endif
+            </span>
         </div>
         <div class="detail-item">
             <label>Participants (Males)</label>
