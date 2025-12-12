@@ -53,14 +53,13 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Team No</th>
-                    <th>UC Name</th>
-                    <th>Mosque/Madrassa</th>
-                    <th>Leader Name</th>
-                    <th>Phone</th>
-                    <th>Sect</th>
-                    <th>Support Level</th>
+                    <th>Form ID</th>
+                    <th>Date</th>
+                    <th>District</th>
+                    <th>UC</th>
+                    <th>Attached HF</th>
+                    <th>Group Type</th>
+                    <th>Facilitator</th>
                     <th>Submitted By</th>
                     <th>Actions</th>
                 </tr>
@@ -68,16 +67,18 @@
             <tbody>
                 @forelse($religiousLeaders as $item)
                     <tr>
-                        <td>{{ $item->id }}</td>
-                        <td>{{ $item->team_no }}</td>
-                        <td>{{ $item->uc_name }}</td>
-                        <td>{{ $item->mosque_madrassa_name }}</td>
-                        <td>{{ $item->religious_leader_name }}</td>
-                        <td>{{ $item->phone_number ?? 'N/A' }}</td>
-                        <td>{{ ucfirst($item->sect) }}</td>
+                        <td><code>{{ $item->unique_id }}</code></td>
+                        <td>{{ $item->date->format('M d, Y') }}</td>
+                        <td>{{ $item->district }}</td>
+                        <td>{{ $item->uc }}</td>
+                        <td>{{ $item->attached_hf }}</td>
                         <td>
-                            <span class="badge {{ $item->support_level === 'high' ? 'badge-success' : ($item->support_level === 'medium' ? 'badge-primary' : 'badge-warning') }}">
-                                {{ ucfirst($item->support_level) }}
+                            <span class="badge badge-primary">
+                                {{ $item->group_type }}
+                            </span>
+                        </td>
+                        <td>{{ $item->facilitator_tkf }}</td>
+                        <td>{{ $item->user->name ?? 'N/A' }}</td>
                             </span>
                         </td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>

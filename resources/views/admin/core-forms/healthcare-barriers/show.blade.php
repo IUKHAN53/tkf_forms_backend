@@ -8,7 +8,7 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Healthcare Barrier #{{ $healthcareBarrier->id }}</h2>
+            <h2>Healthcare Barrier <code>{{ $healthcareBarrier->unique_id }}</code></h2>
             <p class="text-muted">Submitted on {{ $healthcareBarrier->created_at->format('M d, Y \a\t h:i A') }}</p>
         </div>
         <div class="header-actions">
@@ -23,44 +23,40 @@
 
     <div class="detail-grid">
         <div class="detail-item">
-            <label>Team Number</label>
-            <span>{{ $healthcareBarrier->team_no }}</span>
+            <label>Form ID</label>
+            <span><code>{{ $healthcareBarrier->unique_id }}</code></span>
         </div>
         <div class="detail-item">
-            <label>UC Name</label>
-            <span>{{ $healthcareBarrier->uc_name }}</span>
+            <label>Date</label>
+            <span>{{ $healthcareBarrier->date ? $healthcareBarrier->date->format('M d, Y') : 'N/A' }}</span>
         </div>
         <div class="detail-item">
-            <label>Facility Name</label>
-            <span>{{ $healthcareBarrier->facility_name }}</span>
+            <label>UC</label>
+            <span>{{ $healthcareBarrier->uc }}</span>
         </div>
         <div class="detail-item">
-            <label>Facility Type</label>
-            <span>{{ ucfirst(str_replace('_', ' ', $healthcareBarrier->facility_type)) }}</span>
+            <label>HFS (Health Facility Site)</label>
+            <span>{{ $healthcareBarrier->hfs }}</span>
         </div>
         <div class="detail-item">
-            <label>In-charge Name</label>
-            <span>{{ $healthcareBarrier->incharge_name ?? 'N/A' }}</span>
+            <label>Address</label>
+            <span>{{ $healthcareBarrier->address }}</span>
         </div>
         <div class="detail-item">
-            <label>Phone Number</label>
-            <span>{{ $healthcareBarrier->phone_number ?? 'N/A' }}</span>
+            <label>Group Type</label>
+            <span class="badge badge-primary">{{ $healthcareBarrier->group_type }}</span>
         </div>
         <div class="detail-item">
-            <label>Barrier Type</label>
-            <span>{{ ucfirst(str_replace('_', ' ', $healthcareBarrier->barrier_type)) }}</span>
+            <label>Participants (Males)</label>
+            <span>{{ $healthcareBarrier->participants_males }}</span>
         </div>
         <div class="detail-item">
-            <label>Severity</label>
-            <span class="badge {{ $healthcareBarrier->severity === 'high' ? 'badge-danger' : ($healthcareBarrier->severity === 'medium' ? 'badge-warning' : 'badge-success') }}">
-                {{ ucfirst($healthcareBarrier->severity) }}
-            </span>
+            <label>Participants (Females)</label>
+            <span>{{ $healthcareBarrier->participants_females }}</span>
         </div>
         <div class="detail-item">
-            <label>Status</label>
-            <span class="badge {{ $healthcareBarrier->status === 'resolved' ? 'badge-success' : ($healthcareBarrier->status === 'in_progress' ? 'badge-primary' : 'badge-warning') }}">
-                {{ ucfirst(str_replace('_', ' ', $healthcareBarrier->status)) }}
-            </span>
+            <label>TKF Facilitator</label>
+            <span>{{ $healthcareBarrier->facilitator_tkf }}</span>
         </div>
         <div class="detail-item">
             <label>Submitted By</label>
@@ -76,20 +72,6 @@
         </div>
     </div>
 
-    @if($healthcareBarrier->description)
-        <div class="participants-section">
-            <h3>Description</h3>
-            <p>{{ $healthcareBarrier->description }}</p>
-        </div>
-    @endif
-
-    @if($healthcareBarrier->resolution_notes)
-        <div class="participants-section">
-            <h3>Resolution Notes</h3>
-            <p>{{ $healthcareBarrier->resolution_notes }}</p>
-        </div>
-    @endif
-
     @if($healthcareBarrier->participants && $healthcareBarrier->participants->count() > 0)
         <div class="participants-section">
             <h3>Participants ({{ $healthcareBarrier->participants->count() }})</h3>
@@ -97,22 +79,60 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Designation</th>
-                        <th>Phone</th>
+                        <th>Title/Designation</th>
+                        <th>Contact</th>
+                        <th>Gender</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($healthcareBarrier->participants as $participant)
                         <tr>
                             <td>{{ $participant->name }}</td>
-                            <td>{{ $participant->designation ?? 'N/A' }}</td>
-                            <td>{{ $participant->phone ?? 'N/A' }}</td>
+                            <td>{{ $participant->title_designation ?? 'N/A' }}</td>
+                            <td>{{ $participant->contact_no ?? 'N/A' }}</td>
+                            <td>{{ $participant->gender ?? 'N/A' }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
     @endif
+
+    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 600; color: #374151;">Submission Metadata</h3>
+    <div class="detail-grid">
+        <div class="detail-item">
+            <label>IP Address</label>
+            <span>{{ $healthcareBarrier->ip_address ?? 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Started At</label>
+            <span>{{ $healthcareBarrier->started_at ? $healthcareBarrier->started_at->format('M d, Y h:i:s A') : 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Submitted At</label>
+            <span>{{ $healthcareBarrier->submitted_at ? $healthcareBarrier->submitted_at->format('M d, Y h:i:s A') : 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Time to Complete</label>
+            <span>
+                @if($healthcareBarrier->started_at && $healthcareBarrier->submitted_at)
+                    {{ $healthcareBarrier->started_at->diffForHumans($healthcareBarrier->submitted_at, true) }}
+                @else
+                    N/A
+                @endif
+            </span>
+        </div>
+        @if($healthcareBarrier->device_info)
+        <div class="detail-item" style="grid-column: span 2;">
+            <label>Device Info</label>
+            <span style="font-family: monospace; font-size: 12px;">
+                {{ $healthcareBarrier->device_info['platform'] ?? '' }} {{ $healthcareBarrier->device_info['os_version'] ?? '' }} |
+                {{ $healthcareBarrier->device_info['device_brand'] ?? '' }} {{ $healthcareBarrier->device_info['device_model'] ?? '' }} |
+                App v{{ $healthcareBarrier->device_info['app_version'] ?? '' }}
+            </span>
+        </div>
+        @endif
+    </div>
 </div>
 
 @endsection

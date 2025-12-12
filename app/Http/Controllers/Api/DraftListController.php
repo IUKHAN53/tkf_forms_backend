@@ -35,16 +35,21 @@ class DraftListController extends Controller
             'house_number' => 'nullable|string',
             'address' => 'required|string',
             'guardian_phone' => 'nullable|string',
-            'type' => 'required|string|in:Zero Dose (ZD),Defaulter',
+            'type' => 'required|string|in:Zero Dose,Zero Dose (ZD),Defaulter,Refusal',
             'missed_vaccines' => 'required|array',
             'missed_vaccines.*' => 'string',
             'reasons_of_missing' => 'required|string',
             'plan_for_coverage' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'device_info' => 'nullable|array',
+            'started_at' => 'nullable|date',
+            'submitted_at' => 'nullable|date',
         ]);
 
         $validated['user_id'] = $request->user()->id;
+        $validated['ip_address'] = $request->ip();
+        $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
         $list = DraftList::create($validated);
 

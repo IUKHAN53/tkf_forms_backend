@@ -56,13 +56,12 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Form ID</th>
                     <th>District</th>
                     <th>UC Name</th>
-                    <th>Tehsil</th>
                     <th>Area Name</th>
-                    <th>Households</th>
-                    <th>Children</th>
+                    <th>Population</th>
+                    <th>Under 2 Years</th>
                     <th>Created At</th>
                     <th>Actions</th>
                 </tr>
@@ -70,13 +69,12 @@
             <tbody>
                 @forelse($mappings as $mapping)
                     <tr>
-                        <td>{{ $mapping->id }}</td>
+                        <td><code>{{ $mapping->unique_id }}</code></td>
                         <td>{{ $mapping->district }}</td>
                         <td>{{ $mapping->uc_name }}</td>
-                        <td>{{ $mapping->tehsil }}</td>
                         <td>{{ $mapping->area_name }}</td>
-                        <td>{{ $mapping->total_households }}</td>
-                        <td>{{ $mapping->total_children }}</td>
+                        <td>{{ $mapping->total_population }}</td>
+                        <td>{{ $mapping->total_under_2_years }}</td>
                         <td>{{ $mapping->created_at->format('M d, Y') }}</td>
                         <td>
                             <div class="action-buttons">
@@ -91,7 +89,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="text-center text-muted">No area mappings found.</td>
+                        <td colspan="8" class="text-center text-muted">No area mappings found.</td>
                     </tr>
                 @endforelse
             </tbody>

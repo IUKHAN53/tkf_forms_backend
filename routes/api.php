@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommunityBarrierController;
 use App\Http\Controllers\Api\DraftListController;
 use App\Http\Controllers\Api\FormController;
+use App\Http\Controllers\Api\FormIdController;
 use App\Http\Controllers\Api\HealthcareBarrierController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\OutreachSiteController;
@@ -27,6 +28,9 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/outreach-sites/outreach', [OutreachSiteController::class, 'outreachSites']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
+        // Generate unique form ID
+        Route::post('/form-id/generate', [FormIdController::class, 'generate']);
+
         // Profile & Password
         Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::post('/change-password', [AuthController::class, 'changePassword']);

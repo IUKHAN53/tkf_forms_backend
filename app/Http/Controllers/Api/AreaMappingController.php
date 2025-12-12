@@ -46,9 +46,14 @@ class AreaMappingController extends Controller
             'hf_incharge_name' => 'nullable|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'device_info' => 'nullable|array',
+            'started_at' => 'nullable|date',
+            'submitted_at' => 'nullable|date',
         ]);
 
         $validated['user_id'] = $request->user()->id;
+        $validated['ip_address'] = $request->ip();
+        $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
         $mapping = AreaMapping::create($validated);
 

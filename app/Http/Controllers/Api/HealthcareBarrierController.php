@@ -33,6 +33,9 @@ class HealthcareBarrierController extends Controller
             'facilitator_tkf' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
+            'device_info' => 'nullable|array',
+            'started_at' => 'nullable|date',
+            'submitted_at' => 'nullable|date',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
             'participants.*.title_designation' => 'nullable|string',
@@ -45,6 +48,8 @@ class HealthcareBarrierController extends Controller
             $participantsData = $validated['participants'];
             unset($validated['participants']);
             $validated['user_id'] = $request->user()->id;
+            $validated['ip_address'] = $request->ip();
+            $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
             $record = HealthcareBarrier::create($validated);
 

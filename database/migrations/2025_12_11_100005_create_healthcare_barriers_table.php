@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('healthcare_barriers', function (Blueprint $table) {
             $table->id();
+            $table->string('unique_id')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->date('date');
             $table->string('hfs');
@@ -21,6 +22,10 @@ return new class extends Migration
             $table->string('facilitator_tkf');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('ip_address')->nullable();
+            $table->json('device_info')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

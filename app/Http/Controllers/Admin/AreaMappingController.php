@@ -49,7 +49,7 @@ class AreaMappingController extends Controller
             'Content-Disposition' => 'attachment; filename="area_mappings_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['ID', 'District', 'UC Name', 'Tehsil', 'Area Name', 'Total Households', 'Total Children', 'Latitude', 'Longitude', 'Created At'];
+        $columns = ['Form ID', 'District', 'Town', 'UC Name', 'Fix Site', 'Outreach Name', 'Area Name', 'Total Population', 'Total Under 2 Years', 'Total Zero Dose', 'Total Defaulter', 'Total Refusal', 'Latitude', 'Longitude', 'Created At'];
 
         $callback = function () use ($mappings, $columns) {
             $file = fopen('php://output', 'w');
@@ -57,13 +57,18 @@ class AreaMappingController extends Controller
 
             foreach ($mappings as $mapping) {
                 fputcsv($file, [
-                    $mapping->id,
+                    $mapping->unique_id,
                     $mapping->district,
+                    $mapping->town,
                     $mapping->uc_name,
-                    $mapping->tehsil,
+                    $mapping->fix_site,
+                    $mapping->outreach_name,
                     $mapping->area_name,
-                    $mapping->total_households,
-                    $mapping->total_children,
+                    $mapping->total_population,
+                    $mapping->total_under_2_years,
+                    $mapping->total_zero_dose,
+                    $mapping->total_defaulter,
+                    $mapping->total_refusal,
                     $mapping->latitude,
                     $mapping->longitude,
                     $mapping->created_at,
@@ -83,13 +88,13 @@ class AreaMappingController extends Controller
             'Content-Disposition' => 'attachment; filename="area_mappings_template.csv"',
         ];
 
-        $columns = ['district', 'uc_name', 'tehsil', 'area_name', 'total_households', 'total_children', 'latitude', 'longitude'];
+        $columns = ['district', 'town', 'uc_name', 'fix_site', 'outreach_name', 'area_name', 'assigned_aic', 'assigned_cm', 'total_population', 'total_under_2_years', 'total_zero_dose', 'total_defaulter', 'total_refusal', 'latitude', 'longitude'];
 
         $callback = function () use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
             // Add sample row
-            fputcsv($file, ['District Name', 'UC Name', 'Tehsil Name', 'Area Name', '100', '50', '31.5204', '74.3587']);
+            fputcsv($file, ['District Name', 'Town Name', 'UC Name', 'Fix Site', 'Outreach Name', 'Area Name', 'AIC Name', 'CM Name', '1000', '100', '10', '5', '3', '31.5204', '74.3587']);
             fclose($file);
         };
 
@@ -110,18 +115,25 @@ class AreaMappingController extends Controller
         $errors = [];
 
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 8) continue;
+            if (count($row) < 13) continue;
 
             try {
                 AreaMapping::create([
                     'district' => $row[0],
-                    'uc_name' => $row[1],
-                    'tehsil' => $row[2],
-                    'area_name' => $row[3],
-                    'total_households' => (int) $row[4],
-                    'total_children' => (int) $row[5],
-                    'latitude' => $row[6] ?: null,
-                    'longitude' => $row[7] ?: null,
+                    'town' => $row[1],
+                    'uc_name' => $row[2],
+                    'fix_site' => $row[3],
+                    'outreach_name' => $row[4],
+                    'area_name' => $row[5],
+                    'assigned_aic' => $row[6],
+                    'assigned_cm' => $row[7],
+                    'total_population' => (int) $row[8],
+                    'total_under_2_years' => (int) $row[9],
+                    'total_zero_dose' => (int) $row[10],
+                    'total_defaulter' => (int) $row[11],
+                    'total_refusal' => (int) $row[12],
+                    'latitude' => $row[13] ?? null,
+                    'longitude' => $row[14] ?? null,
                 ]);
                 $imported++;
             } catch (\Exception $e) {

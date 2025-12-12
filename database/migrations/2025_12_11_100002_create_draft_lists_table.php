@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('draft_lists', function (Blueprint $table) {
             $table->id();
+            $table->string('unique_id')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('division');
             $table->string('district');
@@ -31,6 +32,10 @@ return new class extends Migration
             $table->text('plan_for_coverage');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('ip_address')->nullable();
+            $table->json('device_info')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }

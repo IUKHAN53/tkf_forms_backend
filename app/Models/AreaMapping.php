@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasUniqueFormId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AreaMapping extends Model
 {
+    use HasUniqueFormId;
+
     protected $fillable = [
+        'unique_id',
         'user_id',
         'district',
         'town',
@@ -34,6 +38,10 @@ class AreaMapping extends Model
         'hf_incharge_name',
         'latitude',
         'longitude',
+        'ip_address',
+        'device_info',
+        'started_at',
+        'submitted_at',
     ];
 
     protected $casts = [
@@ -46,6 +54,9 @@ class AreaMapping extends Model
         'total_girls_under_2' => 'integer',
         'latitude' => 'float',
         'longitude' => 'float',
+        'device_info' => 'array',
+        'started_at' => 'datetime',
+        'submitted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

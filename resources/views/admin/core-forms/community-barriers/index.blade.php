@@ -53,36 +53,33 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Team No</th>
-                    <th>UC Name</th>
-                    <th>Area Name</th>
-                    <th>Barrier Type</th>
-                    <th>Severity</th>
-                    <th>Status</th>
-                    <th>Submitted By</th>
+                    <th>Form ID</th>
                     <th>Date</th>
+                    <th>District</th>
+                    <th>UC</th>
+                    <th>Venue</th>
+                    <th>Community</th>
+                    <th>Group Type</th>
+                    <th>Participants</th>
+                    <th>Submitted By</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($communityBarriers as $item)
                     <tr>
-                        <td>{{ $item->id }}</td>
-                        <td>{{ $item->team_no }}</td>
-                        <td>{{ $item->uc_name }}</td>
-                        <td>{{ $item->area_name }}</td>
-                        <td>{{ ucfirst(str_replace('_', ' ', $item->barrier_type)) }}</td>
+                        <td><code>{{ $item->unique_id }}</code></td>
+                        <td>{{ $item->date->format('M d, Y') }}</td>
+                        <td>{{ $item->district }}</td>
+                        <td>{{ $item->uc }}</td>
+                        <td>{{ $item->venue }}</td>
+                        <td>{{ $item->community }}</td>
                         <td>
-                            <span class="badge {{ $item->severity === 'high' ? 'badge-danger' : ($item->severity === 'medium' ? 'badge-warning' : 'badge-success') }}">
-                                {{ ucfirst($item->severity) }}
+                            <span class="badge badge-primary">
+                                {{ $item->group_type }}
                             </span>
                         </td>
-                        <td>
-                            <span class="badge {{ $item->status === 'resolved' ? 'badge-success' : ($item->status === 'in_progress' ? 'badge-primary' : 'badge-warning') }}">
-                                {{ ucfirst(str_replace('_', ' ', $item->status)) }}
-                            </span>
-                        </td>
+                        <td>{{ $item->participants_males + $item->participants_females }}</td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td>{{ $item->created_at->format('M d, Y') }}</td>
                         <td class="action-buttons">

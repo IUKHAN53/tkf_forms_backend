@@ -8,7 +8,7 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Draft List #{{ $draftList->id }}</h2>
+            <h2>Draft List <code>{{ $draftList->unique_id }}</code></h2>
             <p class="text-muted">Submitted on {{ $draftList->created_at->format('M d, Y \a\t h:i A') }}</p>
         </div>
         <div class="header-actions">
@@ -23,26 +23,24 @@
 
     <div class="detail-grid">
         <div class="detail-item">
-            <label>Team Number</label>
-            <span>{{ $draftList->team_no }}</span>
+            <label>Form ID</label>
+            <span><code>{{ $draftList->unique_id }}</code></span>
         </div>
         <div class="detail-item">
-            <label>UC Name</label>
-            <span>{{ $draftList->uc_name }}</span>
+            <label>Division</label>
+            <span>{{ $draftList->division }}</span>
         </div>
         <div class="detail-item">
-            <label>Area Name</label>
-            <span>{{ $draftList->area_name }}</span>
+            <label>District</label>
+            <span>{{ $draftList->district }}</span>
         </div>
         <div class="detail-item">
-            <label>House Number</label>
-            <span>{{ $draftList->house_no }}</span>
+            <label>UC</label>
+            <span>{{ $draftList->uc }}</span>
         </div>
         <div class="detail-item">
-            <label>Category</label>
-            <span class="badge {{ $draftList->category === 'refusal' ? 'badge-danger' : 'badge-primary' }}">
-                {{ ucfirst($draftList->category) }}
-            </span>
+            <label>Outreach</label>
+            <span>{{ $draftList->outreach }}</span>
         </div>
         <div class="detail-item">
             <label>Child Name</label>
@@ -53,16 +51,28 @@
             <span>{{ $draftList->father_name }}</span>
         </div>
         <div class="detail-item">
-            <label>Age (Months)</label>
-            <span>{{ $draftList->age_months }}</span>
-        </div>
-        <div class="detail-item">
             <label>Gender</label>
             <span>{{ ucfirst($draftList->gender) }}</span>
         </div>
         <div class="detail-item">
-            <label>Contact Number</label>
-            <span>{{ $draftList->contact_number ?? 'N/A' }}</span>
+            <label>Date of Birth</label>
+            <span>{{ $draftList->date_of_birth ? $draftList->date_of_birth->format('M d, Y') : 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Age (Months)</label>
+            <span>{{ $draftList->age_in_months }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Type</label>
+            <span class="badge badge-primary">{{ $draftList->type }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Guardian Phone</label>
+            <span>{{ $draftList->guardian_phone ?? 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Address</label>
+            <span>{{ $draftList->address }}</span>
         </div>
         <div class="detail-item">
             <label>Submitted By</label>
@@ -78,11 +88,54 @@
         </div>
     </div>
 
-    @if($draftList->remarks)
+    @if($draftList->reasons_of_missing)
         <div class="participants-section">
-            <h3>Remarks</h3>
-            <p>{{ $draftList->remarks }}</p>
+            <h3>Reasons for Missing</h3>
+            <p>{{ $draftList->reasons_of_missing }}</p>
         </div>
     @endif
+
+    @if($draftList->plan_for_coverage)
+        <div class="participants-section">
+            <h3>Plan for Coverage</h3>
+            <p>{{ $draftList->plan_for_coverage }}</p>
+        </div>
+    @endif
+
+    <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 600; color: #374151;">Submission Metadata</h3>
+    <div class="detail-grid">
+        <div class="detail-item">
+            <label>IP Address</label>
+            <span>{{ $draftList->ip_address ?? 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Started At</label>
+            <span>{{ $draftList->started_at ? $draftList->started_at->format('M d, Y h:i:s A') : 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Submitted At</label>
+            <span>{{ $draftList->submitted_at ? $draftList->submitted_at->format('M d, Y h:i:s A') : 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <label>Time to Complete</label>
+            <span>
+                @if($draftList->started_at && $draftList->submitted_at)
+                    {{ $draftList->started_at->diffForHumans($draftList->submitted_at, true) }}
+                @else
+                    N/A
+                @endif
+            </span>
+        </div>
+        @if($draftList->device_info)
+        <div class="detail-item" style="grid-column: span 2;">
+            <label>Device Info</label>
+            <span style="font-family: monospace; font-size: 12px;">
+                {{ $draftList->device_info['platform'] ?? '' }} {{ $draftList->device_info['os_version'] ?? '' }} |
+                {{ $draftList->device_info['device_brand'] ?? '' }} {{ $draftList->device_info['device_model'] ?? '' }} |
+                App v{{ $draftList->device_info['app_version'] ?? '' }}
+            </span>
+        </div>
+        @endif
+    </div>
 </div>
 @endsection

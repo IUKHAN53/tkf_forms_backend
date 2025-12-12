@@ -53,13 +53,12 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Team No</th>
-                    <th>UC Name</th>
-                    <th>Area</th>
-                    <th>House No</th>
-                    <th>Category</th>
+                    <th>Form ID</th>
+                    <th>District</th>
+                    <th>UC</th>
                     <th>Child Name</th>
+                    <th>Father Name</th>
+                    <th>Type</th>
                     <th>Age (Months)</th>
                     <th>Gender</th>
                     <th>Submitted By</th>
@@ -69,18 +68,17 @@
             <tbody>
                 @forelse($draftLists as $item)
                     <tr>
-                        <td>{{ $item->id }}</td>
-                        <td>{{ $item->team_no }}</td>
-                        <td>{{ $item->uc_name }}</td>
-                        <td>{{ $item->area_name }}</td>
-                        <td>{{ $item->house_no }}</td>
+                        <td><code>{{ $item->unique_id }}</code></td>
+                        <td>{{ $item->district }}</td>
+                        <td>{{ $item->uc }}</td>
+                        <td>{{ $item->child_name }}</td>
+                        <td>{{ $item->father_name }}</td>
                         <td>
-                            <span class="badge {{ $item->category === 'refusal' ? 'badge-danger' : 'badge-primary' }}">
-                                {{ ucfirst($item->category) }}
+                            <span class="badge {{ $item->type === 'Zero Dose' ? 'badge-danger' : 'badge-warning' }}">
+                                {{ $item->type }}
                             </span>
                         </td>
-                        <td>{{ $item->child_name }}</td>
-                        <td>{{ $item->age_months }}</td>
+                        <td>{{ $item->age_in_months }}</td>
                         <td>{{ ucfirst($item->gender) }}</td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td class="action-buttons">

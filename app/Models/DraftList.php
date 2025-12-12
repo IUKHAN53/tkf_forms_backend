@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasUniqueFormId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DraftList extends Model
 {
+    use HasUniqueFormId;
+
     protected $fillable = [
+        'unique_id',
         'user_id',
         'division',
         'district',
@@ -29,6 +33,10 @@ class DraftList extends Model
         'plan_for_coverage',
         'latitude',
         'longitude',
+        'ip_address',
+        'device_info',
+        'started_at',
+        'submitted_at',
     ];
 
     protected $casts = [
@@ -37,6 +45,9 @@ class DraftList extends Model
         'missed_vaccines' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
+        'device_info' => 'array',
+        'started_at' => 'datetime',
+        'submitted_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

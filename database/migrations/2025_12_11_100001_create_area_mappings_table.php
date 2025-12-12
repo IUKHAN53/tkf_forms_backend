@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('area_mappings', function (Blueprint $table) {
             $table->id();
+            $table->string('unique_id')->unique();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('district');
             $table->string('town');
@@ -36,6 +37,10 @@ return new class extends Migration
             $table->string('hf_incharge_name')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('ip_address')->nullable();
+            $table->json('device_info')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('submitted_at')->nullable();
             $table->timestamps();
         });
     }
