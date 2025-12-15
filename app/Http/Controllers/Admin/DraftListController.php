@@ -26,13 +26,13 @@ class DraftListController extends Controller
         $draftLists = $query->paginate(15)->withQueryString();
 
         // Prepare map data
-        $mapData = DraftList::whereNotNull('lat')
-            ->whereNotNull('lon')
+        $mapData = DraftList::whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->get()
             ->map(function ($draft) {
                 return [
-                    'lat' => (float) $draft->lat,
-                    'lon' => (float) $draft->lon,
+                    'lat' => (float) $draft->latitude,
+                    'lon' => (float) $draft->longitude,
                     'popup' => "<strong>{$draft->child_name}</strong><br>
                                 District: {$draft->district}<br>
                                 UC: {$draft->uc_name}<br>

@@ -14,17 +14,15 @@ use App\Http\Controllers\Admin\CommunityBarrierController;
 use App\Http\Controllers\Admin\HealthcareBarrierController;
 
 Route::get('/', function () {
-    return redirect('/admin');
+    return redirect('/login');
 });
 
-Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/');
-})->name('logout');
+// Authentication routes
+Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [App\Http\Controllers\Auth\LoginController::class, 'login']);
+Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
 
-Route::prefix('admin')->name('admin.')->middleware('activity.log')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     
     Route::resource('forms', AdminFormController::class);
