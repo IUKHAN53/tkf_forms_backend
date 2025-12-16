@@ -26,13 +26,13 @@ class CommunityBarrierController extends Controller
         $communityBarriers = $query->paginate(15)->withQueryString();
 
         // Prepare map data
-        $mapData = CommunityBarrier::whereNotNull('lat')
-            ->whereNotNull('lon')
+        $mapData = CommunityBarrier::whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->get()
             ->map(function ($barrier) {
                 return [
-                    'lat' => (float) $barrier->lat,
-                    'lon' => (float) $barrier->lon,
+                    'lat' => (float) $barrier->latitude,
+                    'lon' => (float) $barrier->longitude,
                     'popup' => "<strong>{$barrier->date}</strong><br>
                                 District: {$barrier->district}<br>
                                 UC: {$barrier->uc_name}<br>

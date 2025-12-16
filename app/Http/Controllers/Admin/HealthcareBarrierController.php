@@ -26,13 +26,13 @@ class HealthcareBarrierController extends Controller
         $healthcareBarriers = $query->paginate(15)->withQueryString();
 
         // Prepare map data
-        $mapData = HealthcareBarrier::whereNotNull('lat')
-            ->whereNotNull('lon')
+        $mapData = HealthcareBarrier::whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->get()
             ->map(function ($barrier) {
                 return [
-                    'lat' => (float) $barrier->lat,
-                    'lon' => (float) $barrier->lon,
+                    'lat' => (float) $barrier->latitude,
+                    'lon' => (float) $barrier->longitude,
                     'popup' => "<strong>{$barrier->date}</strong><br>
                                 District: {$barrier->district}<br>
                                 UC: {$barrier->uc_name}<br>
