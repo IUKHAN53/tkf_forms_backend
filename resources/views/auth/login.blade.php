@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2540 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -23,65 +23,93 @@
 
         .login-container {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 48px;
+            border-radius: 24px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+            padding: 48px 40px;
             width: 100%;
-            max-width: 440px;
+            max-width: 420px;
         }
 
         .login-header {
             text-align: center;
-            margin-bottom: 32px;
+            margin-bottom: 36px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .logo-center {
+            height: 75px;
+            width: auto;
+            object-fit: contain;
         }
 
         .login-header h1 {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 8px;
+            color: #1e3a5f;
+            margin-bottom: 6px;
         }
 
         .login-header p {
-            color: #718096;
+            color: #64748b;
             font-size: 14px;
         }
 
         .form-group {
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .form-label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #2d3748;
+            color: #334155;
             margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 16px;
+            padding: 14px 16px;
             font-size: 15px;
             border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            transition: all 0.2s;
+            border-radius: 12px;
+            transition: all 0.2s ease;
             outline: none;
+            background: #f8fafc;
         }
 
         .form-input:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #1e3a5f;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.1);
         }
 
         .form-input.error {
-            border-color: #f56565;
+            border-color: #ef4444;
+            background: #fef2f2;
         }
 
         .error-message {
-            color: #f56565;
-            font-size: 13px;
+            color: #dc2626;
+            font-size: 12px;
             margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .remember-me {
@@ -93,32 +121,35 @@
         .remember-me input[type="checkbox"] {
             width: 18px;
             height: 18px;
-            margin-right: 8px;
+            margin-right: 10px;
             cursor: pointer;
+            accent-color: #1e3a5f;
         }
 
         .remember-me label {
             font-size: 14px;
-            color: #4a5568;
+            color: #475569;
             cursor: pointer;
         }
 
         .btn-login {
             width: 100%;
-            padding: 14px;
-            font-size: 16px;
+            padding: 16px;
+            font-size: 15px;
             font-weight: 600;
             color: white;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(30, 58, 95, 0.4);
         }
 
         .btn-login:active {
@@ -126,29 +157,58 @@
         }
 
         .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .alert-danger {
-            background-color: #fed7d7;
-            color: #c53030;
-            border: 1px solid #fc8181;
+            background-color: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-danger::before {
+            content: "⚠";
+            font-size: 18px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .footer p {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .footer strong {
+            color: #64748b;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
         <div class="login-header">
-            <h1>Welcome Back</h1>
-            <p>Sign in to access your dashboard</p>
+            <div class="logo-container">
+                <img src="{{ asset('images/govt-logo.png') }}" alt="Government Logo" class="logo" onerror="this.style.display='none'">
+                <img src="{{ asset('images/epi-logo.png') }}" alt="EPI Logo" class="logo-center" onerror="this.style.display='none'">
+                <img src="{{ asset('images/logo.png') }}" alt="TKF Logo" class="logo" onerror="this.style.display='none'">
+            </div>
+            <h1>Community Led Engagement</h1>
+            <p>Sign in to access the admin dashboard</p>
         </div>
 
         @if ($errors->any())
             <div class="alert alert-danger">
-                <strong>Error:</strong> {{ $errors->first() }}
+                {{ $errors->first() }}
             </div>
         @endif
 
@@ -165,7 +225,7 @@
                     value="{{ old('email') }}" 
                     required 
                     autofocus
-                    placeholder="Enter your email"
+                    placeholder="admin@example.com"
                 >
                 @error('email')
                     <div class="error-message">{{ $message }}</div>
@@ -180,7 +240,7 @@
                     name="password" 
                     class="form-input @error('password') error @enderror" 
                     required
-                    placeholder="Enter your password"
+                    placeholder="••••••••"
                 >
                 @error('password')
                     <div class="error-message">{{ $message }}</div>
@@ -189,13 +249,17 @@
 
             <div class="remember-me">
                 <input type="checkbox" id="remember" name="remember">
-                <label for="remember">Remember me</label>
+                <label for="remember">Keep me signed in</label>
             </div>
 
             <button type="submit" class="btn-login">
                 Sign In
             </button>
         </form>
+
+        <div class="footer">
+            <p>Powered by <strong>EPI & Tameer-e-Khalaq Foundation</strong></p>
+        </div>
     </div>
 </body>
 </html>
