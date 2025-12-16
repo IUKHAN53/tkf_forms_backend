@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AreaMappingController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommunityBarrierController;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DraftListController;
 use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\FormIdController;
@@ -28,6 +29,9 @@ Route::prefix('v1')->group(function (): void {
     Route::get('/outreach-sites/outreach', [OutreachSiteController::class, 'outreachSites']);
 
     Route::middleware('auth:sanctum')->group(function (): void {
+        // Dashboard Statistics
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+
         // Generate unique form ID
         Route::post('/form-id/generate', [FormIdController::class, 'generate']);
 
