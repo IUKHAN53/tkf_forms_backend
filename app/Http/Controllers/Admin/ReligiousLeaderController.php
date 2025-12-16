@@ -26,13 +26,13 @@ class ReligiousLeaderController extends Controller
         $religiousLeaders = $query->paginate(15)->withQueryString();
 
         // Prepare map data
-        $mapData = ReligiousLeader::whereNotNull('lat')
-            ->whereNotNull('lon')
+        $mapData = ReligiousLeader::whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->get()
             ->map(function ($leader) {
                 return [
-                    'lat' => (float) $leader->lat,
-                    'lon' => (float) $leader->lon,
+                    'lat' => (float) $leader->latitude,
+                    'lon' => (float) $leader->longitude,
                     'popup' => "<strong>{$leader->date}</strong><br>
                                 District: {$leader->district}<br>
                                 UC: {$leader->uc_name}<br>
