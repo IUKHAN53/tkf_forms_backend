@@ -61,9 +61,9 @@
                     <th>UC</th>
                     <th>Venue</th>
                     <th>Community</th>
-                    <th>Group Type</th>
                     <th>Participants</th>
                     <th>Submitted By</th>
+                    <th>Created</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -75,12 +75,7 @@
                         <td>{{ $item->district }}</td>
                         <td>{{ $item->uc }}</td>
                         <td>{{ $item->venue }}</td>
-                        <td>{{ $item->community }}</td>
-                        <td>
-                            <span class="badge badge-primary">
-                                {{ $item->group_type }}
-                            </span>
-                        </td>
+                        <td>{{ is_array($item->community) ? implode(', ', $item->community) : $item->community }}</td>
                         <td>{{ $item->participants_males + $item->participants_females }}</td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td>{{ $item->created_at->format('M d, Y') }}</td>

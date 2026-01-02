@@ -40,10 +40,57 @@
         </div>
     </div>
 
-    <!-- Heat Map -->
+    <!-- Heat Map Container -->
     <div class="map-container" style="margin-bottom: 24px;">
-        <div id="map" style="height: 400px; border-radius: 8px; overflow: hidden;"></div>
+        <div class="map-header" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 16px; font-weight: 600; color: var(--color-text-primary);">Geographic Distribution</h3>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <span style="color: var(--color-text-secondary); font-size: 14px;">
+                    {{ count($mapData) }} locations with coordinates
+                </span>
+                <button type="button" class="btn btn-sm btn-outline" onclick="toggleMapFullscreen('map')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                    </svg>
+                    Fullscreen
+                </button>
+            </div>
+        </div>
+        <div id="map" style="height: 400px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border);"></div>
     </div>
+
+<style>
+.map-fullscreen {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    border-radius: 0 !important;
+}
+
+.fullscreen-close-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 10000;
+    background: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: none;
+}
+
+.fullscreen-close-btn.visible {
+    display: block;
+}
+</style>
+
+<button id="map-fullscreen-close" class="fullscreen-close-btn" onclick="exitMapFullscreen()">✕ Exit Fullscreen</button>
 
     <!-- Search -->
     <div class="card-filters">
@@ -131,22 +178,25 @@
 @include('admin.core-forms.partials.styles')
 
 <script>
+let areaMappingMap = null;
+let currentFullscreenMapId = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize map centered on Karachi
-    const map = L.map('map').setView([24.8607, 67.0011], 11);
-    
+    areaMappingMap = L.map('map').setView([24.8607, 67.0011], 11);
+
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
-    }).addTo(map);
-    
+    }).addTo(areaMappingMap);
+
     // Get location data from Laravel
     const locations = @json($mapData);
-    
+
     // Prepare heat map data
     const heatData = locations.map(loc => [loc.lat, loc.lon, 0.5]);
-    
+
     // Add heat layer
     if (heatData.length > 0) {
         L.heatLayer(heatData, {
@@ -158,8 +208,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 0.5: 'lime',
                 1.0: 'red'
             }
-        }).addTo(map);
-        
+        }).addTo(areaMappingMap);
+
         // Add markers
         locations.forEach(loc => {
             L.marker([loc.lat, loc.lon])
@@ -169,8 +219,52 @@ document.addEventListener('DOMContentLoaded', function() {
                     UC: ${loc.uc}<br>
                     Population: ${loc.population}
                 `)
-                .addTo(map);
+                .addTo(areaMappingMap);
         });
+
+        // Fit map to markers bounds
+        const group = L.featureGroup(locations.map(loc => L.marker([loc.lat, loc.lon])));
+        areaMappingMap.fitBounds(group.getBounds().pad(0.1));
+    }
+});
+
+function toggleMapFullscreen(mapId) {
+    const mapElement = document.getElementById(mapId);
+    mapElement.classList.add('map-fullscreen');
+    document.getElementById('map-fullscreen-close').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+    currentFullscreenMapId = mapId;
+
+    // Resize the map after transition
+    setTimeout(() => {
+        if (areaMappingMap) {
+            areaMappingMap.invalidateSize();
+        }
+    }, 100);
+}
+
+function exitMapFullscreen() {
+    if (currentFullscreenMapId) {
+        const mapElement = document.getElementById(currentFullscreenMapId);
+        mapElement.classList.remove('map-fullscreen');
+        document.getElementById('map-fullscreen-close').classList.remove('visible');
+        document.body.style.overflow = '';
+
+        // Resize the map after transition
+        setTimeout(() => {
+            if (areaMappingMap) {
+                areaMappingMap.invalidateSize();
+            }
+        }, 100);
+
+        currentFullscreenMapId = null;
+    }
+}
+
+// ESC key to exit fullscreen
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && currentFullscreenMapId) {
+        exitMapFullscreen();
     }
 });
 </script>

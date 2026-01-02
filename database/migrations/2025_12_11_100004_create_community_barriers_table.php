@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('fix_site');
             $table->string('outreach');
             $table->json('community'); // Array: Pathan, Punjabi, Sindhi, Saraiki, Urdu speaking
-            $table->json('group_type'); // Array: Teachers, Shopkeepers, Religious Leaders, etc.
             $table->integer('participants_males');
             $table->integer('participants_females');
             $table->string('facilitator_tkf');

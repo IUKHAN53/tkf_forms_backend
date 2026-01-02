@@ -25,7 +25,56 @@ class OutreachSiteController extends Controller
 
         $outreachSites = $query->paginate(15)->withQueryString();
 
-        return view('admin.outreach-sites.index', compact('outreachSites'));
+        // Prepare map data for heatmap visualization
+        $mapData = OutreachSite::whereNotNull('coordinates')
+            ->where('coordinates', '!=', '')
+            ->get()
+            ->map(function ($site) {
+                // Parse coordinates (format: "lat,lng" or "lat, lng")
+                $coords = $this->parseCoordinates($site->coordinates);
+                if (!$coords) {
+                    return null;
+                }
+                return [
+                    'lat' => $coords['lat'],
+                    'lon' => $coords['lng'],
+                    'popup' => "<strong>{$site->outreach_site}</strong><br>
+                               District: {$site->district}<br>
+                               UC: {$site->union_council}<br>
+                               Fix Site: {$site->fix_site}",
+                ];
+            })
+            ->filter()
+            ->values()
+            ->toArray();
+
+        return view('admin.outreach-sites.index', compact('outreachSites', 'mapData'));
+    }
+
+    /**
+     * Parse coordinates from string format
+     */
+    private function parseCoordinates(?string $coordinates): ?array
+    {
+        if (empty($coordinates)) {
+            return null;
+        }
+
+        // Try different formats: "lat,lng", "lat, lng", "(lat, lng)"
+        $coordinates = trim($coordinates, '() ');
+        $parts = preg_split('/[,\s]+/', $coordinates, -1, PREG_SPLIT_NO_EMPTY);
+
+        if (count($parts) >= 2) {
+            $lat = (float) $parts[0];
+            $lng = (float) $parts[1];
+
+            // Validate coordinates are in reasonable range
+            if ($lat >= -90 && $lat <= 90 && $lng >= -180 && $lng <= 180) {
+                return ['lat' => $lat, 'lng' => $lng];
+            }
+        }
+
+        return null;
     }
 
     public function create()

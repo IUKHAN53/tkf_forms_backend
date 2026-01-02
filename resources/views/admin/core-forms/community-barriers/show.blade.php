@@ -63,18 +63,6 @@
             </span>
         </div>
         <div class="detail-item">
-            <label>Group Type</label>
-            <span>
-                @if(is_array($communityBarrier->group_type))
-                    @foreach($communityBarrier->group_type as $type)
-                        <span class="badge badge-primary">{{ $type }}</span>
-                    @endforeach
-                @else
-                    <span class="badge badge-primary">{{ $communityBarrier->group_type }}</span>
-                @endif
-            </span>
-        </div>
-        <div class="detail-item">
             <label>Participants (Males)</label>
             <span>{{ $communityBarrier->participants_males }}</span>
         </div>

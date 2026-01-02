@@ -74,8 +74,6 @@ class FormController extends Controller
     public function edit(Form $form)
     {
         $form->load('fields');
-
-        LogActivity::record('form.deleted', "Deleted form {$form->name}", ['form_id' => $form->id]);
         $fieldTypes = FormFieldType::cases();
         return view('admin.forms.edit', compact('form', 'fieldTypes'));
     }
@@ -144,7 +142,14 @@ class FormController extends Controller
 
     public function destroy(Form $form)
     {
+        $formName = $form->name;
+        $formId = $form->id;
+        $submissionsCount = $form->submissions()->count();
+
         $form->delete();
-        return redirect()->route('admin.forms.index')->with('success', 'Form deleted successfully');
+
+        LogActivity::record('form.deleted', "Deleted form '{$formName}' with {$submissionsCount} submissions", ['form_id' => $formId]);
+
+        return redirect()->route('admin.forms.index')->with('success', 'Form and all related submissions deleted successfully');
     }
 }

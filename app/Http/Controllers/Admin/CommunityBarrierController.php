@@ -30,14 +30,18 @@ class CommunityBarrierController extends Controller
             ->whereNotNull('longitude')
             ->get()
             ->map(function ($barrier) {
+                $communities = is_array($barrier->community)
+                    ? implode(', ', $barrier->community)
+                    : ($barrier->community ?? '');
+
                 return [
                     'lat' => (float) $barrier->latitude,
                     'lon' => (float) $barrier->longitude,
                     'popup' => "<strong>{$barrier->date}</strong><br>
                                 District: {$barrier->district}<br>
-                                UC: {$barrier->uc_name}<br>
+                                UC: {$barrier->uc}<br>
                                 Venue: {$barrier->venue}<br>
-                                Group Type: {$barrier->group_type}"
+                                Community: {$communities}"
                 ];
             })
             ->values()

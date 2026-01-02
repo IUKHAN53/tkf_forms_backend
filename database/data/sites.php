@@ -3714,7 +3714,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Owis Medical centre ',
         'outreach_site' => '-',
@@ -3722,7 +3722,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Saad Clinic ',
         'outreach_site' => '-',
@@ -3730,7 +3730,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => '-',
@@ -3738,7 +3738,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Pak welfare Clinic ',
@@ -3746,7 +3746,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Al Rahamat Clinic ',
@@ -3754,7 +3754,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Al Hamra Clinic ',
@@ -3762,7 +3762,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Shahida Lhw House',
@@ -3770,7 +3770,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Al Raheem Clinic ',
@@ -3778,7 +3778,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Apwa Center ',
@@ -3786,7 +3786,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Mussart LHW House ',
@@ -3794,7 +3794,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Dr Shahid Clinic ',
@@ -3802,7 +3802,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Sayed Clinic ',
@@ -3810,7 +3810,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Maa Hospital ',
@@ -3818,7 +3818,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'LHW Farhat jahn ',
@@ -3826,7 +3826,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Ustadullulm Madrasa ',
@@ -3834,7 +3834,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => '50 Bed Hospital ',
         'outreach_site' => 'Dr Sharmeen Clinic ',
@@ -3842,7 +3842,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => '-',
@@ -3850,7 +3850,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Feroz Metrnty home ',
@@ -3858,7 +3858,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Ahmad Raza House ',
@@ -3866,7 +3866,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Samiullah House ',
@@ -3874,7 +3874,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Zareen LHW House',
@@ -3882,7 +3882,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Usman House ',
@@ -3890,7 +3890,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'ED Raja Tanveer Nawaz ',
         'outreach_site' => 'Nadir House Raja Tanveer Nawaz ',
@@ -3898,7 +3898,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => '-',
@@ -3906,7 +3906,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity & Ithad town Rod',
@@ -3914,7 +3914,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity & Arfat School ',
@@ -3922,7 +3922,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity & Arfat School Bake said ',
@@ -3930,7 +3930,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Raise Amrohi ',
@@ -3938,7 +3938,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Al khidmat Tirng centre ',
@@ -3946,7 +3946,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Bodar area UC 05',
@@ -3954,7 +3954,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Bashani Baekari ',
@@ -3962,7 +3962,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity daba mor',
@@ -3970,7 +3970,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Shah Waliyallah Nagr Zainab School ',
@@ -3978,7 +3978,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Shah Waliyallah Nagr Fine School ',
@@ -3986,7 +3986,7 @@ return [
         'comments' => 'nan',
     ],
     [
-        'district' => ' Karachi West District ',
+        'district' => 'West',
         'union_council' => ' Chishti Nagar-7 ',
         'fix_site' => 'Sina Clinic ',
         'outreach_site' => 'Vital Van Activity Sawt Chok rod',

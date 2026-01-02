@@ -30,9 +30,7 @@ class CommunityBarrierController extends Controller
             'fix_site' => 'required|string',
             'outreach' => 'required|string',
             'community' => 'required|array|min:1',
-            'community.*' => 'required|string|in:Pathan,Punjabi,Sindhi,Saraiki,Urdu speaking',
-            'group_type' => 'required|array|min:1',
-            'group_type.*' => 'required|string|in:Teachers,Shopkeepers,Religious Leaders,Political Leaders,Mother in Laws,Mothers,Fathers,Father in Laws',
+            'community.*' => 'required|string', // Allow any community type (including custom entries)
             'participants_males' => 'required|integer',
             'participants_females' => 'required|integer',
             'facilitator_tkf' => 'required|string',
@@ -41,12 +39,13 @@ class CommunityBarrierController extends Controller
             'device_info' => 'nullable|array',
             'started_at' => 'nullable|date',
             'submitted_at' => 'nullable|date',
+            'unique_id' => 'nullable|string',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
             'participants.*.occupation' => 'nullable|string',
             'participants.*.address' => 'nullable|string',
-            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
-            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
+            'participants.*.contact_no' => ['nullable', 'string', 'regex:/^03\d{9}$/'],
+            'participants.*.cnic' => ['nullable', 'string', 'regex:/^\d{5}-\d{7}-\d$/'],
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 

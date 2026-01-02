@@ -21,7 +21,6 @@ class CommunityBarrier extends Model
         'fix_site',
         'outreach',
         'community',
-        'group_type',
         'participants_males',
         'participants_females',
         'facilitator_tkf',
@@ -36,7 +35,6 @@ class CommunityBarrier extends Model
     protected $casts = [
         'date' => 'datetime',
         'community' => 'array',
-        'group_type' => 'array',
         'participants_males' => 'integer',
         'participants_females' => 'integer',
         'latitude' => 'float',

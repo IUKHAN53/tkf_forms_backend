@@ -24,6 +24,19 @@ class Form extends Model
         'has_participants' => 'bool',
     ];
 
+    /**
+     * The "booted" method of the model - cascade delete related records
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Form $form) {
+            // Delete all related submissions (this will also cascade to participants)
+            $form->submissions()->delete();
+            // Delete all related form fields
+            $form->fields()->delete();
+        });
+    }
+
     public function fields(): HasMany
     {
         return $this->hasMany(FormField::class)->orderBy('order');
