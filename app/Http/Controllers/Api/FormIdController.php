@@ -16,15 +16,13 @@ class FormIdController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $request->validate([
-            'form_type' => 'required|in:area_mapping,draft_list,religious_leader,community_barrier,healthcare_barrier,bridging_the_gap',
+            'form_type' => 'required|in:fgds_community,fgds_health_workers,child_line_list,bridging_the_gap',
         ]);
 
         $prefixes = [
-            'area_mapping' => 'AM',
-            'draft_list' => 'DL',
-            'religious_leader' => 'RL',
-            'community_barrier' => 'CB',
-            'healthcare_barrier' => 'HB',
+            'fgds_community' => 'FC',
+            'fgds_health_workers' => 'FH',
+            'child_line_list' => 'CL',
             'bridging_the_gap' => 'BG',
         ];
 

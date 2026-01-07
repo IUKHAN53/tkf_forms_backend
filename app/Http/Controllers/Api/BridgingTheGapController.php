@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\BridgingTheGap;
-use App\Models\CommunityBarrier;
-use App\Models\HealthcareBarrier;
+use App\Models\FgdsCommunity;
+use App\Models\FgdsHealthWorkers;
 use App\Models\Participant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,7 +49,7 @@ class BridgingTheGapController extends Controller
             // IIT Team members (participant IDs from other forms)
             'team_members' => 'nullable|array',
             'team_members.*.participant_id' => 'required|integer|exists:participants,id',
-            'team_members.*.source_type' => 'required|string|in:community_barrier,healthcare_barrier',
+            'team_members.*.source_type' => 'required|string|in:fgds_community,fgds_health_workers',
             'team_members.*.source_id' => 'required|integer',
         ]);
 
@@ -114,10 +114,10 @@ class BridgingTheGapController extends Controller
         $uc = $request->uc;
         $search = $request->search;
 
-        // Get participants from Community Barriers in the same UC
-        $communityBarrierIds = CommunityBarrier::where('uc', $uc)->pluck('id');
-        $communityParticipants = Participant::where('participantable_type', CommunityBarrier::class)
-            ->whereIn('participantable_id', $communityBarrierIds)
+        // Get participants from FGDs-Community in the same UC
+        $fgdsCommunityIds = FgdsCommunity::where('uc', $uc)->pluck('id');
+        $communityParticipants = Participant::where('participantable_type', FgdsCommunity::class)
+            ->whereIn('participantable_id', $fgdsCommunityIds)
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -131,16 +131,16 @@ class BridgingTheGapController extends Controller
                     'name' => $participant->name,
                     'contact_no' => $participant->contact_no,
                     'occupation' => $participant->occupation,
-                    'source_type' => 'community_barrier',
+                    'source_type' => 'fgds_community',
                     'source_id' => $participant->participantable_id,
-                    'source_label' => 'Community Barriers',
+                    'source_label' => 'FGDs-Community',
                 ];
             });
 
-        // Get participants from Healthcare Barriers in the same UC
-        $healthcareBarrierIds = HealthcareBarrier::where('uc', $uc)->pluck('id');
-        $healthcareParticipants = Participant::where('participantable_type', HealthcareBarrier::class)
-            ->whereIn('participantable_id', $healthcareBarrierIds)
+        // Get participants from FGDs-Health Workers in the same UC
+        $fgdsHealthWorkersIds = FgdsHealthWorkers::where('uc', $uc)->pluck('id');
+        $healthcareParticipants = Participant::where('participantable_type', FgdsHealthWorkers::class)
+            ->whereIn('participantable_id', $fgdsHealthWorkersIds)
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($q) use ($search) {
                     $q->where('name', 'like', "%{$search}%")
@@ -154,9 +154,9 @@ class BridgingTheGapController extends Controller
                     'name' => $participant->name,
                     'contact_no' => $participant->contact_no,
                     'designation' => $participant->designation,
-                    'source_type' => 'healthcare_barrier',
+                    'source_type' => 'fgds_health_workers',
                     'source_id' => $participant->participantable_id,
-                    'source_label' => 'Healthcare Barriers',
+                    'source_label' => 'FGDs-Health Workers',
                 ];
             });
 

@@ -70,7 +70,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'SESSI Hospital',
         'outreach_site' => 'Tahir Clinic',
-        'coordinates' => '24.835845,67,221225',
+        'coordinates' => '24.835845,67.221225',
         'comments' => 'nan',
     ],
     [
@@ -86,7 +86,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'SESSI Hospital',
         'outreach_site' => 'Tuba Clinic ',
-        'coordinates' => '24.830050,67220978',
+        'coordinates' => '24.830050,67.220978',
         'comments' => 'nan',
     ],
     [
@@ -174,7 +174,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'ISD Muslimabad Colony ',
         'outreach_site' => 'Fixed Site',
-        'coordinates' => '24.827967,67215703',
+        'coordinates' => '24.827967,67.215703',
         'comments' => 'nan',
     ],
     [
@@ -198,7 +198,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'ISD Muslimabad Colony ',
         'outreach_site' => 'Baba House',
-        'coordinates' => '24.834018,6721946',
+        'coordinates' => '24.834018,67.21946',
         'comments' => 'nan',
     ],
     [
@@ -206,7 +206,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'ISD Muslimabad Colony ',
         'outreach_site' => 'Danish House',
-        'coordinates' => '24.833661,67220892',
+        'coordinates' => '24.833661,67.220892',
         'comments' => 'nan',
     ],
     [
@@ -238,7 +238,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'ISD Muslimabad Colony ',
         'outreach_site' => 'LHW Health House, Muslimabad ',
-        'coordinates' => '24.837029,67220193',
+        'coordinates' => '24.837029,67.220193',
         'comments' => 'nan',
     ],
     [
@@ -279,7 +279,7 @@ return [
         'fix_site' => 'ISD Muslimabad Colony ',
         'outreach_site' => 'Rehman Clinic',
         'coordinates' => '24.833571,76.218606',
-        'comments' => 'nan',
+        'comments' => 'NEEDS FIX: Longitude 76.218606 is outside Karachi (should be ~67.x)',
     ],
     [
         'district' => 'Malir',
@@ -406,7 +406,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'Govt Muslimabad Star Ground Dispencery',
         'outreach_site' => 'Eman Clinic',
-        'coordinates' => '24.832820.67.216371',
+        'coordinates' => '24.832820,67.216371',
         'comments' => 'nan',
     ],
     [
@@ -414,7 +414,7 @@ return [
         'union_council' => 'Muslimabad',
         'fix_site' => 'ISD Bilal Colony',
         'outreach_site' => 'Fixed Site',
-        'coordinates' => '24.850060,67224368',
+        'coordinates' => '24.850060,67.224368',
         'comments' => 'No Outreach Vaccinator Is Deployed From This Fixed Site',
     ],
     [
@@ -534,7 +534,7 @@ return [
         'union_council' => 'Muzafrabad',
         'fix_site' => 'Bilqees Sultana Hospital',
         'outreach_site' => 'Ameen Betak',
-        'coordinates' => '24.8305461,67232866',
+        'coordinates' => '24.8305461,67.232866',
         'comments' => 'nan',
     ],
     [
@@ -566,7 +566,7 @@ return [
         'union_council' => 'Muzafrabad',
         'fix_site' => 'Bilqees Sultana Hospital',
         'outreach_site' => 'TSC Jacob line',
-        'coordinates' => '24.83318,6723981',
+        'coordinates' => '24.83318,67.23981',
         'comments' => 'nan',
     ],
     [
@@ -638,7 +638,7 @@ return [
         'union_council' => 'Muzafrabad',
         'fix_site' => 'ISD Gulshan e Buneer ',
         'outreach_site' => 'Halima masjid',
-        'coordinates' => '24.82605,6722113',
+        'coordinates' => '24.82605,67.22113',
         'comments' => 'nan',
     ],
     [
@@ -694,7 +694,7 @@ return [
         'union_council' => 'Muzafrabad',
         'fix_site' => 'ISD Gulshan e Buneer ',
         'outreach_site' => 'Saleem Masjid',
-        'coordinates' => '24.82847,67,22085',
+        'coordinates' => '24.82847,67.22085',
         'comments' => 'nan',
     ],
     [
@@ -703,7 +703,7 @@ return [
         'fix_site' => 'ISD Gulshan e Buneer ',
         'outreach_site' => 'Shakirullah house',
         'coordinates' => '24.83147,62.22399',
-        'comments' => 'nan',
+        'comments' => 'NEEDS FIX: Longitude 62.22399 is outside Karachi (should be ~67.x)',
     ],
     [
         'district' => 'Malir',
@@ -726,7 +726,7 @@ return [
         'union_council' => 'Gujro C',
         'fix_site' => 'Insaf Medical center',
         'outreach_site' => 'nan',
-        'coordinates' => '24°58\'15.1"N 67°05\'59.1"E',
+        'coordinates' => '24.970861,67.099750',
         'comments' => 'nan',
     ],
     [
@@ -798,7 +798,7 @@ return [
         'union_council' => 'Gujro C',
         'fix_site' => 'BHU lassi Goth',
         'outreach_site' => 'nan',
-        'coordinates' => '24°58\'34.7"N 67°05\'35.5"E',
+        'coordinates' => '24.976306,67.093194',
         'comments' => 'nan',
     ],
     [
@@ -918,7 +918,7 @@ return [
         'union_council' => 'Gujro C',
         'fix_site' => 'Sina Clinic Saindad',
         'outreach_site' => 'nan',
-        'coordinates' => '24°58\'48.1"N 67°05\'50.5"E',
+        'coordinates' => '24.980028,67.097361',
         'comments' => 'nan',
     ],
     [
@@ -1006,7 +1006,7 @@ return [
         'union_council' => 'Gujro C',
         'fix_site' => 'Sina Jamali Clinic',
         'outreach_site' => 'nan',
-        'coordinates' => '24°58\'39.7"N 67°06\'41.8"E',
+        'coordinates' => '24.977694,67.111611',
         'comments' => 'nan',
     ],
     [
@@ -1062,7 +1062,7 @@ return [
         'union_council' => 'Gujro C',
         'fix_site' => 'Tariq Medical center',
         'outreach_site' => 'nan',
-        'coordinates' => '24°59\'13.4"N 67°05\'37.5"E',
+        'coordinates' => '24.987056,67.093750',
         'comments' => 'nan',
     ],
     [
@@ -1110,7 +1110,7 @@ return [
         'union_council' => 'Gujro E ',
         'fix_site' => 'SGD Gulshan Aka khail ',
         'outreach_site' => 'nan',
-        'coordinates' => '25°00\'05.9"N 67°08\'15.5"E',
+        'coordinates' => '25.001639,67.137639',
         'comments' => 'nan',
     ],
     [
@@ -1118,7 +1118,7 @@ return [
         'union_council' => 'Gujro E ',
         'fix_site' => 'SGD Gulshan Aka khail ',
         'outreach_site' => 'Arbab Bethak Khan Muhala ',
-        'coordinates' => '24°59\'59.6"N 67°07\'59.6"E',
+        'coordinates' => '24.999889,67.133222',
         'comments' => 'nan',
     ],
     [
@@ -1190,7 +1190,7 @@ return [
         'union_council' => 'Gujro E ',
         'fix_site' => 'Ameen Hospital ',
         'outreach_site' => 'nan',
-        'coordinates' => '25°00\'41.6"N 67°07\'56.2"E',
+        'coordinates' => '25.011556,67.132278',
         'comments' => 'nan',
     ],
     [
@@ -3326,7 +3326,7 @@ return [
         'union_council' => 'Islamia colony-09',
         'fix_site' => 'Government dispensary ED Islamia',
         'outreach_site' => 'Raksha Stand Islamia colony',
-        'coordinates' => '24.951778,67030249',
+        'coordinates' => '24.951778,67.030249',
         'comments' => 'nan',
     ],
     [
@@ -4902,7 +4902,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'nan',
-        'coordinates' => '24°59\'59.2"N 67°10\'12.6"E',
+        'coordinates' => '24.999778,67.170167',
         'comments' => 'nan',
     ],
     [
@@ -4910,7 +4910,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Baloch clinic hingora goth ( Van Activity )',
-        'coordinates' => '25°00\'07.7"N 67°10\'14.3"E',
+        'coordinates' => '25.002139,67.170639',
         'comments' => 'nan',
     ],
     [
@@ -4918,7 +4918,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Ja Muhammad clinic ( Van Activity )',
-        'coordinates' => '24°59\'57.9"N 67°10\'23.3"E',
+        'coordinates' => '24.999417,67.173139',
         'comments' => 'nan',
     ],
     [
@@ -4926,7 +4926,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Sooba kha bethak ( Van Activity )',
-        'coordinates' => '24°59\'25.5"N 67°10\'34.4"E',
+        'coordinates' => '24.990417,67.176222',
         'comments' => 'nan',
     ],
     [
@@ -4934,7 +4934,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Wahab Clinic ( Van Activity )',
-        'coordinates' => '25.002144.67.162695',
+        'coordinates' => '25.002144,67.162695',
         'comments' => 'nan',
     ],
     [
@@ -4942,7 +4942,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Sindh Clinic ( Van Activity )',
-        'coordinates' => '25°00\'00.5"N 67°10\'10.5"E',
+        'coordinates' => '25.000139,67.169583',
         'comments' => 'nan',
     ],
     [
@@ -4950,7 +4950,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'SINA Hingora Goth',
         'outreach_site' => 'Naem Clinic ( Van Activity )',
-        'coordinates' => '25.000938.67.1613314',
+        'coordinates' => '25.000938,67.1613314',
         'comments' => 'nan',
     ],
     [
@@ -4958,7 +4958,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'nan',
-        'coordinates' => '25.0016225.67.1374967',
+        'coordinates' => '25.0016225,67.1374967',
         'comments' => 'nan',
     ],
     [
@@ -4966,7 +4966,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Jameel Clinic ',
-        'coordinates' => '25°00\'34.0"N 67°08\'05.9"E',
+        'coordinates' => '25.009444,67.134972',
         'comments' => 'nan',
     ],
     [
@@ -4974,7 +4974,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Baloch bethak',
-        'coordinates' => '25°00\'39.4"N 67°08\'22.2"E',
+        'coordinates' => '25.010944,67.139500',
         'comments' => 'nan',
     ],
     [
@@ -4982,7 +4982,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Abbas bethak',
-        'coordinates' => '25°00\'25.1"N 67°08\'39.1"E',
+        'coordinates' => '25.006972,67.144194',
         'comments' => 'nan',
     ],
     [
@@ -4990,7 +4990,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Ramzan bethak',
-        'coordinates' => '25°00\'34.1"N 67°08\'16.4"E',
+        'coordinates' => '25.009472,67.137889',
         'comments' => 'nan',
     ],
     [
@@ -4998,7 +4998,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Shoukat bethak',
-        'coordinates' => '25°00\'32.5"N 67°08\'13.9"E',
+        'coordinates' => '25.009028,67.137194',
         'comments' => 'nan',
     ],
     [
@@ -5006,7 +5006,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Rashid bethak ',
-        'coordinates' => '25°00\'33.8"N 67°08\'16.3"E',
+        'coordinates' => '25.009389,67.137861',
         'comments' => 'nan',
     ],
     [
@@ -5014,7 +5014,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Aijaz bethak',
-        'coordinates' => '25°00\'37.4"N 67°08\'19.1"E',
+        'coordinates' => '25.010389,67.138639',
         'comments' => 'nan',
     ],
     [
@@ -5022,7 +5022,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Rehman clinic ',
-        'coordinates' => '25°00\'36.4"N 67°08\'14.9"E',
+        'coordinates' => '25.010111,67.137472',
         'comments' => 'nan',
     ],
     [
@@ -5030,7 +5030,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'faizan bethak',
-        'coordinates' => '25°00\'39.3"N 67°08\'09.7"E',
+        'coordinates' => '25.010917,67.136028',
         'comments' => 'nan',
     ],
     [
@@ -5038,7 +5038,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Falahi Marjaz',
-        'coordinates' => '25°00\'10.5"N 67°08\'05.7"E',
+        'coordinates' => '25.002917,67.134917',
         'comments' => 'nan',
     ],
     [
@@ -5046,7 +5046,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Waheed Clinic ',
-        'coordinates' => '25°00\'52.0"N 67°08\'34.5"E',
+        'coordinates' => '25.014444,67.142917',
         'comments' => 'nan',
     ],
     [
@@ -5054,7 +5054,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'PPHI Expremental dispensary Akakhail ',
         'outreach_site' => 'Al Umar clinic ',
-        'coordinates' => '25°00\'43.5"N 67°08\'24.2"E',
+        'coordinates' => '25.012083,67.140056',
         'comments' => 'nan',
     ],
     [
@@ -5062,7 +5062,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'nan',
-        'coordinates' => '25°00\'41.0"N 67°08\'41.2"E',
+        'coordinates' => '25.011389,67.144778',
         'comments' => 'nan',
     ],
     [
@@ -5070,7 +5070,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Hayat bethak. ( Van Activity )',
-        'coordinates' => '25.014257.67.144944',
+        'coordinates' => '25.014257,67.144944',
         'comments' => 'nan',
     ],
     [
@@ -5078,7 +5078,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Ayub bethak ( Van Activity )',
-        'coordinates' => '25°00\'27.5"N 67°08\'31.3"E',
+        'coordinates' => '25.007639,67.142028',
         'comments' => 'nan',
     ],
     [
@@ -5086,7 +5086,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Waheed clinic  ( Van Activity )',
-        'coordinates' => '25°00\'52.0"N 67°08\'34.5"E',
+        'coordinates' => '25.014444,67.142917',
         'comments' => 'nan',
     ],
     [
@@ -5094,7 +5094,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Burqi clinic  ( Van Activity )',
-        'coordinates' => '25.011235.67.140821',
+        'coordinates' => '25.011235,67.140821',
         'comments' => 'nan',
     ],
     [
@@ -5102,7 +5102,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Cotton society  ( Van Activity )',
-        'coordinates' => '24.999605.67.129852',
+        'coordinates' => '24.999605,67.129852',
         'comments' => 'nan',
     ],
     [
@@ -5110,7 +5110,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Hadiabad Area ( Van Activity )',
-        'coordinates' => '24°59\'48.1"N 67°07\'53.9"E',
+        'coordinates' => '24.996694,67.131639',
         'comments' => 'nan',
     ],
     [
@@ -5118,7 +5118,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Rainbo tower Area ( Van Activity )',
-        'coordinates' => '24°59\'47.4"N 67°07\'53.4"E',
+        'coordinates' => '24.996500,67.131500',
         'comments' => 'nan',
     ],
     [
@@ -5126,7 +5126,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Rehman clinic  ( Van Activity )',
-        'coordinates' => '25.009633.67.139808',
+        'coordinates' => '25.009633,67.139808',
         'comments' => 'nan',
     ],
     [
@@ -5134,7 +5134,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Maryam Clinic  ( Van Activity )',
-        'coordinates' => '25.006137.67.136955',
+        'coordinates' => '25.006137,67.136955',
         'comments' => 'nan',
     ],
     [
@@ -5142,7 +5142,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Muzafar Shah Thala ( Van Activity )',
-        'coordinates' => '25.015237.67.146124',
+        'coordinates' => '25.015237,67.146124',
         'comments' => 'nan',
     ],
     [
@@ -5150,7 +5150,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Da Gul Thala ( Van Activity )',
-        'coordinates' => '25°00\'27.8"N 67°08\'28.2"E',
+        'coordinates' => '25.007722,67.141167',
         'comments' => 'nan',
     ],
     [
@@ -5158,7 +5158,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Attaullah Bethak  ( Van Activity )',
-        'coordinates' => '25.010203.67.144495',
+        'coordinates' => '25.010203,67.144495',
         'comments' => 'nan',
     ],
     [
@@ -5166,7 +5166,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Mashwani bethak  ( Van Activity )',
-        'coordinates' => '25°00\'51.6"N 67°08\'43.7"E',
+        'coordinates' => '25.014333,67.145472',
         'comments' => 'nan',
     ],
     [
@@ -5174,7 +5174,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Mugheri house  ( Van Activity )',
-        'coordinates' => '25°00\'38.2"N 67°08\'41.8"E',
+        'coordinates' => '25.010611,67.144944',
         'comments' => 'nan',
     ],
     [
@@ -5182,7 +5182,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Noman Clinic  ( Van Activity )',
-        'coordinates' => '25.011649.67.147384',
+        'coordinates' => '25.011649,67.147384',
         'comments' => 'nan',
     ],
     [
@@ -5190,7 +5190,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Zaheer bethak ( Van Activity )',
-        'coordinates' => '25.011656.67.142691',
+        'coordinates' => '25.011656,67.142691',
         'comments' => 'nan',
     ],
     [
@@ -5198,7 +5198,7 @@ return [
         'union_council' => 'Zone E',
         'fix_site' => 'Sina Gul Goth',
         'outreach_site' => 'Taj Rasool bethak  ( Van Activity )',
-        'coordinates' => '25.010505.67.147613',
+        'coordinates' => '25.010505,67.147613',
         'comments' => 'nan',
     ],
     [
@@ -5222,7 +5222,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'UC Office ',
-        'coordinates' => '25°00\'14.4"N 67°06\'52.6"E',
+        'coordinates' => '25.004000,67.114611',
         'comments' => 'nan',
     ],
     [
@@ -5230,7 +5230,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Life Care Hospital ',
-        'coordinates' => '25°00\'10.9"N 67°06\'21.1"E',
+        'coordinates' => '25.003028,67.105861',
         'comments' => 'nan',
     ],
     [
@@ -5238,7 +5238,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'SG Complex ',
-        'coordinates' => '25°00\'29.9"N 67°06\'48.6"E',
+        'coordinates' => '25.008306,67.113500',
         'comments' => 'nan',
     ],
     [
@@ -5246,7 +5246,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Rafeeq house ',
-        'coordinates' => '25°00\'16.6"N 67°06\'32.8"E',
+        'coordinates' => '25.004611,67.109111',
         'comments' => 'nan',
     ],
     [
@@ -5254,7 +5254,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Ya Ali Madad Plaza ',
-        'coordinates' => '25°00\'17.3"N 67°06\'59.9"E',
+        'coordinates' => '25.004806,67.116639',
         'comments' => 'nan',
     ],
     [
@@ -5262,7 +5262,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Arein House',
-        'coordinates' => '25°00\'00.5"N 67°06\'38.2"E',
+        'coordinates' => '25.000139,67.110611',
         'comments' => 'nan',
     ],
     [
@@ -5270,7 +5270,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Police house ',
-        'coordinates' => '25°00\'16.0"N 67°06\'46.3"E',
+        'coordinates' => '25.004444,67.112861',
         'comments' => 'nan',
     ],
     [
@@ -5278,7 +5278,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Zainab plaza ',
-        'coordinates' => '25°00\'15.6"N 67°07\'01.7"E',
+        'coordinates' => '25.004333,67.117139',
         'comments' => 'nan',
     ],
     [
@@ -5286,7 +5286,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Soomro bethak',
-        'coordinates' => '25°00\'10.9"N 67°06\'21.1"E',
+        'coordinates' => '25.003028,67.105861',
         'comments' => 'nan',
     ],
     [
@@ -5294,7 +5294,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Siddique E Akhbar Masjid',
-        'coordinates' => '25°00\'16.8"N 67°06\'32.9"E',
+        'coordinates' => '25.004667,67.109139',
         'comments' => 'nan',
     ],
     [
@@ -5302,7 +5302,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Host School ',
-        'coordinates' => '25°00\'27.4"N 67°07\'49.2"E',
+        'coordinates' => '25.007611,67.130333',
         'comments' => 'nan',
     ],
     [
@@ -5310,7 +5310,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Hakeem Dawa Khana',
-        'coordinates' => '25°00\'10.9"N 67°06\'21.1"E',
+        'coordinates' => '25.003028,67.105861',
         'comments' => 'nan',
     ],
     [
@@ -5318,7 +5318,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'khair ul Nisa School',
-        'coordinates' => '25°00\'06.8"N 67°06\'40.1"E',
+        'coordinates' => '25.001889,67.111139',
         'comments' => 'nan',
     ],
     [
@@ -5326,7 +5326,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'East City Hospital ',
         'outreach_site' => 'Nadeem house',
-        'coordinates' => '25°00\'29.9"N 67°06\'48.7"E',
+        'coordinates' => '25.008306,67.113528',
         'comments' => 'nan',
     ],
     [
@@ -5342,7 +5342,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'MashaAllah Clinic ',
-        'coordinates' => '24°59\'23.0"N 67°07\'31.7"E',
+        'coordinates' => '24.989722,67.125472',
         'comments' => 'nan',
     ],
     [
@@ -5350,7 +5350,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'Noman clinic ',
-        'coordinates' => '24°59\'28.9"N 67°07\'35.9"E',
+        'coordinates' => '24.991361,67.126639',
         'comments' => 'nan',
     ],
     [
@@ -5358,7 +5358,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'Jannat clinic ',
-        'coordinates' => '24°59\'30.5"N 67°07\'34.3"E',
+        'coordinates' => '24.991806,67.126194',
         'comments' => 'nan',
     ],
     [
@@ -5366,7 +5366,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'Nazak House',
-        'coordinates' => '24°59\'33.4"N 67°07\'33.6"E',
+        'coordinates' => '24.992611,67.126000',
         'comments' => 'nan',
     ],
     [
@@ -5374,7 +5374,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'Sikandar Clinic ',
-        'coordinates' => '24°59\'24.9"N 67°07\'32.6"E',
+        'coordinates' => '24.990250,67.125722',
         'comments' => 'nan',
     ],
     [
@@ -5382,7 +5382,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'imam bargah ',
-        'coordinates' => '24°59\'19.4"N 67°07\'30.7"E',
+        'coordinates' => '24.988722,67.125194',
         'comments' => 'nan',
     ],
     [
@@ -5390,7 +5390,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'Imam Basri Hospital ',
         'outreach_site' => 'Ahmed baba bethak',
-        'coordinates' => '24°59\'24.5"N 67°07\'36.8"E',
+        'coordinates' => '24.990139,67.126889',
         'comments' => 'nan',
     ],
     [
@@ -5398,7 +5398,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'nan',
-        'coordinates' => '24°59\'27.5"N 67°06\'26.7"E',
+        'coordinates' => '24.990972,67.107417',
         'comments' => 'nan',
     ],
     [
@@ -5406,7 +5406,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Sabir Clinic, Shehzad Clinic ',
-        'coordinates' => '24°59\'33.4"N 67°06\'38.1"E',
+        'coordinates' => '24.992611,67.110583',
         'comments' => 'nan',
     ],
     [
@@ -5415,14 +5415,14 @@ return [
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'IRD Van Activity',
         'coordinates' => 'nan',
-        'comments' => 'nan',
+        'comments' => 'NEEDS FIX: Missing coordinates - needs field collection',
     ],
     [
         'district' => 'East',
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Anum Clinic ',
-        'coordinates' => '24°59\'47.6"N 67°06\'57.5"E',
+        'coordinates' => '24.996556,67.115972',
         'comments' => 'nan',
     ],
     [
@@ -5438,7 +5438,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Mustafa Clinic',
-        'coordinates' => '24°59\'55.5"N 67°06\'47.6"E',
+        'coordinates' => '24.998750,67.113222',
         'comments' => 'nan',
     ],
     [
@@ -5446,7 +5446,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'CMC Clinic',
-        'coordinates' => '24°59\'43.3"N 67°06\'53.6"E',
+        'coordinates' => '24.995361,67.114889',
         'comments' => 'nan',
     ],
     [
@@ -5454,7 +5454,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'UC office Dildar goth  ( Van Activity )',
-        'coordinates' => '24.991477.67 .116215',
+        'coordinates' => '24.991477,67.116215',
         'comments' => 'nan',
     ],
     [
@@ -5462,7 +5462,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Bismillah Clinic ( Van Activity )',
-        'coordinates' => '24.992011067.1170200',
+        'coordinates' => '24.9920110,67.1170200',
         'comments' => 'nan',
     ],
     [
@@ -5470,7 +5470,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Maryam Clinic ( Van Activity )',
-        'coordinates' => '24°59\'29.4"N 67°06\'58.2"E',
+        'coordinates' => '24.991500,67.116167',
         'comments' => 'nan',
     ],
     [
@@ -5479,14 +5479,14 @@ return [
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Bismillah Clinic ( Van Activity )',
         'coordinates' => 'nan',
-        'comments' => 'nan',
+        'comments' => 'NEEDS FIX: Missing coordinates - needs field collection',
     ],
     [
         'district' => 'East',
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Mohabat Clinic ( Van Activity )',
-        'coordinates' => '24.983034.67.117657',
+        'coordinates' => '24.983034,67.117657',
         'comments' => 'nan',
     ],
     [
@@ -5494,7 +5494,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Yahyah Bethak Area ( Van Activity )',
-        'coordinates' => '24.980649.67.117950',
+        'coordinates' => '24.980649,67.117950',
         'comments' => 'nan',
     ],
     [
@@ -5502,7 +5502,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Gohar House Area ( Van Activity )',
-        'coordinates' => '24.992035.67.130358',
+        'coordinates' => '24.992035,67.130358',
         'comments' => 'nan',
     ],
     [
@@ -5510,7 +5510,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Rafeeq house area ( Van Activity )',
-        'coordinates' => '24.994492.67.129641',
+        'coordinates' => '24.994492,67.129641',
         'comments' => 'nan',
     ],
     [
@@ -5518,7 +5518,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Ali shaikh area ( Van Activity )',
-        'coordinates' => '24.993285.67.116729',
+        'coordinates' => '24.993285,67.116729',
         'comments' => 'nan',
     ],
     [
@@ -5526,7 +5526,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Ali sher Bethak ( Van Activity )',
-        'coordinates' => '24.982898.67.115962',
+        'coordinates' => '24.982898,67.115962',
         'comments' => 'nan',
     ],
     [
@@ -5534,7 +5534,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'PPHI Expremental dispensary Wazeer Goth ',
         'outreach_site' => 'Imam bargah Area ( Van Activity )',
-        'coordinates' => '24°59\'19.4"N 67°07\'30.7"E',
+        'coordinates' => '24.988722,67.125194',
         'comments' => 'nan',
     ],
     [
@@ -5542,7 +5542,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'nan',
-        'coordinates' => '24°59\'26.5"N 67°05\'41.0"E',
+        'coordinates' => '24.990694,67.094722',
         'comments' => 'nan',
     ],
     [
@@ -5550,7 +5550,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Ayesha Clinic ( Van Activity )',
-        'coordinates' => '24°59\'57.0"N 67°05\'33.1"E',
+        'coordinates' => '24.999167,67.092528',
         'comments' => 'nan',
     ],
     [
@@ -5558,7 +5558,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Buneri Clinic  ( Van Activity )',
-        'coordinates' => '24°59\'57.0"N 67°05\'33.1"E',
+        'coordinates' => '24.999167,67.092528',
         'comments' => 'nan',
     ],
     [
@@ -5566,7 +5566,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Ayan clinic ( Van Activity )',
-        'coordinates' => '24°59\'57.0"N 67°05\'33.1"E',
+        'coordinates' => '24.999167,67.092528',
         'comments' => 'nan',
     ],
     [
@@ -5574,7 +5574,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Muhammadi Masjid Area ( Van Activity )',
-        'coordinates' => '24°59\'42.0"N 67°05\'38.8"E',
+        'coordinates' => '24.995000,67.094111',
         'comments' => 'nan',
     ],
     [
@@ -5582,7 +5582,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Al Noor Society ( Van Activity )',
-        'coordinates' => '24°59\'39.7"N 67°06\'43.1"E',
+        'coordinates' => '24.994361,67.111972',
         'comments' => 'nan',
     ],
     [
@@ -5590,7 +5590,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Ayub Goth Rea ( Van Activity )',
-        'coordinates' => '25.003151.67.090843',
+        'coordinates' => '25.003151,67.090843',
         'comments' => 'nan',
     ],
     [
@@ -5598,7 +5598,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Pak Clinic  ( Van Activity )',
-        'coordinates' => '25.000456.67.093034',
+        'coordinates' => '25.000456,67.093034',
         'comments' => 'nan',
     ],
     [
@@ -5606,7 +5606,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Rehmat clinic ( Van Activity )',
-        'coordinates' => '24.992146.67.094199',
+        'coordinates' => '24.992146,67.094199',
         'comments' => 'nan',
     ],
     [
@@ -5614,7 +5614,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Bilal Masjid ( Van Activity )',
-        'coordinates' => '24°59\'44.9"N 67°05\'38.3"E',
+        'coordinates' => '24.995806,67.093972',
         'comments' => 'nan',
     ],
     [
@@ -5623,14 +5623,14 @@ return [
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Shad bagh area ( Van Activity )',
         'coordinates' => 'nan',
-        'comments' => 'nan',
+        'comments' => 'NEEDS FIX: Missing coordinates - needs field collection',
     ],
     [
         'district' => 'East',
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Al Rashid Nomads ( Van Activity )',
-        'coordinates' => '24°59\'17.8"N 67°06\'07.6"E',
+        'coordinates' => '24.988278,67.102111',
         'comments' => 'nan',
     ],
     [
@@ -5638,7 +5638,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Hussain clinic area ( Van Activity )',
-        'coordinates' => '24°59\'57.9"N 67°05\'32.2"E',
+        'coordinates' => '24.999417,67.092278',
         'comments' => 'nan',
     ],
     [
@@ -5646,7 +5646,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'TSC Saifal  ( Van Activity )',
-        'coordinates' => '24°59\'29.9"N 67°05\'55.3"E',
+        'coordinates' => '24.991639,67.098694',
         'comments' => 'nan',
     ],
     [
@@ -5654,7 +5654,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Atif Clinic  ( Van Activity )',
-        'coordinates' => '24°59\'30.9"N 67°05\'49.1"E',
+        'coordinates' => '24.991917,67.096972',
         'comments' => 'nan',
     ],
     [
@@ -5662,7 +5662,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Mansoor Bethak ( Van Activity )',
-        'coordinates' => '24°59\'23.1"N 67°05\'35.3"E',
+        'coordinates' => '24.989750,67.093139',
         'comments' => 'nan',
     ],
     [
@@ -5670,7 +5670,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Ganga clinic  Area ( Van Activity )',
-        'coordinates' => '24°59\'22.1"N 67°05\'47.5"E',
+        'coordinates' => '24.989472,67.096528',
         'comments' => 'nan',
     ],
     [
@@ -5678,7 +5678,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Ahmed clinic  Area ( Van Activity )',
-        'coordinates' => '24°59\'26.5"N 67°05\'51.6"E',
+        'coordinates' => '24.990694,67.097667',
         'comments' => 'nan',
     ],
     [
@@ -5686,7 +5686,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Khatak clinic  ( Van Activity )',
-        'coordinates' => '24°59\'24.5"N 67°05\'53.3"E',
+        'coordinates' => '24.990139,67.098139',
         'comments' => 'nan',
     ],
     [
@@ -5694,7 +5694,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'PPP office area ( Van Activity )',
-        'coordinates' => '24°59\'21.9"N 67°05\'45.2"E',
+        'coordinates' => '24.989417,67.095889',
         'comments' => 'nan',
     ],
     [
@@ -5702,7 +5702,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Dua Clinic  ( Van Activity )',
-        'coordinates' => '24°59\'30.9"N 67°05\'47.3"E',
+        'coordinates' => '24.991917,67.096472',
         'comments' => 'nan',
     ],
     [
@@ -5710,7 +5710,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Asim Bethak  ( Van Activity )',
-        'coordinates' => '24°59\'16.4"N 67°05\'29.6"E',
+        'coordinates' => '24.987889,67.091556',
         'comments' => 'nan',
     ],
     [
@@ -5718,7 +5718,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Laiba Clinic  ( Van Activity )',
-        'coordinates' => '24°59\'41.1"N 67°06\'54.8"E',
+        'coordinates' => '24.994750,67.115222',
         'comments' => 'nan',
     ],
     [
@@ -5726,7 +5726,7 @@ return [
         'union_council' => 'Gujro Zone D',
         'fix_site' => 'SINA Sukhia Goth',
         'outreach_site' => 'Dadi mahal Area  ( Van Activity )',
-        'coordinates' => '24°59\'17.6"N 67°05\'46.8"E',
+        'coordinates' => '24.988222,67.096333',
         'comments' => 'nan',
     ],
 ];

@@ -13,6 +13,7 @@ class BridgingTheGapController extends Controller
     {
         $query = BridgingTheGap::with(['participants', 'teamMembers.participant'])->latest();
 
+        // Text search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -22,7 +23,34 @@ class BridgingTheGapController extends Controller
             });
         }
 
+        // District filter
+        if ($request->filled('district')) {
+            $query->where('district', $request->district);
+        }
+
+        // UC filter
+        if ($request->filled('uc')) {
+            $query->where('uc', $request->uc);
+        }
+
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        // Venue filter
+        if ($request->filled('venue')) {
+            $query->where('venue', 'like', "%{$request->venue}%");
+        }
+
         $records = $query->paginate(15)->withQueryString();
+
+        // Get distinct values for filter dropdowns
+        $districts = BridgingTheGap::distinct()->pluck('district')->filter()->sort()->values();
+        $ucs = BridgingTheGap::distinct()->pluck('uc')->filter()->sort()->values();
 
         // Prepare map data
         $mapData = BridgingTheGap::whereNotNull('latitude')
@@ -42,7 +70,7 @@ class BridgingTheGapController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.bridging-the-gap.index', compact('records', 'mapData'));
+        return view('admin.core-forms.bridging-the-gap.index', compact('records', 'mapData', 'districts', 'ucs'));
     }
 
     public function show(BridgingTheGap $bridgingTheGap)

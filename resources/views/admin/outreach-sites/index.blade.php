@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Outreach Sites')
+@section('title', 'Vaccination Sites')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,8 +8,8 @@
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
-            <h2>Outreach Sites</h2>
-            <p class="text-muted">Manage outreach sites for cascading dropdowns</p>
+            <h2>Vaccination Sites</h2>
+            <p class="text-muted">Manage fix sites and outreach sites for cascading dropdowns</p>
         </div>
         <div class="header-actions">
             <a href="{{ route('admin.outreach-sites.template') }}" class="btn btn-outline">
@@ -66,12 +66,18 @@
     </div>
 
     <div class="card-filters">
-        <form action="{{ route('admin.outreach-sites.index') }}" method="GET" class="search-form">
-            <input type="text" name="search" class="form-input" placeholder="Search by district, UC, fix site, or outreach site..." value="{{ request('search') }}">
-            <button type="submit" class="btn btn-primary">Search</button>
-            @if(request('search'))
-                <a href="{{ route('admin.outreach-sites.index') }}" class="btn btn-outline">Clear</a>
-            @endif
+        <form action="{{ route('admin.outreach-sites.index') }}" method="GET" class="filter-form">
+            <div class="filter-row">
+                <input type="text" name="search" class="form-input" placeholder="Search by district, UC, fix site, or outreach site..." value="{{ request('search') }}">
+                <label class="checkbox-filter" style="display: flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap;">
+                    <input type="checkbox" name="invalid_coords" value="1" {{ request('invalid_coords') == '1' ? 'checked' : '' }} onchange="this.form.submit()">
+                    <span style="font-size: 14px; color: var(--color-text-secondary);">Show only sites with coordinates</span>
+                </label>
+                <button type="submit" class="btn btn-primary">Search</button>
+                @if(request()->hasAny(['search', 'invalid_coords']))
+                    <a href="{{ route('admin.outreach-sites.index') }}" class="btn btn-outline">Clear</a>
+                @endif
+            </div>
         </form>
     </div>
 
@@ -90,13 +96,37 @@
             </thead>
             <tbody>
                 @forelse($outreachSites as $site)
-                    <tr>
+                    <tr class="{{ $site->coordinate_status === 'outside_karachi' ? 'row-warning' : '' }}">
                         <td><code>{{ $site->id }}</code></td>
                         <td>{{ $site->district }}</td>
                         <td>{{ $site->union_council }}</td>
                         <td>{{ $site->fix_site }}</td>
                         <td>{{ $site->outreach_site }}</td>
-                        <td>{{ $site->coordinates ?: 'N/A' }}</td>
+                        <td>
+                            @if($site->coordinate_status === 'outside_karachi')
+                                <span class="coordinates-invalid" title="Coordinates outside Karachi zone (Lat: 24.7-25.2, Lng: 66.9-67.5)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                    {{ $site->coordinates }}
+                                </span>
+                            @elseif($site->coordinate_status === 'invalid')
+                                <span class="coordinates-error" title="Invalid coordinate format">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="15" y1="9" x2="9" y2="15"/>
+                                        <line x1="9" y1="9" x2="15" y2="15"/>
+                                    </svg>
+                                    {{ $site->coordinates }}
+                                </span>
+                            @elseif($site->coordinate_status === 'valid')
+                                <span class="coordinates-valid">{{ $site->coordinates }}</span>
+                            @else
+                                <span class="text-muted">N/A</span>
+                            @endif
+                        </td>
                         <td>
                             <div class="action-buttons">
                                 <a href="{{ route('admin.outreach-sites.edit', $site) }}" class="btn-icon" title="Edit">
@@ -120,7 +150,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="text-center">No outreach sites found</td>
+                        <td colspan="7" class="text-center">No vaccination sites found</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -136,7 +166,7 @@
 <dialog id="importModal" class="import-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Import Outreach Sites</h3>
+            <h3>Import Vaccination Sites</h3>
             <button type="button" onclick="document.getElementById('importModal').close()" class="close-btn">&times;</button>
         </div>
         <form action="{{ route('admin.outreach-sites.import') }}" method="POST" enctype="multipart/form-data">
@@ -185,6 +215,52 @@
 
 .fullscreen-close.visible {
     display: block;
+}
+
+/* Coordinate validation styles */
+.row-warning {
+    background-color: rgba(245, 158, 11, 0.1) !important;
+}
+
+.row-warning:hover {
+    background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+.coordinates-invalid {
+    display: inline-flex;
+    align-items: center;
+    color: #b45309;
+    background-color: #fef3c7;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: help;
+}
+
+.coordinates-invalid svg {
+    color: #d97706;
+}
+
+.coordinates-error {
+    display: inline-flex;
+    align-items: center;
+    color: #b91c1c;
+    background-color: #fee2e2;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: help;
+}
+
+.coordinates-error svg {
+    color: #dc2626;
+}
+
+.coordinates-valid {
+    color: #047857;
+    font-size: 13px;
 }
 </style>
 

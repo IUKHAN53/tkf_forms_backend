@@ -42,6 +42,42 @@
     flex-wrap: wrap;
 }
 
+/* Advanced Filter Styles */
+.filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-row {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-select {
+    min-width: 150px;
+    max-width: 200px;
+}
+
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.date-filter label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+}
+
+.date-filter .form-input {
+    min-width: 140px;
+}
+
 .form-input {
     padding: 10px 14px;
     border: 1px solid var(--color-border);
@@ -136,6 +172,16 @@
 
 .btn-danger:hover {
     background: var(--color-error-dark);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, var(--color-success-main), var(--color-success-dark));
+    color: white;
+    border-color: var(--color-success-main);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, var(--color-success-dark), var(--color-success-darker));
 }
 
 .card-footer {

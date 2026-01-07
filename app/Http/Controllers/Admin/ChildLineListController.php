@@ -3,52 +3,52 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DraftList;
+use App\Models\ChildLineList;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class DraftListController extends Controller
+class ChildLineListController extends Controller
 {
     public function index(Request $request)
     {
-        $query = DraftList::query()->latest();
+        $query = ChildLineList::query()->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('district', 'like', "%{$search}%")
-                    ->orWhere('uc_name', 'like', "%{$search}%")
+                    ->orWhere('uc', 'like', "%{$search}%")
                     ->orWhere('child_name', 'like', "%{$search}%")
                     ->orWhere('father_name', 'like', "%{$search}%");
             });
         }
 
-        $draftLists = $query->paginate(15)->withQueryString();
+        $childLineLists = $query->paginate(15)->withQueryString();
 
         // Prepare map data
-        $mapData = DraftList::whereNotNull('latitude')
+        $mapData = ChildLineList::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get()
-            ->map(function ($draft) {
+            ->map(function ($record) {
                 return [
-                    'lat' => (float) $draft->latitude,
-                    'lon' => (float) $draft->longitude,
-                    'popup' => "<strong>{$draft->child_name}</strong><br>
-                                District: {$draft->district}<br>
-                                UC: {$draft->uc_name}<br>
-                                Outreach: {$draft->outreach}<br>
-                                Type: {$draft->type}"
+                    'lat' => (float) $record->latitude,
+                    'lon' => (float) $record->longitude,
+                    'popup' => "<strong>{$record->child_name}</strong><br>
+                                District: {$record->district}<br>
+                                UC: {$record->uc}<br>
+                                Outreach: {$record->outreach}<br>
+                                Type: {$record->type}"
                 ];
             })
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.draft-lists.index', compact('draftLists', 'mapData'));
+        return view('admin.core-forms.child-line-list.index', compact('childLineLists', 'mapData'));
     }
 
     public function create()
     {
-        return view('admin.core-forms.draft-lists.create');
+        return view('admin.core-forms.child-line-list.create');
     }
 
     public function store(Request $request)
@@ -80,18 +80,18 @@ class DraftListController extends Controller
         $validated['submitted_at'] = now();
         $validated['started_at'] = now();
 
-        DraftList::create($validated);
+        ChildLineList::create($validated);
 
-        return redirect()->route('admin.draft-lists.index')
-            ->with('success', 'Draft list entry created successfully.');
+        return redirect()->route('admin.child-line-list.index')
+            ->with('success', 'Child line list entry created successfully.');
     }
 
-    public function edit(DraftList $draftList)
+    public function edit(ChildLineList $childLineList)
     {
-        return view('admin.core-forms.draft-lists.edit', compact('draftList'));
+        return view('admin.core-forms.child-line-list.edit', compact('childLineList'));
     }
 
-    public function update(Request $request, DraftList $draftList)
+    public function update(Request $request, ChildLineList $childLineList)
     {
         $validated = $request->validate([
             'division' => 'required|string|max:255',
@@ -116,40 +116,40 @@ class DraftListController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
-        $draftList->update($validated);
+        $childLineList->update($validated);
 
-        return redirect()->route('admin.draft-lists.index')
-            ->with('success', 'Draft list entry updated successfully.');
+        return redirect()->route('admin.child-line-list.index')
+            ->with('success', 'Child line list entry updated successfully.');
     }
 
-    public function show(DraftList $draftList)
+    public function show(ChildLineList $childLineList)
     {
-        return view('admin.core-forms.draft-lists.show', compact('draftList'));
+        return view('admin.core-forms.child-line-list.show', compact('childLineList'));
     }
 
-    public function destroy(DraftList $draftList)
+    public function destroy(ChildLineList $childLineList)
     {
-        $draftList->delete();
-        return redirect()->route('admin.draft-lists.index')
-            ->with('success', 'Draft list entry deleted successfully.');
+        $childLineList->delete();
+        return redirect()->route('admin.child-line-list.index')
+            ->with('success', 'Child line list entry deleted successfully.');
     }
 
     public function export()
     {
-        $draftLists = DraftList::all();
+        $records = ChildLineList::all();
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="draft_lists_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="child_line_list_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHETR CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERGE'];
+        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERAGE'];
 
-        $callback = function () use ($draftLists, $columns) {
+        $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($draftLists as $item) {
+            foreach ($records as $item) {
                 fputcsv($file, [
                     $item->division,
                     $item->district,
@@ -182,10 +182,10 @@ class DraftListController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="draft_lists_template.csv"',
+            'Content-Disposition' => 'attachment; filename="child_line_list_template.csv"',
         ];
 
-        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHETR CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERGE'];
+        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERAGE'];
 
         $callback = function () use ($columns) {
             $file = fopen('php://output', 'w');
@@ -216,8 +216,8 @@ class DraftListController extends Controller
             try {
                 // Parse missed vaccines from comma-separated string to array
                 $missedVaccines = !empty($row[15]) ? array_map('trim', explode(',', $row[15])) : [];
-                
-                DraftList::create([
+
+                ChildLineList::create([
                     'division' => $row[0],
                     'district' => $row[1],
                     'town' => $row[2],
@@ -253,7 +253,7 @@ class DraftListController extends Controller
             $message .= " " . count($errors) . " errors occurred.";
         }
 
-        return redirect()->route('admin.draft-lists.index')
+        return redirect()->route('admin.child-line-list.index')
             ->with('success', $message);
     }
 }

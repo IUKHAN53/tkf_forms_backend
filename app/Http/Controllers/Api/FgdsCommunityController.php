@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\HealthcareBarrier;
+use App\Models\FgdsCommunity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class HealthcareBarrierController extends Controller
+class FgdsCommunityController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $records = HealthcareBarrier::with('participants')
+        $records = FgdsCommunity::with('participants')
             ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate(20);
@@ -24,23 +24,28 @@ class HealthcareBarrierController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|string',
-            'hfs' => 'required|string',
-            'address' => 'required|string',
+            'venue' => 'required|string',
             'uc' => 'required|string',
+            'district' => 'required|string',
+            'fix_site' => 'required|string',
+            'outreach' => 'required|string',
+            'community' => 'required|array|min:1',
+            'community.*' => 'required|string',
             'participants_males' => 'required|integer',
             'participants_females' => 'required|integer',
-            'group_type' => 'required|string|in:Medics,Non-Medics,Both',
             'facilitator_tkf' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'device_info' => 'nullable|array',
             'started_at' => 'nullable|date',
             'submitted_at' => 'nullable|date',
+            'unique_id' => 'nullable|string',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
-            'participants.*.designation' => 'nullable|string',
-            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
-            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
+            'participants.*.occupation' => 'nullable|string',
+            'participants.*.address' => 'nullable|string',
+            'participants.*.contact_no' => ['nullable', 'string', 'regex:/^03\d{9}$/'],
+            'participants.*.cnic' => ['nullable', 'string', 'regex:/^\d{5}-\d{7}-\d$/'],
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 
@@ -51,13 +56,14 @@ class HealthcareBarrierController extends Controller
             $validated['ip_address'] = $request->ip();
             $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
-            $record = HealthcareBarrier::create($validated);
+            $record = FgdsCommunity::create($validated);
 
             foreach ($participantsData as $index => $participant) {
                 $record->participants()->create([
                     'sr_no' => $index + 1,
                     'name' => $participant['name'],
-                    'designation' => $participant['designation'] ?? null,
+                    'occupation' => $participant['occupation'] ?? null,
+                    'address' => $participant['address'] ?? null,
                     'contact_no' => $participant['contact_no'] ?? null,
                     'cnic' => $participant['cnic'] ?? null,
                     'gender' => $participant['gender'] ?? null,
@@ -68,13 +74,13 @@ class HealthcareBarrierController extends Controller
         });
 
         return response()->json([
-            'message' => 'Healthcare barriers record created successfully',
+            'message' => 'FGDs-Community record created successfully',
             'data' => $record,
         ], 201);
     }
 
-    public function show(HealthcareBarrier $healthcareBarrier): JsonResponse
+    public function show(FgdsCommunity $fgdsCommunity): JsonResponse
     {
-        return response()->json($healthcareBarrier->load('participants'));
+        return response()->json($fgdsCommunity->load('participants'));
     }
 }

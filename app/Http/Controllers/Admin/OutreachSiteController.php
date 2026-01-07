@@ -9,6 +9,12 @@ use Illuminate\Support\Facades\Response;
 
 class OutreachSiteController extends Controller
 {
+    // Karachi geographic boundaries
+    private const KARACHI_LAT_MIN = 24.7;
+    private const KARACHI_LAT_MAX = 25.2;
+    private const KARACHI_LNG_MIN = 66.9;
+    private const KARACHI_LNG_MAX = 67.5;
+
     public function index(Request $request)
     {
         $query = OutreachSite::query()->latest();
@@ -23,7 +29,21 @@ class OutreachSiteController extends Controller
             });
         }
 
+        // Filter for invalid coordinates only
+        if ($request->filled('invalid_coords') && $request->invalid_coords === '1') {
+            $query->where(function ($q) {
+                $q->whereNotNull('coordinates')
+                    ->where('coordinates', '!=', '');
+            });
+        }
+
         $outreachSites = $query->paginate(15)->withQueryString();
+
+        // Add coordinate validation status to each site
+        $outreachSites->getCollection()->transform(function ($site) {
+            $site->coordinate_status = $this->validateCoordinatesInKarachi($site->coordinates);
+            return $site;
+        });
 
         // Prepare map data for heatmap visualization
         $mapData = OutreachSite::whereNotNull('coordinates')
@@ -77,6 +97,34 @@ class OutreachSiteController extends Controller
         return null;
     }
 
+    /**
+     * Validate if coordinates fall within Karachi zone
+     * Returns: 'valid', 'invalid', or 'missing'
+     */
+    private function validateCoordinatesInKarachi(?string $coordinates): string
+    {
+        if (empty($coordinates)) {
+            return 'missing';
+        }
+
+        $coords = $this->parseCoordinates($coordinates);
+
+        if (!$coords) {
+            return 'invalid';
+        }
+
+        $lat = $coords['lat'];
+        $lng = $coords['lng'];
+
+        // Check if within Karachi boundaries
+        if ($lat >= self::KARACHI_LAT_MIN && $lat <= self::KARACHI_LAT_MAX &&
+            $lng >= self::KARACHI_LNG_MIN && $lng <= self::KARACHI_LNG_MAX) {
+            return 'valid';
+        }
+
+        return 'outside_karachi';
+    }
+
     public function create()
     {
         return view('admin.outreach-sites.create');
@@ -96,7 +144,7 @@ class OutreachSiteController extends Controller
         OutreachSite::create($validated);
 
         return redirect()->route('admin.outreach-sites.index')
-            ->with('success', 'Outreach site created successfully');
+            ->with('success', 'Vaccination site created successfully');
     }
 
     public function edit(OutreachSite $outreachSite)
@@ -118,14 +166,14 @@ class OutreachSiteController extends Controller
         $outreachSite->update($validated);
 
         return redirect()->route('admin.outreach-sites.index')
-            ->with('success', 'Outreach site updated successfully');
+            ->with('success', 'Vaccination site updated successfully');
     }
 
     public function destroy(OutreachSite $outreachSite)
     {
         $outreachSite->delete();
         return redirect()->route('admin.outreach-sites.index')
-            ->with('success', 'Outreach site deleted successfully');
+            ->with('success', 'Vaccination site deleted successfully');
     }
 
     public function export()
@@ -203,6 +251,6 @@ class OutreachSiteController extends Controller
         }
 
         return redirect()->route('admin.outreach-sites.index')
-            ->with('success', "Successfully imported {$imported} outreach sites");
+            ->with('success', "Successfully imported {$imported} vaccination sites");
     }
 }

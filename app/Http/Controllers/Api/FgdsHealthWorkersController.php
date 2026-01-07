@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommunityBarrier;
+use App\Models\FgdsHealthWorkers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class CommunityBarrierController extends Controller
+class FgdsHealthWorkersController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $records = CommunityBarrier::with('participants')
+        $records = FgdsHealthWorkers::with('participants')
             ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate(20);
@@ -24,28 +24,23 @@ class CommunityBarrierController extends Controller
     {
         $validated = $request->validate([
             'date' => 'required|string',
-            'venue' => 'required|string',
+            'hfs' => 'required|string',
+            'address' => 'required|string',
             'uc' => 'required|string',
-            'district' => 'required|string',
-            'fix_site' => 'required|string',
-            'outreach' => 'required|string',
-            'community' => 'required|array|min:1',
-            'community.*' => 'required|string', // Allow any community type (including custom entries)
             'participants_males' => 'required|integer',
             'participants_females' => 'required|integer',
+            'group_type' => 'required|string|in:Medics,Non-Medics,Both',
             'facilitator_tkf' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'device_info' => 'nullable|array',
             'started_at' => 'nullable|date',
             'submitted_at' => 'nullable|date',
-            'unique_id' => 'nullable|string',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
-            'participants.*.occupation' => 'nullable|string',
-            'participants.*.address' => 'nullable|string',
-            'participants.*.contact_no' => ['nullable', 'string', 'regex:/^03\d{9}$/'],
-            'participants.*.cnic' => ['nullable', 'string', 'regex:/^\d{5}-\d{7}-\d$/'],
+            'participants.*.designation' => 'nullable|string',
+            'participants.*.contact_no' => 'nullable|string|regex:/^03\d{9}$/',
+            'participants.*.cnic' => 'nullable|string|regex:/^\d{5}-\d{7}-\d$/',
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 
@@ -56,14 +51,13 @@ class CommunityBarrierController extends Controller
             $validated['ip_address'] = $request->ip();
             $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
-            $record = CommunityBarrier::create($validated);
+            $record = FgdsHealthWorkers::create($validated);
 
             foreach ($participantsData as $index => $participant) {
                 $record->participants()->create([
                     'sr_no' => $index + 1,
                     'name' => $participant['name'],
-                    'occupation' => $participant['occupation'] ?? null,
-                    'address' => $participant['address'] ?? null,
+                    'designation' => $participant['designation'] ?? null,
                     'contact_no' => $participant['contact_no'] ?? null,
                     'cnic' => $participant['cnic'] ?? null,
                     'gender' => $participant['gender'] ?? null,
@@ -74,13 +68,13 @@ class CommunityBarrierController extends Controller
         });
 
         return response()->json([
-            'message' => 'Community barriers record created successfully',
+            'message' => 'FGDs-Health Workers record created successfully',
             'data' => $record,
         ], 201);
     }
 
-    public function show(CommunityBarrier $communityBarrier): JsonResponse
+    public function show(FgdsHealthWorkers $fgdsHealthWorker): JsonResponse
     {
-        return response()->json($communityBarrier->load('participants'));
+        return response()->json($fgdsHealthWorker->load('participants'));
     }
 }

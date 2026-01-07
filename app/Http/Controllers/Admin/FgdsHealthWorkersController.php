@@ -3,79 +3,105 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\HealthcareBarrier;
+use App\Models\FgdsHealthWorkers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class HealthcareBarrierController extends Controller
+class FgdsHealthWorkersController extends Controller
 {
     public function index(Request $request)
     {
-        $query = HealthcareBarrier::with('participants')->latest();
+        $query = FgdsHealthWorkers::with('participants')->latest();
 
+        // Text search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('district', 'like', "%{$search}%")
-                    ->orWhere('uc_name', 'like', "%{$search}%")
-                    ->orWhere('facilitator_tkf', 'like', "%{$search}%")
-                    ->orWhere('facility_name', 'like', "%{$search}%");
+                $q->where('uc', 'like', "%{$search}%")
+                    ->orWhere('hfs', 'like', "%{$search}%")
+                    ->orWhere('facilitator_tkf', 'like', "%{$search}%");
             });
         }
 
-        $healthcareBarriers = $query->paginate(15)->withQueryString();
+        // UC filter
+        if ($request->filled('uc')) {
+            $query->where('uc', $request->uc);
+        }
+
+        // Group type filter
+        if ($request->filled('group_type')) {
+            $query->where('group_type', $request->group_type);
+        }
+
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        // Facilitator filter
+        if ($request->filled('facilitator')) {
+            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
+        }
+
+        $fgdsHealthWorkers = $query->paginate(15)->withQueryString();
+
+        // Get distinct values for filter dropdowns
+        $ucs = FgdsHealthWorkers::distinct()->pluck('uc')->filter()->sort()->values();
+        $groupTypes = FgdsHealthWorkers::distinct()->pluck('group_type')->filter()->sort()->values();
 
         // Prepare map data
-        $mapData = HealthcareBarrier::whereNotNull('latitude')
+        $mapData = FgdsHealthWorkers::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get()
-            ->map(function ($barrier) {
+            ->map(function ($record) {
                 return [
-                    'lat' => (float) $barrier->latitude,
-                    'lon' => (float) $barrier->longitude,
-                    'popup' => "<strong>{$barrier->date}</strong><br>
-                                District: {$barrier->district}<br>
-                                UC: {$barrier->uc_name}<br>
-                                Facility: {$barrier->facility_name}<br>
-                                Group Type: {$barrier->group_type}"
+                    'lat' => (float) $record->latitude,
+                    'lon' => (float) $record->longitude,
+                    'popup' => "<strong>{$record->date}</strong><br>
+                                UC: {$record->uc}<br>
+                                HFS: {$record->hfs}<br>
+                                Group Type: {$record->group_type}"
                 ];
             })
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.healthcare-barriers.index', compact('healthcareBarriers', 'mapData'));
+        return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes'));
     }
 
-    public function show(HealthcareBarrier $healthcareBarrier)
+    public function show(FgdsHealthWorkers $fgdsHealthWorker)
     {
-        $healthcareBarrier->load('participants');
-        return view('admin.core-forms.healthcare-barriers.show', compact('healthcareBarrier'));
+        $fgdsHealthWorker->load('participants');
+        return view('admin.core-forms.fgds-health-workers.show', compact('fgdsHealthWorker'));
     }
 
-    public function destroy(HealthcareBarrier $healthcareBarrier)
+    public function destroy(FgdsHealthWorkers $fgdsHealthWorker)
     {
-        $healthcareBarrier->participants()->delete();
-        $healthcareBarrier->delete();
-        return redirect()->route('admin.healthcare-barriers.index')
-            ->with('success', 'Healthcare barrier session deleted successfully.');
+        $fgdsHealthWorker->participants()->delete();
+        $fgdsHealthWorker->delete();
+        return redirect()->route('admin.fgds-health-workers.index')
+            ->with('success', 'FGDs-Health Workers session deleted successfully.');
     }
 
     public function export()
     {
-        $healthcareBarriers = HealthcareBarrier::with('participants')->get();
+        $records = FgdsHealthWorkers::with('participants')->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="healthcare_barriers_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="fgds_health_workers_' . date('Y-m-d') . '.csv"',
         ];
 
         $columns = ['ID', 'District', 'UC Name', 'Session Date', 'Facilitator TKF', 'Facility Name', 'Facility Type', 'Barriers Identified', 'Solutions Proposed', 'Follow Up Actions', 'Participants Count', 'Latitude', 'Longitude', 'Created At'];
 
-        $callback = function () use ($healthcareBarriers, $columns) {
+        $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($healthcareBarriers as $item) {
+            foreach ($records as $item) {
                 fputcsv($file, [
                     $item->id,
                     $item->district,
@@ -104,7 +130,7 @@ class HealthcareBarrierController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="healthcare_barriers_template.csv"',
+            'Content-Disposition' => 'attachment; filename="fgds_health_workers_template.csv"',
         ];
 
         $columns = ['district', 'uc_name', 'session_date', 'facilitator_tkf', 'facility_name', 'facility_type', 'barriers_identified', 'solutions_proposed', 'follow_up_actions', 'latitude', 'longitude'];
@@ -136,7 +162,7 @@ class HealthcareBarrierController extends Controller
             if (count($row) < 11) continue;
 
             try {
-                HealthcareBarrier::create([
+                FgdsHealthWorkers::create([
                     'district' => $row[0],
                     'uc_name' => $row[1],
                     'session_date' => $row[2],
@@ -162,7 +188,7 @@ class HealthcareBarrierController extends Controller
             $message .= " " . count($errors) . " errors occurred.";
         }
 
-        return redirect()->route('admin.healthcare-barriers.index')
+        return redirect()->route('admin.fgds-health-workers.index')
             ->with('success', $message);
     }
 }

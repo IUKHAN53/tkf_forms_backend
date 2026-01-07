@@ -36,18 +36,52 @@
                 </svg>
                 Import CSV
             </button>
+            <button type="button" class="btn btn-success" onclick="document.getElementById('actionPlanModal').showModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                Upload Action Plan
+            </button>
         </div>
     </div>
 
     @include('admin.core-forms.partials.map', ['mapData' => $mapData])
 
     <div class="card-filters">
-        <form action="{{ route('admin.bridging-the-gap.index') }}" method="GET" class="search-form">
-            <input type="text" name="search" class="form-input" placeholder="Search by district, UC, or venue..." value="{{ request('search') }}">
-            <button type="submit" class="btn btn-primary">Search</button>
-            @if(request('search'))
-                <a href="{{ route('admin.bridging-the-gap.index') }}" class="btn btn-outline">Clear</a>
-            @endif
+        <form action="{{ route('admin.bridging-the-gap.index') }}" method="GET" class="filter-form">
+            <div class="filter-row">
+                <input type="text" name="search" class="form-input" placeholder="Search by district, UC, or venue..." value="{{ request('search') }}">
+                <select name="district" class="form-input filter-select">
+                    <option value="">All Districts</option>
+                    @foreach($districts as $district)
+                        <option value="{{ $district }}" {{ request('district') == $district ? 'selected' : '' }}>{{ $district }}</option>
+                    @endforeach
+                </select>
+                <select name="uc" class="form-input filter-select">
+                    <option value="">All UCs</option>
+                    @foreach($ucs as $uc)
+                        <option value="{{ $uc }}" {{ request('uc') == $uc ? 'selected' : '' }}>{{ $uc }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="filter-row">
+                <div class="date-filter">
+                    <label>From:</label>
+                    <input type="date" name="date_from" class="form-input" value="{{ request('date_from') }}">
+                </div>
+                <div class="date-filter">
+                    <label>To:</label>
+                    <input type="date" name="date_to" class="form-input" value="{{ request('date_to') }}">
+                </div>
+                <input type="text" name="venue" class="form-input" placeholder="Venue..." value="{{ request('venue') }}">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                @if(request()->hasAny(['search', 'district', 'uc', 'date_from', 'date_to', 'venue']))
+                    <a href="{{ route('admin.bridging-the-gap.index') }}" class="btn btn-outline">Clear All</a>
+                @endif
+            </div>
         </form>
     </div>
 
@@ -125,6 +159,34 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline" onclick="document.getElementById('importModal').close()">Cancel</button>
                 <button type="submit" class="btn btn-primary">Import</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<!-- Upload Action Plan Modal -->
+<dialog id="actionPlanModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Upload Action Plan</h3>
+            <button type="button" class="modal-close" onclick="document.getElementById('actionPlanModal').close()">&times;</button>
+        </div>
+        <form action="#" method="POST" enctype="multipart/form-data" id="actionPlanForm">
+            @csrf
+            <div class="modal-body">
+                <p class="mb-md text-muted">Upload an Excel file containing the action plan for Bridging The Gap sessions.</p>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Select Excel File</label>
+                    <input type="file" name="action_plan_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
+                </div>
+                <div class="upload-info" style="background: #f8f9fa; border-radius: 8px; padding: 12px; font-size: 13px; color: #666;">
+                    <p style="margin: 0 0 8px 0;"><strong>Accepted formats:</strong> .xlsx, .xls</p>
+                    <p style="margin: 0;"><strong>Max file size:</strong> 5MB</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('actionPlanModal').close()">Cancel</button>
+                <button type="submit" class="btn btn-success">Upload Action Plan</button>
             </div>
         </form>
     </div>

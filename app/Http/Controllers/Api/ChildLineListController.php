@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\DraftList;
+use App\Models\ChildLineList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-class DraftListController extends Controller
+class ChildLineListController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $lists = DraftList::where('user_id', $request->user()->id)
+        $lists = ChildLineList::where('user_id', $request->user()->id)
             ->latest()
             ->paginate(20);
 
@@ -51,16 +51,16 @@ class DraftListController extends Controller
         $validated['ip_address'] = $request->ip();
         $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
-        $list = DraftList::create($validated);
+        $list = ChildLineList::create($validated);
 
         return response()->json([
-            'message' => 'Draft list entry created successfully',
+            'message' => 'Child line list entry created successfully',
             'data' => $list,
         ], 201);
     }
 
-    public function show(DraftList $draftList): JsonResponse
+    public function show(ChildLineList $childLineList): JsonResponse
     {
-        return response()->json($draftList);
+        return response()->json($childLineList);
     }
 }

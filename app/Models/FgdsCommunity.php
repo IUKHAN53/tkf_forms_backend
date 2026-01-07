@@ -7,19 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class ReligiousLeader extends Model
+class FgdsCommunity extends Model
 {
     use HasUniqueFormId;
+
+    protected $table = 'fgds_community';
 
     protected $fillable = [
         'unique_id',
         'user_id',
         'date',
-        'attached_hf',
+        'venue',
         'uc',
         'district',
+        'fix_site',
         'outreach',
-        'group_type',
+        'community',
+        'participants_males',
+        'participants_females',
         'facilitator_tkf',
         'latitude',
         'longitude',
@@ -31,6 +36,9 @@ class ReligiousLeader extends Model
 
     protected $casts = [
         'date' => 'datetime',
+        'community' => 'array',
+        'participants_males' => 'integer',
+        'participants_females' => 'integer',
         'latitude' => 'float',
         'longitude' => 'float',
         'device_info' => 'array',

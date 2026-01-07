@@ -5,25 +5,34 @@ namespace App\Models;
 use App\Traits\HasUniqueFormId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class CommunityBarrier extends Model
+class ChildLineList extends Model
 {
     use HasUniqueFormId;
+
+    protected $table = 'child_line_lists';
 
     protected $fillable = [
         'unique_id',
         'user_id',
-        'date',
-        'venue',
-        'uc',
+        'division',
         'district',
-        'fix_site',
+        'town',
+        'uc',
         'outreach',
-        'community',
-        'participants_males',
-        'participants_females',
-        'facilitator_tkf',
+        'child_name',
+        'father_name',
+        'gender',
+        'date_of_birth',
+        'age_in_months',
+        'father_cnic',
+        'house_number',
+        'address',
+        'guardian_phone',
+        'type',
+        'missed_vaccines',
+        'reasons_of_missing',
+        'plan_for_coverage',
         'latitude',
         'longitude',
         'ip_address',
@@ -33,10 +42,9 @@ class CommunityBarrier extends Model
     ];
 
     protected $casts = [
-        'date' => 'datetime',
-        'community' => 'array',
-        'participants_males' => 'integer',
-        'participants_females' => 'integer',
+        'date_of_birth' => 'date',
+        'age_in_months' => 'integer',
+        'missed_vaccines' => 'array',
         'latitude' => 'float',
         'longitude' => 'float',
         'device_info' => 'array',
@@ -47,10 +55,5 @@ class CommunityBarrier extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function participants(): MorphMany
-    {
-        return $this->morphMany(Participant::class, 'participantable');
     }
 }

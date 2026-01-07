@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Add Outreach Site')
+@section('title', 'Add Vaccination Site')
 
 @include('admin.core-forms.partials.styles')
 
@@ -8,8 +8,8 @@
 <div class="content-card" style="max-width: 800px;">
     <div class="card-header">
         <div class="header-left">
-            <h2>Add Outreach Site</h2>
-            <p class="text-muted">Create a new outreach site</p>
+            <h2>Add Vaccination Site</h2>
+            <p class="text-muted">Create a new vaccination site (fix site or outreach)</p>
         </div>
     </div>
 

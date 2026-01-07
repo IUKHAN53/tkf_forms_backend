@@ -293,7 +293,7 @@
                     
                     <!-- Core Forms Dropdown -->
                     <li class="nav-group">
-                        <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.area-mappings.*', 'admin.draft-lists.*', 'admin.religious-leaders.*', 'admin.community-barriers.*', 'admin.healthcare-barriers.*') ? 'active' : '' }}" data-toggle="core-forms">
+                        <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*') ? 'active' : '' }}" data-toggle="core-forms">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 11l3 3L22 4"></path>
                                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
@@ -303,35 +303,30 @@
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
-                        <ul class="nav-submenu {{ request()->routeIs('admin.area-mappings.*', 'admin.draft-lists.*', 'admin.religious-leaders.*', 'admin.community-barriers.*', 'admin.healthcare-barriers.*') ? 'open' : '' }}" id="core-forms">
+                        <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*') ? 'open' : '' }}" id="core-forms">
                             <li>
-                                <a href="{{ route('admin.area-mappings.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.area-mappings.*') ? 'active' : '' }}">
-                                    <span>Area Mappings</span>
+                                <a href="{{ route('admin.child-line-list.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.child-line-list.*') ? 'active' : '' }}">
+                                    <span>Child Line List</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.draft-lists.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.draft-lists.*') ? 'active' : '' }}">
-                                    <span>Draft Lists</span>
+                                <a href="{{ route('admin.fgds-community.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.fgds-community.*') ? 'active' : '' }}">
+                                    <span>FGDs-Community</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.religious-leaders.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.religious-leaders.*') ? 'active' : '' }}">
-                                    <span>Religious Leaders</span>
+                                <a href="{{ route('admin.fgds-health-workers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.fgds-health-workers.*') ? 'active' : '' }}">
+                                    <span>FGDs-Health Workers</span>
                                 </a>
                             </li>
                             <li>
-                                <a href="{{ route('admin.community-barriers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.community-barriers.*') ? 'active' : '' }}">
-                                    <span>Community Explore Immunization Barriers</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.healthcare-barriers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.healthcare-barriers.*') ? 'active' : '' }}">
-                                    <span>Healthcare Workers Explore Immunization Barriers</span>
+                                <a href="{{ route('admin.bridging-the-gap.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.bridging-the-gap.*') ? 'active' : '' }}">
+                                    <span>Bridging The Gap</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('admin.outreach-sites.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.outreach-sites.*') ? 'active' : '' }}">
-                                    <span>Outreach Sites</span>
+                                    <span>Vaccination Sites</span>
                                 </a>
                             </li>
                         </ul>

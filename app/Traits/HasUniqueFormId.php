@@ -37,12 +37,17 @@ trait HasUniqueFormId
     protected function getFormIdPrefix(): string
     {
         $prefixes = [
+            // New form names
+            'FgdsCommunity' => 'FC',
+            'FgdsHealthWorkers' => 'FH',
+            'ChildLineList' => 'CL',
+            'BridgingTheGap' => 'BG',
+            // Legacy names (kept for backwards compatibility)
             'AreaMapping' => 'AM',
             'DraftList' => 'DL',
             'ReligiousLeader' => 'RL',
             'CommunityBarrier' => 'CB',
             'HealthcareBarrier' => 'HB',
-            'BridgingTheGap' => 'BG',
         ];
 
         $className = class_basename($this);

@@ -3,83 +3,111 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommunityBarrier;
+use App\Models\FgdsCommunity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
-class CommunityBarrierController extends Controller
+class FgdsCommunityController extends Controller
 {
     public function index(Request $request)
     {
-        $query = CommunityBarrier::with('participants')->latest();
+        $query = FgdsCommunity::with('participants')->latest();
 
+        // Text search filter
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('district', 'like', "%{$search}%")
-                    ->orWhere('uc_name', 'like', "%{$search}%")
+                    ->orWhere('uc', 'like', "%{$search}%")
                     ->orWhere('facilitator_tkf', 'like', "%{$search}%")
                     ->orWhere('venue', 'like', "%{$search}%");
             });
         }
 
-        $communityBarriers = $query->paginate(15)->withQueryString();
+        // District filter
+        if ($request->filled('district')) {
+            $query->where('district', $request->district);
+        }
+
+        // UC filter
+        if ($request->filled('uc')) {
+            $query->where('uc', $request->uc);
+        }
+
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        // Facilitator filter
+        if ($request->filled('facilitator')) {
+            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
+        }
+
+        $fgdsCommunity = $query->paginate(15)->withQueryString();
+
+        // Get distinct values for filter dropdowns
+        $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();
+        $ucs = FgdsCommunity::distinct()->pluck('uc')->filter()->sort()->values();
 
         // Prepare map data
-        $mapData = CommunityBarrier::whereNotNull('latitude')
+        $mapData = FgdsCommunity::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get()
-            ->map(function ($barrier) {
-                $communities = is_array($barrier->community)
-                    ? implode(', ', $barrier->community)
-                    : ($barrier->community ?? '');
+            ->map(function ($record) {
+                $communities = is_array($record->community)
+                    ? implode(', ', $record->community)
+                    : ($record->community ?? '');
 
                 return [
-                    'lat' => (float) $barrier->latitude,
-                    'lon' => (float) $barrier->longitude,
-                    'popup' => "<strong>{$barrier->date}</strong><br>
-                                District: {$barrier->district}<br>
-                                UC: {$barrier->uc}<br>
-                                Venue: {$barrier->venue}<br>
+                    'lat' => (float) $record->latitude,
+                    'lon' => (float) $record->longitude,
+                    'popup' => "<strong>{$record->date}</strong><br>
+                                District: {$record->district}<br>
+                                UC: {$record->uc}<br>
+                                Venue: {$record->venue}<br>
                                 Community: {$communities}"
                 ];
             })
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.community-barriers.index', compact('communityBarriers', 'mapData'));
+        return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs'));
     }
 
-    public function show(CommunityBarrier $communityBarrier)
+    public function show(FgdsCommunity $fgdsCommunity)
     {
-        $communityBarrier->load('participants');
-        return view('admin.core-forms.community-barriers.show', compact('communityBarrier'));
+        $fgdsCommunity->load('participants');
+        return view('admin.core-forms.fgds-community.show', compact('fgdsCommunity'));
     }
 
-    public function destroy(CommunityBarrier $communityBarrier)
+    public function destroy(FgdsCommunity $fgdsCommunity)
     {
-        $communityBarrier->participants()->delete();
-        $communityBarrier->delete();
-        return redirect()->route('admin.community-barriers.index')
-            ->with('success', 'Community barrier session deleted successfully.');
+        $fgdsCommunity->participants()->delete();
+        $fgdsCommunity->delete();
+        return redirect()->route('admin.fgds-community.index')
+            ->with('success', 'FGDs-Community session deleted successfully.');
     }
 
     public function export()
     {
-        $communityBarriers = CommunityBarrier::with('participants')->get();
+        $records = FgdsCommunity::with('participants')->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="community_barriers_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="fgds_community_' . date('Y-m-d') . '.csv"',
         ];
 
         $columns = ['ID', 'District', 'UC Name', 'Session Date', 'Facilitator TKF', 'Venue', 'EPI Focal Person', 'Barriers Identified', 'Solutions Proposed', 'Follow Up Actions', 'Participants Count', 'Latitude', 'Longitude', 'Created At'];
 
-        $callback = function () use ($communityBarriers, $columns) {
+        $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($communityBarriers as $item) {
+            foreach ($records as $item) {
                 fputcsv($file, [
                     $item->id,
                     $item->district,
@@ -108,7 +136,7 @@ class CommunityBarrierController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="community_barriers_template.csv"',
+            'Content-Disposition' => 'attachment; filename="fgds_community_template.csv"',
         ];
 
         $columns = ['district', 'uc_name', 'session_date', 'facilitator_tkf', 'venue', 'epi_focal_person', 'barriers_identified', 'solutions_proposed', 'follow_up_actions', 'latitude', 'longitude'];
@@ -140,7 +168,7 @@ class CommunityBarrierController extends Controller
             if (count($row) < 11) continue;
 
             try {
-                CommunityBarrier::create([
+                FgdsCommunity::create([
                     'district' => $row[0],
                     'uc_name' => $row[1],
                     'session_date' => $row[2],
@@ -166,7 +194,7 @@ class CommunityBarrierController extends Controller
             $message .= " " . count($errors) . " errors occurred.";
         }
 
-        return redirect()->route('admin.community-barriers.index')
+        return redirect()->route('admin.fgds-community.index')
             ->with('success', $message);
     }
 }

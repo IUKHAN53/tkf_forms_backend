@@ -1,17 +1,15 @@
 <?php
 
-use App\Http\Controllers\Api\AreaMappingController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BridgingTheGapController;
-use App\Http\Controllers\Api\CommunityBarrierController;
+use App\Http\Controllers\Api\ChildLineListController;
 use App\Http\Controllers\Api\DashboardController;
-use App\Http\Controllers\Api\DraftListController;
+use App\Http\Controllers\Api\FgdsCommunityController;
+use App\Http\Controllers\Api\FgdsHealthWorkersController;
 use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\FormIdController;
-use App\Http\Controllers\Api\HealthcareBarrierController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\OutreachSiteController;
-use App\Http\Controllers\Api\ReligiousLeaderController;
 use App\Http\Controllers\Api\SubmissionController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,30 +47,20 @@ Route::prefix('v1')->group(function (): void {
         // Outreach Sites - create new
         Route::post('/outreach-sites', [OutreachSiteController::class, 'store']);
 
-        // Core Forms - Area Mapping
-        Route::get('/area-mappings', [AreaMappingController::class, 'index']);
-        Route::post('/area-mappings', [AreaMappingController::class, 'store']);
-        Route::get('/area-mappings/{areaMapping}', [AreaMappingController::class, 'show']);
+        // Core Forms - Child Line List (formerly Draft Lists)
+        Route::get('/child-line-lists', [ChildLineListController::class, 'index']);
+        Route::post('/child-line-lists', [ChildLineListController::class, 'store']);
+        Route::get('/child-line-lists/{childLineList}', [ChildLineListController::class, 'show']);
 
-        // Core Forms - Draft List
-        Route::get('/draft-lists', [DraftListController::class, 'index']);
-        Route::post('/draft-lists', [DraftListController::class, 'store']);
-        Route::get('/draft-lists/{draftList}', [DraftListController::class, 'show']);
+        // Core Forms - FGDs-Community (formerly Community Barriers)
+        Route::get('/fgds-community', [FgdsCommunityController::class, 'index']);
+        Route::post('/fgds-community', [FgdsCommunityController::class, 'store']);
+        Route::get('/fgds-community/{fgdsCommunity}', [FgdsCommunityController::class, 'show']);
 
-        // Core Forms - Religious Leaders
-        Route::get('/religious-leaders', [ReligiousLeaderController::class, 'index']);
-        Route::post('/religious-leaders', [ReligiousLeaderController::class, 'store']);
-        Route::get('/religious-leaders/{religiousLeader}', [ReligiousLeaderController::class, 'show']);
-
-        // Core Forms - Community Barriers
-        Route::get('/community-barriers', [CommunityBarrierController::class, 'index']);
-        Route::post('/community-barriers', [CommunityBarrierController::class, 'store']);
-        Route::get('/community-barriers/{communityBarrier}', [CommunityBarrierController::class, 'show']);
-
-        // Core Forms - Healthcare Barriers
-        Route::get('/healthcare-barriers', [HealthcareBarrierController::class, 'index']);
-        Route::post('/healthcare-barriers', [HealthcareBarrierController::class, 'store']);
-        Route::get('/healthcare-barriers/{healthcareBarrier}', [HealthcareBarrierController::class, 'show']);
+        // Core Forms - FGDs-Health Workers (formerly Healthcare Barriers)
+        Route::get('/fgds-health-workers', [FgdsHealthWorkersController::class, 'index']);
+        Route::post('/fgds-health-workers', [FgdsHealthWorkersController::class, 'store']);
+        Route::get('/fgds-health-workers/{fgdsHealthWorker}', [FgdsHealthWorkersController::class, 'show']);
 
         // Core Forms - Bridging The Gap
         Route::get('/bridging-the-gap', [BridgingTheGapController::class, 'index']);

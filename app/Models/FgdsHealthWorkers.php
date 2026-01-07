@@ -5,32 +5,25 @@ namespace App\Models;
 use App\Traits\HasUniqueFormId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class DraftList extends Model
+class FgdsHealthWorkers extends Model
 {
     use HasUniqueFormId;
+
+    protected $table = 'fgds_health_workers';
 
     protected $fillable = [
         'unique_id',
         'user_id',
-        'division',
-        'district',
-        'town',
-        'uc',
-        'outreach',
-        'child_name',
-        'father_name',
-        'gender',
-        'date_of_birth',
-        'age_in_months',
-        'father_cnic',
-        'house_number',
+        'date',
+        'hfs',
         'address',
-        'guardian_phone',
-        'type',
-        'missed_vaccines',
-        'reasons_of_missing',
-        'plan_for_coverage',
+        'uc',
+        'participants_males',
+        'participants_females',
+        'group_type',
+        'facilitator_tkf',
         'latitude',
         'longitude',
         'ip_address',
@@ -40,9 +33,9 @@ class DraftList extends Model
     ];
 
     protected $casts = [
-        'date_of_birth' => 'date',
-        'age_in_months' => 'integer',
-        'missed_vaccines' => 'array',
+        'date' => 'datetime',
+        'participants_males' => 'integer',
+        'participants_females' => 'integer',
         'latitude' => 'float',
         'longitude' => 'float',
         'device_info' => 'array',
@@ -53,5 +46,10 @@ class DraftList extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function participants(): MorphMany
+    {
+        return $this->morphMany(Participant::class, 'participantable');
     }
 }
