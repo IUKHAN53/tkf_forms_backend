@@ -509,7 +509,9 @@
             // Sidebar submenu toggle
             const toggleButtons = document.querySelectorAll('.nav-toggle, .nav-nested-toggle');
             toggleButtons.forEach((btn) => {
-                btn.addEventListener('click', () => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const targetId = btn.getAttribute('data-toggle');
                     const submenu = document.getElementById(targetId);
                     if (submenu) {
