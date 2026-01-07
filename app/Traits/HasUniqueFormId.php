@@ -42,6 +42,7 @@ trait HasUniqueFormId
             'ReligiousLeader' => 'RL',
             'CommunityBarrier' => 'CB',
             'HealthcareBarrier' => 'HB',
+            'BridgingTheGap' => 'BG',
         ];
 
         $className = class_basename($this);

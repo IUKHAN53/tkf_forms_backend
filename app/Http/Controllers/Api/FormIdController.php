@@ -16,7 +16,7 @@ class FormIdController extends Controller
     public function generate(Request $request): JsonResponse
     {
         $request->validate([
-            'form_type' => 'required|in:area_mapping,draft_list,religious_leader,community_barrier,healthcare_barrier',
+            'form_type' => 'required|in:area_mapping,draft_list,religious_leader,community_barrier,healthcare_barrier,bridging_the_gap',
         ]);
 
         $prefixes = [
@@ -25,6 +25,7 @@ class FormIdController extends Controller
             'religious_leader' => 'RL',
             'community_barrier' => 'CB',
             'healthcare_barrier' => 'HB',
+            'bridging_the_gap' => 'BG',
         ];
 
         $prefix = $prefixes[$request->form_type];

@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\BridgingTheGap;
+use App\Models\CommunityBarrier;
+use App\Models\HealthcareBarrier;
+use App\Models\Participant;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class BridgingTheGapController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        $records = BridgingTheGap::with(['participants', 'teamMembers.participant'])
+            ->where('user_id', $request->user()->id)
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($records);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'date' => 'required|string',
+            'venue' => 'required|string',
+            'district' => 'required|string',
+            'uc' => 'required|string',
+            'fix_site' => 'required|string',
+            'participants_males' => 'required|integer|min:0',
+            'participants_females' => 'required|integer|min:0',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'device_info' => 'nullable|array',
+            'started_at' => 'nullable|date',
+            'submitted_at' => 'nullable|date',
+            'unique_id' => 'nullable|string',
+
+            // Attendance tab participants
+            'participants' => 'required|array|min:1',
+            'participants.*.name' => 'required|string',
+            'participants.*.occupation' => 'required|string',
+            'participants.*.contact_no' => 'required|string|regex:/^03\d{9}$/',
+
+            // IIT Team members (participant IDs from other forms)
+            'team_members' => 'nullable|array',
+            'team_members.*.participant_id' => 'required|integer|exists:participants,id',
+            'team_members.*.source_type' => 'required|string|in:community_barrier,healthcare_barrier',
+            'team_members.*.source_id' => 'required|integer',
+        ]);
+
+        $record = DB::transaction(function () use ($validated, $request) {
+            $participantsData = $validated['participants'];
+            $teamMembersData = $validated['team_members'] ?? [];
+            unset($validated['participants'], $validated['team_members']);
+
+            $validated['user_id'] = $request->user()->id;
+            $validated['ip_address'] = $request->ip();
+            $validated['submitted_at'] = $validated['submitted_at'] ?? now();
+
+            $record = BridgingTheGap::create($validated);
+
+            // Create attendance participants
+            foreach ($participantsData as $index => $participant) {
+                $record->participants()->create([
+                    'sr_no' => $index + 1,
+                    'name' => $participant['name'],
+                    'occupation' => $participant['occupation'],
+                    'contact_no' => $participant['contact_no'],
+                ]);
+            }
+
+            // Link IIT team members
+            foreach ($teamMembersData as $teamMember) {
+                $record->teamMembers()->create([
+                    'participant_id' => $teamMember['participant_id'],
+                    'source_type' => $teamMember['source_type'],
+                    'source_id' => $teamMember['source_id'],
+                ]);
+            }
+
+            return $record;
+        });
+
+        $record->load(['participants', 'teamMembers.participant']);
+
+        return response()->json([
+            'message' => 'Bridging The Gap record created successfully.',
+            'data' => $record,
+        ], 201);
+    }
+
+    public function show(BridgingTheGap $bridgingTheGap): JsonResponse
+    {
+        $bridgingTheGap->load(['participants', 'teamMembers.participant']);
+        return response()->json($bridgingTheGap);
+    }
+
+    /**
+     * Search participants from Community Barriers and Healthcare Barriers
+     * filtered by UC for IIT team selection
+     */
+    public function searchParticipants(Request $request): JsonResponse
+    {
+        $request->validate([
+            'uc' => 'required|string',
+            'search' => 'nullable|string|min:2',
+        ]);
+
+        $uc = $request->uc;
+        $search = $request->search;
+
+        // Get participants from Community Barriers in the same UC
+        $communityBarrierIds = CommunityBarrier::where('uc', $uc)->pluck('id');
+        $communityParticipants = Participant::where('participantable_type', CommunityBarrier::class)
+            ->whereIn('participantable_id', $communityBarrierIds)
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('contact_no', 'like', "%{$search}%");
+                });
+            })
+            ->get()
+            ->map(function ($participant) {
+                return [
+                    'id' => $participant->id,
+                    'name' => $participant->name,
+                    'contact_no' => $participant->contact_no,
+                    'occupation' => $participant->occupation,
+                    'source_type' => 'community_barrier',
+                    'source_id' => $participant->participantable_id,
+                    'source_label' => 'Community Barriers',
+                ];
+            });
+
+        // Get participants from Healthcare Barriers in the same UC
+        $healthcareBarrierIds = HealthcareBarrier::where('uc', $uc)->pluck('id');
+        $healthcareParticipants = Participant::where('participantable_type', HealthcareBarrier::class)
+            ->whereIn('participantable_id', $healthcareBarrierIds)
+            ->when($search, function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('name', 'like', "%{$search}%")
+                        ->orWhere('contact_no', 'like', "%{$search}%");
+                });
+            })
+            ->get()
+            ->map(function ($participant) {
+                return [
+                    'id' => $participant->id,
+                    'name' => $participant->name,
+                    'contact_no' => $participant->contact_no,
+                    'designation' => $participant->designation,
+                    'source_type' => 'healthcare_barrier',
+                    'source_id' => $participant->participantable_id,
+                    'source_label' => 'Healthcare Barriers',
+                ];
+            });
+
+        // Combine and return results
+        $allParticipants = $communityParticipants->merge($healthcareParticipants);
+
+        return response()->json([
+            'data' => $allParticipants->values(),
+            'total' => $allParticipants->count(),
+        ]);
+    }
+}

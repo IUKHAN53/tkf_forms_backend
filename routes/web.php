@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\DraftListController;
 use App\Http\Controllers\Admin\ReligiousLeaderController;
 use App\Http\Controllers\Admin\CommunityBarrierController;
 use App\Http\Controllers\Admin\HealthcareBarrierController;
+use App\Http\Controllers\Admin\BridgingTheGapController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -59,6 +60,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('healthcare-barriers/template', [HealthcareBarrierController::class, 'template'])->name('healthcare-barriers.template');
     Route::post('healthcare-barriers/import', [HealthcareBarrierController::class, 'import'])->name('healthcare-barriers.import');
     Route::resource('healthcare-barriers', HealthcareBarrierController::class)->only(['index', 'show', 'destroy']);
+
+    // Core Forms - Bridging The Gap
+    Route::get('bridging-the-gap/export', [BridgingTheGapController::class, 'export'])->name('bridging-the-gap.export');
+    Route::get('bridging-the-gap/template', [BridgingTheGapController::class, 'template'])->name('bridging-the-gap.template');
+    Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
+    Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'destroy']);
 
     // Outreach Sites Management
     Route::get('outreach-sites/export', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'export'])->name('outreach-sites.export');

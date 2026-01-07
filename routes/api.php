@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AreaMappingController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BridgingTheGapController;
 use App\Http\Controllers\Api\CommunityBarrierController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\DraftListController;
@@ -72,5 +73,11 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/healthcare-barriers', [HealthcareBarrierController::class, 'index']);
         Route::post('/healthcare-barriers', [HealthcareBarrierController::class, 'store']);
         Route::get('/healthcare-barriers/{healthcareBarrier}', [HealthcareBarrierController::class, 'show']);
+
+        // Core Forms - Bridging The Gap
+        Route::get('/bridging-the-gap', [BridgingTheGapController::class, 'index']);
+        Route::post('/bridging-the-gap', [BridgingTheGapController::class, 'store']);
+        Route::get('/bridging-the-gap/search-participants', [BridgingTheGapController::class, 'searchParticipants']);
+        Route::get('/bridging-the-gap/{bridgingTheGap}', [BridgingTheGapController::class, 'show']);
     });
 });
