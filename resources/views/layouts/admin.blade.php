@@ -134,6 +134,51 @@
     font-size: 14px;
 }
 
+/* Nested submenu styles */
+.nav-nested-group {
+    list-style: none;
+    margin-top: 2px;
+}
+
+.nav-nested-toggle {
+    width: 100%;
+    justify-content: flex-start;
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 8px 12px 8px 24px;
+    font-size: 14px;
+}
+
+.nav-nested-toggle .chevron {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+    width: 14px;
+    height: 14px;
+}
+
+.nav-nested-toggle.expanded .chevron,
+.nav-nested-toggle.active .chevron {
+    transform: rotate(180deg);
+}
+
+.nav-nested-submenu {
+    display: none;
+    padding-left: 16px;
+    margin-top: 2px;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.nav-nested-submenu.open {
+    display: flex;
+}
+
+.nav-link.nested-link {
+    padding: 6px 12px 6px 16px;
+    font-size: 13px;
+}
+
 .main-wrapper {
     flex: 1;
     margin-left: var(--nav-width);
@@ -303,21 +348,32 @@
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
-                        <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*') ? 'open' : '' }}" id="core-forms">
+                        <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*') ? 'open' : '' }}" id="core-forms">
                             <li>
                                 <a href="{{ route('admin.child-line-list.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.child-line-list.*') ? 'active' : '' }}">
                                     <span>Child Line List</span>
                                 </a>
                             </li>
-                            <li>
-                                <a href="{{ route('admin.fgds-community.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.fgds-community.*') ? 'active' : '' }}">
-                                    <span>FGDs-Community</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('admin.fgds-health-workers.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.fgds-health-workers.*') ? 'active' : '' }}">
-                                    <span>FGDs-Health Workers</span>
-                                </a>
+                            <!-- Exploring Immunization Barriers Nested Submenu -->
+                            <li class="nav-nested-group">
+                                <button type="button" class="nav-link nav-nested-toggle {{ request()->routeIs('admin.fgds-community.*', 'admin.fgds-health-workers.*') ? 'active' : '' }}" data-toggle="barriers-submenu">
+                                    <span>Exploring Immunization Barriers</span>
+                                    <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </button>
+                                <ul class="nav-nested-submenu {{ request()->routeIs('admin.fgds-community.*', 'admin.fgds-health-workers.*') ? 'open' : '' }}" id="barriers-submenu">
+                                    <li>
+                                        <a href="{{ route('admin.fgds-community.index') }}" class="nav-link nested-link {{ request()->routeIs('admin.fgds-community.*') ? 'active' : '' }}">
+                                            <span>FGDs-Community</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('admin.fgds-health-workers.index') }}" class="nav-link nested-link {{ request()->routeIs('admin.fgds-health-workers.*') ? 'active' : '' }}">
+                                            <span>FGDs-Health Workers</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                             <li>
                                 <a href="{{ route('admin.bridging-the-gap.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.bridging-the-gap.*') ? 'active' : '' }}">
@@ -451,7 +507,7 @@
             });
 
             // Sidebar submenu toggle
-            const toggleButtons = document.querySelectorAll('.nav-toggle');
+            const toggleButtons = document.querySelectorAll('.nav-toggle, .nav-nested-toggle');
             toggleButtons.forEach((btn) => {
                 btn.addEventListener('click', () => {
                     const targetId = btn.getAttribute('data-toggle');

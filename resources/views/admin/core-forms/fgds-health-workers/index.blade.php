@@ -108,6 +108,9 @@
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td class="action-buttons">
                             <a href="{{ route('admin.fgds-health-workers.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                            <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
+                                Barriers
+                            </button>
                             <form action="{{ route('admin.fgds-health-workers.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
                                 @csrf
                                 @method('DELETE')
@@ -151,5 +154,50 @@
         </form>
     </div>
 </dialog>
+
+<!-- Upload Barriers Modal -->
+<dialog id="barriersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Upload Barriers - <span id="barriersRecordId"></span></h3>
+            <button type="button" class="modal-close" onclick="document.getElementById('barriersModal').close()">&times;</button>
+        </div>
+        <form action="{{ route('admin.fgds-health-workers.upload-barriers', ['id' => '__ID__']) }}" method="POST" enctype="multipart/form-data" id="barriersForm">
+            @csrf
+            <div class="modal-body">
+                <p class="mb-md text-muted">Upload an Excel file containing the identified immunization barriers from this FGD session.</p>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Select Excel File</label>
+                    <input type="file" name="barriers_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
+                </div>
+                <div class="upload-info" style="background: #f8f9fa; border-radius: 8px; padding: 12px; font-size: 13px; color: #666;">
+                    <p style="margin: 0 0 8px 0;"><strong>Accepted formats:</strong> .xlsx, .xls</p>
+                    <p style="margin: 0;"><strong>Max file size:</strong> 5MB</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="document.getElementById('barriersModal').close()">Cancel</button>
+                <button type="submit" class="btn btn-warning">Upload Barriers</button>
+            </div>
+        </form>
+    </div>
+</dialog>
+
+<script>
+function openBarriersModal(id, uniqueId) {
+    const modal = document.getElementById('barriersModal');
+    const form = document.getElementById('barriersForm');
+    const recordIdSpan = document.getElementById('barriersRecordId');
+
+    // Update the form action with the correct ID
+    const baseUrl = '{{ route('admin.fgds-health-workers.upload-barriers', ['id' => '__ID__']) }}';
+    form.action = baseUrl.replace('__ID__', id);
+
+    // Update the modal title with the record ID
+    recordIdSpan.textContent = uniqueId;
+
+    modal.showModal();
+}
+</script>
 
 @endsection

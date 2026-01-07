@@ -30,6 +30,7 @@ class FgdsHealthWorkers extends Model
         'device_info',
         'started_at',
         'submitted_at',
+        'barriers_file',
     ];
 
     protected $casts = [

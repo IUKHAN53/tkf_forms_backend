@@ -36,15 +36,6 @@
                 </svg>
                 Import CSV
             </button>
-            <button type="button" class="btn btn-success" onclick="document.getElementById('actionPlanModal').showModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="12" y1="18" x2="12" y2="12"/>
-                    <line x1="9" y1="15" x2="15" y2="15"/>
-                </svg>
-                Upload Action Plan
-            </button>
         </div>
     </div>
 
@@ -120,6 +111,9 @@
                         <td>{{ $item->created_at->format('M d, Y') }}</td>
                         <td class="action-buttons">
                             <a href="{{ route('admin.bridging-the-gap.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                            <button type="button" class="btn btn-sm btn-success" onclick="openActionPlanModal({{ $item->id }}, '{{ $item->unique_id }}')">
+                                Action Plan
+                            </button>
                             <form action="{{ route('admin.bridging-the-gap.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
                                 @csrf
                                 @method('DELETE')
@@ -168,13 +162,13 @@
 <dialog id="actionPlanModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Upload Action Plan</h3>
+            <h3>Upload Action Plan - <span id="actionPlanRecordId"></span></h3>
             <button type="button" class="modal-close" onclick="document.getElementById('actionPlanModal').close()">&times;</button>
         </div>
-        <form action="#" method="POST" enctype="multipart/form-data" id="actionPlanForm">
+        <form action="{{ route('admin.bridging-the-gap.upload-action-plan', ['id' => '__ID__']) }}" method="POST" enctype="multipart/form-data" id="actionPlanForm">
             @csrf
             <div class="modal-body">
-                <p class="mb-md text-muted">Upload an Excel file containing the action plan for Bridging The Gap sessions.</p>
+                <p class="mb-md text-muted">Upload an Excel file containing the action plan for this Bridging The Gap session.</p>
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label">Select Excel File</label>
                     <input type="file" name="action_plan_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
@@ -191,5 +185,22 @@
         </form>
     </div>
 </dialog>
+
+<script>
+function openActionPlanModal(id, uniqueId) {
+    const modal = document.getElementById('actionPlanModal');
+    const form = document.getElementById('actionPlanForm');
+    const recordIdSpan = document.getElementById('actionPlanRecordId');
+
+    // Update the form action with the correct ID
+    const baseUrl = '{{ route('admin.bridging-the-gap.upload-action-plan', ['id' => '__ID__']) }}';
+    form.action = baseUrl.replace('__ID__', id);
+
+    // Update the modal title with the record ID
+    recordIdSpan.textContent = uniqueId;
+
+    modal.showModal();
+}
+</script>
 
 @endsection

@@ -191,4 +191,26 @@ class FgdsHealthWorkersController extends Controller
         return redirect()->route('admin.fgds-health-workers.index')
             ->with('success', $message);
     }
+
+    public function uploadBarriers(Request $request, $id)
+    {
+        $request->validate([
+            'barriers_file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
+
+        $record = FgdsHealthWorkers::findOrFail($id);
+
+        // Store the file
+        $file = $request->file('barriers_file');
+        $filename = 'barriers_' . $record->unique_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('barriers/fgds_health_workers', $filename, 'public');
+
+        // Update the record with the file path
+        $record->update([
+            'barriers_file' => $path,
+        ]);
+
+        return redirect()->route('admin.fgds-health-workers.index')
+            ->with('success', "Barriers file uploaded successfully for record {$record->unique_id}.");
+    }
 }

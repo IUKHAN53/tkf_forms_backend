@@ -30,6 +30,7 @@ class BridgingTheGap extends Model
         'device_info',
         'started_at',
         'submitted_at',
+        'action_plan_file',
     ];
 
     protected $casts = [

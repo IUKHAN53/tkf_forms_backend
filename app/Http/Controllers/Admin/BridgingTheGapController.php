@@ -192,4 +192,26 @@ class BridgingTheGapController extends Controller
         return redirect()->route('admin.bridging-the-gap.index')
             ->with('success', $message);
     }
+
+    public function uploadActionPlan(Request $request, $id)
+    {
+        $request->validate([
+            'action_plan_file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ]);
+
+        $record = BridgingTheGap::findOrFail($id);
+
+        // Store the file
+        $file = $request->file('action_plan_file');
+        $filename = 'action_plan_' . $record->unique_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('action_plans/bridging_the_gap', $filename, 'public');
+
+        // Update the record with the file path
+        $record->update([
+            'action_plan_file' => $path,
+        ]);
+
+        return redirect()->route('admin.bridging-the-gap.index')
+            ->with('success', "Action plan uploaded successfully for record {$record->unique_id}.");
+    }
 }
