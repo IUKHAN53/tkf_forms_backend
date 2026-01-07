@@ -338,7 +338,7 @@
                     
                     <!-- Core Forms Dropdown -->
                     <li class="nav-group">
-                        <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*') ? 'active' : '' }}" data-toggle="core-forms">
+                        <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*') ? 'active' : '' }}" data-toggle="core-forms-submenu">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 11l3 3L22 4"></path>
                                 <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
@@ -348,7 +348,7 @@
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
-                        <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*') ? 'open' : '' }}" id="core-forms">
+                        <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*') ? 'open' : '' }}" id="core-forms-submenu">
                             <li>
                                 <a href="{{ route('admin.child-line-list.index') }}" class="nav-link sub-link {{ request()->routeIs('admin.child-line-list.*') ? 'active' : '' }}">
                                     <span>Child Line List</span>
