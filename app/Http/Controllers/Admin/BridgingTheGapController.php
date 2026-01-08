@@ -11,7 +11,8 @@ class BridgingTheGapController extends Controller
 {
     public function index(Request $request)
     {
-        $query = BridgingTheGap::with(['participants', 'teamMembers.participant'])->latest();
+        // Use withCount instead of eager loading participant relationship to avoid issues with deleted participants
+        $query = BridgingTheGap::with(['participants', 'teamMembers', 'user'])->latest();
 
         // Text search filter
         if ($request->filled('search')) {
@@ -81,16 +82,22 @@ class BridgingTheGapController extends Controller
 
     public function destroy(BridgingTheGap $bridgingTheGap)
     {
-        $bridgingTheGap->participants()->delete();
+        // Delete team members first (references to external participants)
         $bridgingTheGap->teamMembers()->delete();
+
+        // Delete attendance participants (morphMany relationship)
+        $bridgingTheGap->participants()->delete();
+
+        // Delete the main record
         $bridgingTheGap->delete();
+
         return redirect()->route('admin.bridging-the-gap.index')
             ->with('success', 'Bridging The Gap record deleted successfully.');
     }
 
     public function export()
     {
-        $records = BridgingTheGap::with(['participants', 'teamMembers.participant'])->get();
+        $records = BridgingTheGap::with(['participants', 'teamMembers', 'user'])->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
