@@ -1,4 +1,4 @@
-<!-- Modern Heat Map Container -->
+<!-- Compact Heat Map Container -->
 <div class="map-card">
     <div class="map-card-header">
         <div class="map-header-left">
@@ -10,7 +10,7 @@
             </div>
             <div class="map-header-text">
                 <h3>Geographic Distribution</h3>
-                <p>{{ count($mapData) }} locations with coordinates</p>
+                <span class="map-count">{{ count($mapData) }} locations</span>
             </div>
         </div>
         <div class="map-header-actions">
@@ -52,13 +52,13 @@
 </div>
 
 <style>
-/* Modern Map Card Styles */
+/* Compact Map Card Styles */
 .map-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+    margin-bottom: 16px;
     border: 1px solid var(--gray-200, #e5e7eb);
 }
 
@@ -66,22 +66,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--gray-100, #f3f4f6);
-    gap: 16px;
+    gap: 12px;
     flex-wrap: wrap;
 }
 
 .map-header-left {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
 }
 
 .map-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     background: linear-gradient(135deg, var(--primary-500, #10b981), var(--primary-600, #059669));
     display: flex;
     align-items: center;
@@ -89,43 +89,51 @@
 }
 
 .map-icon svg {
-    width: 22px;
-    height: 22px;
+    width: 16px;
+    height: 16px;
     color: white;
 }
 
-.map-header-text h3 {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--gray-900, #111827);
-    margin: 0 0 2px 0;
+.map-header-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.map-header-text p {
-    font-size: 13px;
-    color: var(--gray-500, #6b7280);
+.map-header-text h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-800, #1f2937);
     margin: 0;
+}
+
+.map-count {
+    font-size: 12px;
+    color: var(--gray-500, #6b7280);
+    background: var(--gray-100, #f3f4f6);
+    padding: 3px 8px;
+    border-radius: 12px;
 }
 
 .map-header-actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
 .map-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    border-radius: 8px;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 6px;
     border: 1px solid var(--gray-200, #e5e7eb);
     background: white;
-    color: var(--gray-700, #374151);
-    font-size: 13px;
+    color: var(--gray-600, #4b5563);
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
 }
 
 .map-btn:hover {
@@ -135,13 +143,13 @@
 
 .map-btn.active {
     background: var(--primary-50, #ecfdf5);
-    border-color: var(--primary-500, #10b981);
+    border-color: var(--primary-400, #34d399);
     color: var(--primary-700, #047857);
 }
 
 .map-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .map-btn-primary {
@@ -160,45 +168,45 @@
 }
 
 #map {
-    height: 450px;
+    height: 380px;
     width: 100%;
     background: var(--gray-100, #f3f4f6);
 }
 
-/* Map Legend */
+/* Map Legend - Compact */
 .map-legend {
     position: absolute;
-    bottom: 24px;
-    left: 24px;
+    bottom: 16px;
+    left: 16px;
     background: white;
-    padding: 14px 18px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     z-index: 500;
-    min-width: 160px;
+    min-width: 140px;
 }
 
 .legend-title {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 600;
-    color: var(--gray-700, #374151);
-    margin-bottom: 10px;
+    color: var(--gray-600, #4b5563);
+    margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .gradient-bar {
-    height: 10px;
-    border-radius: 5px;
+    height: 8px;
+    border-radius: 4px;
     background: linear-gradient(to right, #3b82f6, #10b981, #f59e0b, #ef4444);
-    margin-bottom: 6px;
+    margin-bottom: 5px;
 }
 
 .gradient-labels {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
-    color: var(--gray-500, #6b7280);
+    font-size: 10px;
+    color: var(--gray-400, #9ca3af);
 }
 
 /* Fullscreen Styles */
