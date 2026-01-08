@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsCommunity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -86,6 +87,14 @@ class FgdsCommunityController extends Controller
 
     public function destroy(FgdsCommunity $fgdsCommunity)
     {
+        // Get participant IDs before deleting
+        $participantIds = $fgdsCommunity->participants()->pluck('id');
+
+        // Delete team member references in Bridging The Gap forms
+        if ($participantIds->isNotEmpty()) {
+            BridgingTheGapTeamMember::whereIn('participant_id', $participantIds)->delete();
+        }
+
         $fgdsCommunity->participants()->delete();
         $fgdsCommunity->delete();
         return redirect()->route('admin.fgds-community.index')

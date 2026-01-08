@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsHealthWorkers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -80,6 +81,14 @@ class FgdsHealthWorkersController extends Controller
 
     public function destroy(FgdsHealthWorkers $fgdsHealthWorker)
     {
+        // Get participant IDs before deleting
+        $participantIds = $fgdsHealthWorker->participants()->pluck('id');
+
+        // Delete team member references in Bridging The Gap forms
+        if ($participantIds->isNotEmpty()) {
+            BridgingTheGapTeamMember::whereIn('participant_id', $participantIds)->delete();
+        }
+
         $fgdsHealthWorker->participants()->delete();
         $fgdsHealthWorker->delete();
         return redirect()->route('admin.fgds-health-workers.index')
