@@ -70,7 +70,24 @@
     <div class="charts-row">
         <div class="card">
             <div class="card-header">
-                <h2>UC-wise Submissions (Top 15)</h2>
+                <h2>UC-wise Submissions</h2>
+                <div class="chart-filters" id="uc-filters">
+                    <select class="date-preset" data-chart="uc">
+                        <option value="all" selected>All Time</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="this_month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div class="custom-date-range" style="display: none;">
+                        <input type="date" class="start-date" placeholder="Start Date">
+                        <input type="date" class="end-date" placeholder="End Date">
+                        <button class="apply-filter btn btn-sm btn-primary" data-chart="uc">Apply</button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="submissionsChart" height="80"></canvas>
@@ -80,6 +97,23 @@
         <div class="card">
             <div class="card-header">
                 <h2>District-wise Distribution</h2>
+                <div class="chart-filters" id="district-filters">
+                    <select class="date-preset" data-chart="district">
+                        <option value="all" selected>All Time</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                        <option value="7days">Last 7 Days</option>
+                        <option value="30days">Last 30 Days</option>
+                        <option value="this_month">This Month</option>
+                        <option value="last_month">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                    <div class="custom-date-range" style="display: none;">
+                        <input type="date" class="start-date" placeholder="Start Date">
+                        <input type="date" class="end-date" placeholder="End Date">
+                        <button class="apply-filter btn btn-sm btn-primary" data-chart="district">Apply</button>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <canvas id="districtChart" height="80"></canvas>
@@ -220,131 +254,266 @@
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
     gap: var(--spacing-lg);
 }
+
+.card-header {
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.chart-filters {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.chart-filters .date-preset {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-paper);
+    color: var(--color-text-primary);
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.chart-filters .custom-date-range {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.chart-filters .start-date,
+.chart-filters .end-date {
+    padding: 5px 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-paper);
+    color: var(--color-text-primary);
+    font-size: 13px;
+}
+
+.chart-filters .apply-filter {
+    padding: 5px 12px;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .chart-filters {
+        width: 100%;
+    }
+
+    .chart-filters .date-preset {
+        flex: 1;
+    }
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // UC-wise Submissions Chart (Stacked Bar)
+    // Store chart instances for updates
+    let ucChart = null;
+    let districtChart = null;
+
+    // Chart configuration
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        },
+        scales: {
+            x: {
+                stacked: true,
+            },
+            y: {
+                stacked: true,
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    };
+
+    // Dataset colors
+    const datasetConfigs = [
+        { label: 'Child Line Lists', key: 'child_line_lists', color: 'rgba(99, 102, 241, 0.8)' },
+        { label: 'FGDs-Community', key: 'fgds_community', color: 'rgba(34, 197, 94, 0.8)' },
+        { label: 'FGDs-Health Workers', key: 'fgds_health_workers', color: 'rgba(245, 158, 11, 0.8)' },
+        { label: 'Bridging The Gap', key: 'bridging_the_gap', color: 'rgba(236, 72, 153, 0.8)' }
+    ];
+
+    // Create chart with data
+    function createChart(canvasId, data) {
+        const labels = Object.keys(data);
+        const datasets = datasetConfigs.map(config => ({
+            label: config.label,
+            data: labels.map(label => data[label][config.key] || 0),
+            backgroundColor: config.color
+        }));
+
+        return new Chart(document.getElementById(canvasId), {
+            type: 'bar',
+            data: { labels, datasets },
+            options: chartOptions
+        });
+    }
+
+    // Update chart with new data
+    function updateChart(chart, data) {
+        const labels = Object.keys(data);
+        chart.data.labels = labels;
+        chart.data.datasets.forEach((dataset, index) => {
+            const key = datasetConfigs[index].key;
+            dataset.data = labels.map(label => data[label][key] || 0);
+        });
+        chart.update();
+    }
+
+    // Calculate date range from preset
+    function getDateRange(preset) {
+        const today = new Date();
+        let startDate = null;
+        let endDate = today.toISOString().split('T')[0];
+
+        switch (preset) {
+            case 'today':
+                startDate = endDate;
+                break;
+            case 'yesterday':
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                startDate = yesterday.toISOString().split('T')[0];
+                endDate = startDate;
+                break;
+            case '7days':
+                const week = new Date(today);
+                week.setDate(week.getDate() - 6);
+                startDate = week.toISOString().split('T')[0];
+                break;
+            case '30days':
+                const month = new Date(today);
+                month.setDate(month.getDate() - 29);
+                startDate = month.toISOString().split('T')[0];
+                break;
+            case 'this_month':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                break;
+            case 'last_month':
+                const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                startDate = lastMonth.toISOString().split('T')[0];
+                const lastDay = new Date(today.getFullYear(), today.getMonth(), 0);
+                endDate = lastDay.toISOString().split('T')[0];
+                break;
+            case 'all':
+            default:
+                startDate = null;
+                endDate = null;
+                break;
+        }
+
+        return { startDate, endDate };
+    }
+
+    // Fetch chart data with filters
+    async function fetchChartData(chartType, startDate, endDate) {
+        const params = new URLSearchParams({ chart: chartType });
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+
+        try {
+            const response = await fetch(`{{ route('admin.dashboard.chartData') }}?${params.toString()}`);
+            const result = await response.json();
+            if (result.success) {
+                return result.data;
+            }
+        } catch (error) {
+            console.error('Error fetching chart data:', error);
+        }
+        return null;
+    }
+
+    // Handle preset change
+    async function handlePresetChange(select) {
+        const chartType = select.dataset.chart;
+        const preset = select.value;
+        const filterContainer = select.closest('.chart-filters');
+        const customRange = filterContainer.querySelector('.custom-date-range');
+
+        if (preset === 'custom') {
+            customRange.style.display = 'flex';
+            return;
+        }
+
+        customRange.style.display = 'none';
+        const { startDate, endDate } = getDateRange(preset);
+        const data = await fetchChartData(chartType, startDate, endDate);
+
+        if (data) {
+            if (chartType === 'uc') {
+                updateChart(ucChart, data);
+            } else {
+                updateChart(districtChart, data);
+            }
+        }
+    }
+
+    // Handle custom date apply
+    async function handleCustomDateApply(button) {
+        const chartType = button.dataset.chart;
+        const filterContainer = button.closest('.chart-filters');
+        const startDate = filterContainer.querySelector('.start-date').value;
+        const endDate = filterContainer.querySelector('.end-date').value;
+
+        if (!startDate || !endDate) {
+            alert('Please select both start and end dates');
+            return;
+        }
+
+        const data = await fetchChartData(chartType, startDate, endDate);
+
+        if (data) {
+            if (chartType === 'uc') {
+                updateChart(ucChart, data);
+            } else {
+                updateChart(districtChart, data);
+            }
+        }
+    }
+
+    // Initialize UC Chart
     const ucData = @json($stats['uc_wise_submissions']);
-    const ucs = Object.keys(ucData);
-
-    if (ucs.length > 0) {
-        const childLineListData = ucs.map(uc => ucData[uc].child_line_lists || 0);
-        const fgdsCommunityData = ucs.map(uc => ucData[uc].fgds_community || 0);
-        const fgdsHealthWorkersData = ucs.map(uc => ucData[uc].fgds_health_workers || 0);
-        const bridgingTheGapData = ucs.map(uc => ucData[uc].bridging_the_gap || 0);
-
-        new Chart(document.getElementById('submissionsChart'), {
-            type: 'bar',
-            data: {
-                labels: ucs,
-                datasets: [
-                    {
-                        label: 'Child Line Lists',
-                        data: childLineListData,
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                    },
-                    {
-                        label: 'FGDs-Community',
-                        data: fgdsCommunityData,
-                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                    },
-                    {
-                        label: 'FGDs-Health Workers',
-                        data: fgdsHealthWorkersData,
-                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                    },
-                    {
-                        label: 'Bridging The Gap',
-                        data: bridgingTheGapData,
-                        backgroundColor: 'rgba(236, 72, 153, 0.8)',
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            }
-        });
+    if (Object.keys(ucData).length > 0) {
+        ucChart = createChart('submissionsChart', ucData);
     }
 
-    // District Distribution Chart (Stacked Bar)
+    // Initialize District Chart
     const districtData = @json($stats['district_distribution']);
-    const districts = Object.keys(districtData);
-
-    if (districts.length > 0) {
-        const districtChildLineLists = districts.map(d => districtData[d].child_line_lists || 0);
-        const districtFgdsCommunity = districts.map(d => districtData[d].fgds_community || 0);
-        const districtFgdsHealthWorkers = districts.map(d => districtData[d].fgds_health_workers || 0);
-        const districtBridgingTheGap = districts.map(d => districtData[d].bridging_the_gap || 0);
-
-        new Chart(document.getElementById('districtChart'), {
-            type: 'bar',
-            data: {
-                labels: districts,
-                datasets: [
-                    {
-                        label: 'Child Line Lists',
-                        data: districtChildLineLists,
-                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
-                    },
-                    {
-                        label: 'FGDs-Community',
-                        data: districtFgdsCommunity,
-                        backgroundColor: 'rgba(34, 197, 94, 0.8)',
-                    },
-                    {
-                        label: 'FGDs-Health Workers',
-                        data: districtFgdsHealthWorkers,
-                        backgroundColor: 'rgba(245, 158, 11, 0.8)',
-                    },
-                    {
-                        label: 'Bridging The Gap',
-                        data: districtBridgingTheGap,
-                        backgroundColor: 'rgba(236, 72, 153, 0.8)',
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true,
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
-                }
-            }
-        });
+    if (Object.keys(districtData).length > 0) {
+        districtChart = createChart('districtChart', districtData);
     }
+
+    // Event listeners for date presets
+    document.querySelectorAll('.date-preset').forEach(select => {
+        select.addEventListener('change', function() {
+            handlePresetChange(this);
+        });
+    });
+
+    // Event listeners for custom date apply buttons
+    document.querySelectorAll('.apply-filter').forEach(button => {
+        button.addEventListener('click', function() {
+            handleCustomDateApply(this);
+        });
+    });
 });
 </script>
 @endsection

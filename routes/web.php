@@ -23,6 +23,7 @@ Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logou
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->name('dashboard.chartData');
 
     Route::resource('forms', AdminFormController::class);
     Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
