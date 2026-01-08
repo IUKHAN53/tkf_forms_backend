@@ -1,23 +1,207 @@
-<!-- Heat Map Container -->
-<div class="map-container" style="margin-bottom: 24px;">
-    <div class="map-header" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 16px; font-weight: 600; color: var(--color-text-primary);">Geographic Distribution</h3>
-        <div style="display: flex; gap: 12px; align-items: center;">
-            <span style="color: var(--color-text-secondary); font-size: 14px;">
-                {{ count($mapData) }} locations with coordinates
-            </span>
-            <button type="button" class="btn btn-sm btn-outline" onclick="toggleMapFullscreen('map')">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+<!-- Modern Heat Map Container -->
+<div class="map-card">
+    <div class="map-card-header">
+        <div class="map-header-left">
+            <div class="map-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+            </div>
+            <div class="map-header-text">
+                <h3>Geographic Distribution</h3>
+                <p>{{ count($mapData) }} locations with coordinates</p>
+            </div>
+        </div>
+        <div class="map-header-actions">
+            <button type="button" class="map-btn" id="toggleHeatmap" title="Toggle Heatmap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                </svg>
+                <span>Heatmap</span>
+            </button>
+            <button type="button" class="map-btn" id="toggleMarkers" title="Toggle Markers">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>Markers</span>
+            </button>
+            <button type="button" class="map-btn map-btn-primary" onclick="toggleMapFullscreen('map')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
-                Fullscreen
+                <span>Fullscreen</span>
             </button>
         </div>
     </div>
-    <div id="map" style="height: 400px; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border);"></div>
+    <div class="map-wrapper">
+        <div id="map"></div>
+        <div class="map-legend">
+            <div class="legend-title">Activity Density</div>
+            <div class="legend-gradient">
+                <div class="gradient-bar"></div>
+                <div class="gradient-labels">
+                    <span>Low</span>
+                    <span>Medium</span>
+                    <span>High</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>
+/* Modern Map Card Styles */
+.map-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    margin-bottom: 24px;
+    border: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-100, #f3f4f6);
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.map-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.map-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary-500, #10b981), var(--primary-600, #059669));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-icon svg {
+    width: 22px;
+    height: 22px;
+    color: white;
+}
+
+.map-header-text h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900, #111827);
+    margin: 0 0 2px 0;
+}
+
+.map-header-text p {
+    font-size: 13px;
+    color: var(--gray-500, #6b7280);
+    margin: 0;
+}
+
+.map-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-200, #e5e7eb);
+    background: white;
+    color: var(--gray-700, #374151);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.map-btn:hover {
+    background: var(--gray-50, #f9fafb);
+    border-color: var(--gray-300, #d1d5db);
+}
+
+.map-btn.active {
+    background: var(--primary-50, #ecfdf5);
+    border-color: var(--primary-500, #10b981);
+    color: var(--primary-700, #047857);
+}
+
+.map-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.map-btn-primary {
+    background: linear-gradient(135deg, var(--primary-500, #10b981), var(--primary-600, #059669));
+    border-color: var(--primary-500, #10b981);
+    color: white;
+}
+
+.map-btn-primary:hover {
+    background: linear-gradient(135deg, var(--primary-600, #059669), var(--primary-700, #047857));
+    border-color: var(--primary-600, #059669);
+}
+
+.map-wrapper {
+    position: relative;
+}
+
+#map {
+    height: 450px;
+    width: 100%;
+    background: var(--gray-100, #f3f4f6);
+}
+
+/* Map Legend */
+.map-legend {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    background: white;
+    padding: 14px 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 500;
+    min-width: 160px;
+}
+
+.legend-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-700, #374151);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.gradient-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #3b82f6, #10b981, #f59e0b, #ef4444);
+    margin-bottom: 6px;
+}
+
+.gradient-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--gray-500, #6b7280);
+}
+
+/* Fullscreen Styles */
 .map-fullscreen {
     position: fixed !important;
     top: 0 !important;
@@ -35,77 +219,292 @@
     z-index: 10000;
     background: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
     cursor: pointer;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     display: none;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.fullscreen-close-btn:hover {
+    background: var(--gray-100, #f3f4f6);
+    transform: scale(1.02);
 }
 
 .fullscreen-close-btn.visible {
+    display: flex;
+}
+
+/* Custom Leaflet Controls */
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+}
+
+.leaflet-control-zoom a {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 18px !important;
+    color: var(--gray-700, #374151) !important;
+    background: white !important;
+    border-bottom: 1px solid var(--gray-100, #f3f4f6) !important;
+    transition: all 0.2s ease !important;
+}
+
+.leaflet-control-zoom a:hover {
+    background: var(--gray-50, #f9fafb) !important;
+    color: var(--primary-600, #059669) !important;
+}
+
+.leaflet-control-zoom a:last-child {
+    border-bottom: none !important;
+}
+
+.leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.9) !important;
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    border-radius: 6px 0 0 0 !important;
+}
+
+/* Custom Popup Styles */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    padding: 0 !important;
+}
+
+.leaflet-popup-content {
+    margin: 0 !important;
+    padding: 16px 20px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    color: var(--gray-700, #374151) !important;
+}
+
+.leaflet-popup-content strong {
     display: block;
+    font-size: 14px;
+    color: var(--gray-900, #111827);
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-100, #f3f4f6);
+}
+
+.leaflet-popup-tip {
+    box-shadow: none !important;
+}
+
+.leaflet-popup-close-button {
+    top: 8px !important;
+    right: 8px !important;
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 18px !important;
+    color: var(--gray-400, #9ca3af) !important;
+    border-radius: 6px !important;
+    transition: all 0.2s ease !important;
+}
+
+.leaflet-popup-close-button:hover {
+    background: var(--gray-100, #f3f4f6) !important;
+    color: var(--gray-700, #374151) !important;
+}
+
+/* Custom Marker Styles */
+.custom-marker {
+    background: linear-gradient(135deg, var(--primary-500, #10b981), var(--primary-600, #059669));
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .map-card-header {
+        padding: 16px;
+    }
+
+    .map-header-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .map-btn span {
+        display: none;
+    }
+
+    .map-btn {
+        padding: 10px;
+    }
+
+    #map {
+        height: 350px;
+    }
+
+    .map-legend {
+        bottom: 16px;
+        left: 16px;
+        padding: 12px;
+    }
 }
 </style>
 
-<button id="map-fullscreen-close" class="fullscreen-close-btn" onclick="exitMapFullscreen()">✕ Exit Fullscreen</button>
+<button id="map-fullscreen-close" class="fullscreen-close-btn" onclick="exitMapFullscreen()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+    Exit Fullscreen
+</button>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize map centered on Karachi
-    const map = L.map('map').setView([24.8607, 67.0011], 11);
+    const map = L.map('map', {
+        zoomControl: true,
+        attributionControl: true
+    }).setView([24.8607, 67.0011], 11);
 
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 18
+    // CartoDB Positron - Modern Light Theme
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
     }).addTo(map);
 
     // Get location data
     const locations = @json($mapData);
 
-    if (locations.length > 0) {
-        // Prepare heat map data
-        const heatData = locations.map(loc => [loc.lat, loc.lon, 0.5]);
+    let heatLayer = null;
+    let markersLayer = L.layerGroup();
+    let heatEnabled = true;
+    let markersEnabled = true;
 
-        // Add heat layer
-        L.heatLayer(heatData, {
-            radius: 25,
-            blur: 15,
+    if (locations.length > 0) {
+        // Prepare heat map data with intensity
+        const heatData = locations.map(loc => [loc.lat, loc.lon, 0.6]);
+
+        // Add heat layer with modern gradient
+        heatLayer = L.heatLayer(heatData, {
+            radius: 30,
+            blur: 20,
             maxZoom: 17,
+            max: 1.0,
             gradient: {
-                0.0: 'blue',
-                0.5: 'lime',
-                1.0: 'red'
+                0.0: '#3b82f6',
+                0.25: '#10b981',
+                0.5: '#22c55e',
+                0.75: '#f59e0b',
+                1.0: '#ef4444'
             }
         }).addTo(map);
 
-        // Add markers with popups
-        locations.forEach(loc => {
-            const marker = L.marker([loc.lat, loc.lon]);
-            marker.bindPopup(loc.popup);
-            marker.addTo(map);
+        // Create custom marker icon
+        const customIcon = L.divIcon({
+            className: 'custom-marker-container',
+            html: `<div style="
+                width: 12px;
+                height: 12px;
+                background: linear-gradient(135deg, #10b981, #059669);
+                border: 2px solid white;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            "></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
         });
 
-        // Fit map to markers bounds
+        // Add markers with popups
+        locations.forEach(loc => {
+            const marker = L.marker([loc.lat, loc.lon], { icon: customIcon });
+            marker.bindPopup(loc.popup, {
+                maxWidth: 300,
+                className: 'modern-popup'
+            });
+            markersLayer.addLayer(marker);
+        });
+        markersLayer.addTo(map);
+
+        // Fit map to markers bounds with padding
         const group = L.featureGroup(locations.map(loc => L.marker([loc.lat, loc.lon])));
-        map.fitBounds(group.getBounds().pad(0.1));
+        map.fitBounds(group.getBounds().pad(0.15));
     } else {
-        // Add a message if no coordinates
+        // Add a styled message if no coordinates
         const message = L.control({position: 'topright'});
         message.onAdd = function() {
-            const div = L.DomUtil.create('div', 'map-message');
-            div.style.background = 'white';
-            div.style.padding = '10px';
-            div.style.borderRadius = '4px';
-            div.innerHTML = '<strong>No location data available</strong>';
+            const div = L.DomUtil.create('div', 'map-no-data');
+            div.style.cssText = `
+                background: white;
+                padding: 16px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                color: #6b7280;
+            `;
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <span>No location data available</span>
+                </div>
+            `;
             return div;
         };
         message.addTo(map);
     }
 
-    // Store map reference for resize
+    // Store map reference
     window.coreFormMap = map;
+    window.coreFormHeatLayer = heatLayer;
+    window.coreFormMarkersLayer = markersLayer;
+
+    // Toggle buttons functionality
+    const toggleHeatmapBtn = document.getElementById('toggleHeatmap');
+    const toggleMarkersBtn = document.getElementById('toggleMarkers');
+
+    if (toggleHeatmapBtn) {
+        toggleHeatmapBtn.classList.add('active');
+        toggleHeatmapBtn.addEventListener('click', function() {
+            if (heatLayer) {
+                if (heatEnabled) {
+                    map.removeLayer(heatLayer);
+                    this.classList.remove('active');
+                } else {
+                    heatLayer.addTo(map);
+                    this.classList.add('active');
+                }
+                heatEnabled = !heatEnabled;
+            }
+        });
+    }
+
+    if (toggleMarkersBtn) {
+        toggleMarkersBtn.classList.add('active');
+        toggleMarkersBtn.addEventListener('click', function() {
+            if (markersEnabled) {
+                map.removeLayer(markersLayer);
+                this.classList.remove('active');
+            } else {
+                markersLayer.addTo(map);
+                this.classList.add('active');
+            }
+            markersEnabled = !markersEnabled;
+        });
+    }
 });
 
 let currentFullscreenMapId = null;
