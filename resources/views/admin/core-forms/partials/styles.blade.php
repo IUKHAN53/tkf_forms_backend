@@ -179,6 +179,24 @@
     color: #7c3aed;
 }
 
+/* Cyan Card */
+.stat-card-cyan::before {
+    background: linear-gradient(90deg, #06b6d4, #22d3ee);
+}
+
+.stat-card-cyan .stat-card-icon {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(6, 182, 212, 0.08));
+    color: #0891b2;
+}
+
+.stat-card-cyan .stat-card-value {
+    color: #0e7490;
+}
+
+.stat-card-cyan .stat-card-label {
+    color: #0891b2;
+}
+
 /* Trend indicators */
 .stat-card-trend-up {
     background: rgba(34, 197, 94, 0.12);

@@ -56,10 +56,11 @@ class BridgingTheGapController extends Controller
         // Calculate statistics
         $stats = [
             'total' => BridgingTheGap::count(),
-            'today' => BridgingTheGap::whereDate('created_at', today())->count(),
-            'this_week' => BridgingTheGap::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => BridgingTheGap::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
-            'total_participants' => BridgingTheGap::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+            'total_action_plans' => 0, // TODO: Implement action plans count
+            'total_attendance' => BridgingTheGap::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+            'total_males' => BridgingTheGap::sum('participants_males') ?? 0,
+            'total_females' => BridgingTheGap::sum('participants_females') ?? 0,
+            'total_iit_members' => \App\Models\BridgingTheGapTeamMember::count(),
         ];
 
         // Prepare map data

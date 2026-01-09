@@ -56,10 +56,11 @@ class FgdsHealthWorkersController extends Controller
         // Calculate statistics
         $stats = [
             'total' => FgdsHealthWorkers::count(),
-            'today' => FgdsHealthWorkers::whereDate('created_at', today())->count(),
-            'this_week' => FgdsHealthWorkers::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => FgdsHealthWorkers::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_barriers' => 0, // TODO: Implement barriers count
             'total_participants' => FgdsHealthWorkers::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+            'total_males' => FgdsHealthWorkers::sum('participants_males') ?? 0,
+            'total_females' => FgdsHealthWorkers::sum('participants_females') ?? 0,
+            'ucs_covered' => FgdsHealthWorkers::distinct('uc')->count('uc'),
         ];
 
         // Prepare map data

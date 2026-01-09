@@ -57,10 +57,11 @@ class FgdsCommunityController extends Controller
         // Calculate statistics
         $stats = [
             'total' => FgdsCommunity::count(),
-            'today' => FgdsCommunity::whereDate('created_at', today())->count(),
-            'this_week' => FgdsCommunity::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
-            'this_month' => FgdsCommunity::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_barriers' => 0, // TODO: Implement barriers count
             'total_participants' => FgdsCommunity::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+            'total_males' => FgdsCommunity::sum('participants_males') ?? 0,
+            'total_females' => FgdsCommunity::sum('participants_females') ?? 0,
+            'districts_covered' => FgdsCommunity::distinct('district')->count('district'),
         ];
 
         // Prepare map data
