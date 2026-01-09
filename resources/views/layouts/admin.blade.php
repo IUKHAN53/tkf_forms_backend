@@ -313,7 +313,7 @@ body {
 }
 
 .nav-submenu .nav-link {
-    padding: 10px 14px;
+    padding: 10px 14px 10px 12px;
     font-size: 13px;
 }
 
@@ -323,7 +323,8 @@ body {
     height: 6px;
     background: var(--gray-300);
     border-radius: 50%;
-    margin-right: 8px;
+    margin-right: 10px;
+    flex-shrink: 0;
     transition: all var(--transition);
 }
 

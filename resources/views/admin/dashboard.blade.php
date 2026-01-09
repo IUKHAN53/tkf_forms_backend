@@ -8,6 +8,23 @@
     <!-- Core Forms Stats Cards -->
     <div class="stats-row">
         <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <path d="M12 2a3 3 0 0 0-3 3v1a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 8a2 2 0 0 1 2 2v1a2 2 0 0 1-4 0v-1a2 2 0 0 1 2-2z"></path>
+                    <path d="M5 8a2 2 0 0 1 2 2v1a2 2 0 0 1-4 0v-1a2 2 0 0 1 2-2z"></path>
+                    <path d="M12 14a4 4 0 0 0-4 4v4h8v-4a4 4 0 0 0-4-4z"></path>
+                    <path d="M5 14a3 3 0 0 0-3 3v5h6v-5a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 14a3 3 0 0 1 3 3v5h-6v-5a3 3 0 0 1 3-3z"></path>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <h3>{{ $stats['core_forms']['child_line_lists'] }}</h3>
+                <p>Children Registered</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
             <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -182,14 +199,18 @@
 }
 
 .stat-card:nth-child(1)::before {
-    background: linear-gradient(90deg, #22c55e, #4ade80);
+    background: linear-gradient(90deg, #6366f1, #818cf8);
 }
 
 .stat-card:nth-child(2)::before {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    background: linear-gradient(90deg, #22c55e, #4ade80);
 }
 
 .stat-card:nth-child(3)::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stat-card:nth-child(4)::before {
     background: linear-gradient(90deg, #ec4899, #f472b6);
 }
 
