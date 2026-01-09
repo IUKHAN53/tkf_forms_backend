@@ -273,6 +273,16 @@ body {
     border: none;
     background: transparent;
     font-family: inherit;
+    color: var(--gray-600);
+}
+
+.nav-group .nav-toggle:hover {
+    background: var(--gray-100);
+    color: var(--gray-900);
+}
+
+.nav-group .nav-toggle.expanded {
+    color: var(--gray-900);
 }
 
 .nav-toggle .nav-chevron {
@@ -280,10 +290,16 @@ body {
     transition: transform var(--transition);
     width: 16px;
     height: 16px;
+    color: var(--gray-400);
+}
+
+.nav-toggle:hover .nav-chevron {
+    color: var(--gray-600);
 }
 
 .nav-toggle.expanded .nav-chevron {
     transform: rotate(180deg);
+    color: var(--gray-600);
 }
 
 .nav-submenu {
