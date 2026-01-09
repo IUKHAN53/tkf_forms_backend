@@ -53,6 +53,15 @@ class FgdsHealthWorkersController extends Controller
         $ucs = FgdsHealthWorkers::distinct()->pluck('uc')->filter()->sort()->values();
         $groupTypes = FgdsHealthWorkers::distinct()->pluck('group_type')->filter()->sort()->values();
 
+        // Calculate statistics
+        $stats = [
+            'total' => FgdsHealthWorkers::count(),
+            'today' => FgdsHealthWorkers::whereDate('created_at', today())->count(),
+            'this_week' => FgdsHealthWorkers::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => FgdsHealthWorkers::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_participants' => FgdsHealthWorkers::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+        ];
+
         // Prepare map data
         $mapData = FgdsHealthWorkers::whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -70,7 +79,7 @@ class FgdsHealthWorkersController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes'));
+        return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes', 'stats'));
     }
 
     public function show(FgdsHealthWorkers $fgdsHealthWorker)

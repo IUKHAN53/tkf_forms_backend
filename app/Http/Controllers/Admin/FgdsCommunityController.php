@@ -54,6 +54,15 @@ class FgdsCommunityController extends Controller
         $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();
         $ucs = FgdsCommunity::distinct()->pluck('uc')->filter()->sort()->values();
 
+        // Calculate statistics
+        $stats = [
+            'total' => FgdsCommunity::count(),
+            'today' => FgdsCommunity::whereDate('created_at', today())->count(),
+            'this_week' => FgdsCommunity::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => FgdsCommunity::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_participants' => FgdsCommunity::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+        ];
+
         // Prepare map data
         $mapData = FgdsCommunity::whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -76,7 +85,7 @@ class FgdsCommunityController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs'));
+        return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs', 'stats'));
     }
 
     public function show(FgdsCommunity $fgdsCommunity)

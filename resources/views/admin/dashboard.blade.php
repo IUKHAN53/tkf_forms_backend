@@ -8,21 +8,6 @@
     <!-- Core Forms Stats Cards -->
     <div class="stats-row">
         <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-            </div>
-            <div class="stat-content">
-                <h3>{{ $stats['core_forms']['child_line_lists'] }}</h3>
-                <p>Child Line Lists</p>
-            </div>
-        </div>
-
-        <div class="stat-card">
             <div class="stat-icon" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -169,39 +154,73 @@
 
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
 }
 
 .stat-card {
-    background: var(--color-bg-paper);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-card);
-    padding: var(--spacing-lg);
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+    padding: 20px 22px;
     display: flex;
-    gap: var(--spacing-md);
+    gap: 16px;
     align-items: center;
+    border: 1px solid var(--gray-100);
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.stat-card:nth-child(1)::before {
+    background: linear-gradient(90deg, #22c55e, #4ade80);
+}
+
+.stat-card:nth-child(2)::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stat-card:nth-child(3)::before {
+    background: linear-gradient(90deg, #ec4899, #f472b6);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-md);
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .stat-content h3 {
     font-size: 28px;
     font-weight: 700;
-    color: var(--color-text-primary);
-    margin-bottom: 4px;
+    color: var(--gray-800);
+    margin-bottom: 2px;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
 }
 
 .stat-content p {
-    color: var(--color-text-secondary);
-    font-size: 14px;
+    color: var(--gray-500);
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .card-header {
@@ -345,7 +364,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Dataset colors
     const datasetConfigs = [
-        { label: 'Child Line Lists', key: 'child_line_lists', color: 'rgba(99, 102, 241, 0.8)' },
         { label: 'FGDs-Community', key: 'fgds_community', color: 'rgba(34, 197, 94, 0.8)' },
         { label: 'FGDs-Health Workers', key: 'fgds_health_workers', color: 'rgba(245, 158, 11, 0.8)' },
         { label: 'Bridging The Gap', key: 'bridging_the_gap', color: 'rgba(236, 72, 153, 0.8)' }

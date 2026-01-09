@@ -53,6 +53,15 @@ class BridgingTheGapController extends Controller
         $districts = BridgingTheGap::distinct()->pluck('district')->filter()->sort()->values();
         $ucs = BridgingTheGap::distinct()->pluck('uc')->filter()->sort()->values();
 
+        // Calculate statistics
+        $stats = [
+            'total' => BridgingTheGap::count(),
+            'today' => BridgingTheGap::whereDate('created_at', today())->count(),
+            'this_week' => BridgingTheGap::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+            'this_month' => BridgingTheGap::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+            'total_participants' => BridgingTheGap::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
+        ];
+
         // Prepare map data
         $mapData = BridgingTheGap::whereNotNull('latitude')
             ->whereNotNull('longitude')
@@ -71,7 +80,7 @@ class BridgingTheGapController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.bridging-the-gap.index', compact('records', 'mapData', 'districts', 'ucs'));
+        return view('admin.core-forms.bridging-the-gap.index', compact('records', 'mapData', 'districts', 'ucs', 'stats'));
     }
 
     public function show(BridgingTheGap $bridgingTheGap)
