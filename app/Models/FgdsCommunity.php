@@ -6,6 +6,7 @@ use App\Traits\HasUniqueFormId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FgdsCommunity extends Model
 {
@@ -55,5 +56,10 @@ class FgdsCommunity extends Model
     public function participants(): MorphMany
     {
         return $this->morphMany(Participant::class, 'participantable');
+    }
+
+    public function barriers(): HasMany
+    {
+        return $this->hasMany(FgdsCommunityBarrier::class, 'fgds_community_id');
     }
 }

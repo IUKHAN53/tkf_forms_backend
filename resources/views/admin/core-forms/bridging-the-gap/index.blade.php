@@ -260,11 +260,27 @@
             @csrf
             <div class="modal-body">
                 <p class="mb-md text-muted">Upload an Excel file containing the action plan for this Bridging The Gap session.</p>
+
+                <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span style="font-size: 13px; color: #166534;">Need the correct format?</span>
+                        <a href="{{ route('admin.bridging-the-gap.action-plan-sample') }}" class="btn btn-sm btn-success" style="margin-left: auto;">
+                            Download Sample Template
+                        </a>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label">Select Excel File</label>
                     <input type="file" name="action_plan_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
                 </div>
                 <div class="upload-info" style="background: #f8f9fa; border-radius: 8px; padding: 12px; font-size: 13px; color: #666;">
+                    <p style="margin: 0 0 8px 0;"><strong>Expected columns:</strong> Problem | Solution | Action Needed | Who is Responsible | Timeline</p>
                     <p style="margin: 0 0 8px 0;"><strong>Accepted formats:</strong> .xlsx, .xls</p>
                     <p style="margin: 0;"><strong>Max file size:</strong> 5MB</p>
                 </div>

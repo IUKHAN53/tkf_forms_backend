@@ -94,10 +94,10 @@
         </div>
     @endif
 
-    @if($bridgingTheGap->teamMembers && $bridgingTheGap->teamMembers->count() > 0)
-        <div class="participants-section" style="margin-top: 24px;">
-            <h3>IIT Team Members ({{ $bridgingTheGap->teamMembers->count() }})</h3>
-            <p class="text-muted" style="margin-bottom: 12px;">Team members selected from Community Barriers and Healthcare Barriers forms</p>
+    <div class="participants-section" style="margin-top: 24px;">
+        <h3>IIT Team Members ({{ $bridgingTheGap->teamMembers ? $bridgingTheGap->teamMembers->count() : 0 }})</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">Team members selected from FGDs-Community and FGDs-Health Workers forms</p>
+        @if($bridgingTheGap->teamMembers && $bridgingTheGap->teamMembers->count() > 0)
             <table class="data-table">
                 <thead>
                     <tr>
@@ -111,21 +111,25 @@
                     @foreach($bridgingTheGap->teamMembers as $index => $member)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $member->participant->name ?? 'N/A' }}</td>
+                            <td>{{ $member->participant->name ?? 'Participant Deleted' }}</td>
                             <td>{{ $member->participant->contact_no ?? 'N/A' }}</td>
                             <td>
-                                @if($member->source_type === 'community_barrier')
-                                    <span class="badge badge-info">Community Barriers</span>
+                                @if($member->source_type === 'fgds_community' || $member->source_type === 'community_barrier')
+                                    <span class="badge badge-info">FGDs-Community</span>
+                                @elseif($member->source_type === 'fgds_health_workers' || $member->source_type === 'healthcare_barrier')
+                                    <span class="badge badge-success">FGDs-Health Workers</span>
                                 @else
-                                    <span class="badge badge-success">Healthcare Barriers</span>
+                                    <span class="badge badge-warning">{{ $member->source_type }}</span>
                                 @endif
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
-    @endif
+        @else
+            <p class="text-muted" style="font-style: italic;">No IIT team members were selected for this session.</p>
+        @endif
+    </div>
 
     <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 600; color: #374151;">Submission Metadata</h3>
     <div class="detail-grid">

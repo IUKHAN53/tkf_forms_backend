@@ -68,92 +68,113 @@
         </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="charts-row">
-        <div class="card">
-            <div class="card-header">
-                <h2>UC-wise Submissions</h2>
-                <div class="chart-filters" id="uc-filters">
-                    <select class="date-preset" data-chart="uc">
-                        <option value="all" selected>All Time</option>
-                        <option value="today">Today</option>
-                        <option value="yesterday">Yesterday</option>
-                        <option value="7days">Last 7 Days</option>
-                        <option value="30days">Last 30 Days</option>
-                        <option value="this_month">This Month</option>
-                        <option value="last_month">Last Month</option>
-                        <option value="custom">Custom Range</option>
-                    </select>
-                    <div class="custom-date-range" style="display: none;">
-                        <input type="date" class="start-date" placeholder="Start Date">
-                        <input type="date" class="end-date" placeholder="End Date">
-                        <button class="apply-filter btn btn-sm btn-primary" data-chart="uc">Apply</button>
-                    </div>
+    <!-- UC Stats Cards Section -->
+    <div class="section-header">
+        <h2>Union Council Statistics</h2>
+        <p class="text-muted">Click on any UC card to view detailed statistics and submissions</p>
+    </div>
+    <div class="uc-cards-grid">
+        @foreach($stats['uc_stats'] as $index => $uc)
+        <a href="{{ route('admin.uc.show', $uc['slug']) }}" class="uc-card" data-index="{{ $index }}">
+            <div class="uc-card-header">
+                <div class="uc-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <div class="uc-card-title">
+                    <h3>{{ $uc['name'] }}</h3>
+                    <span class="uc-total-badge">{{ $uc['total'] }} Total</span>
                 </div>
             </div>
-            <div class="card-body">
-                <canvas id="submissionsChart" height="80"></canvas>
+            <div class="uc-card-stats">
+                <div class="uc-stat-item">
+                    <span class="uc-stat-dot" style="background: #6366f1;"></span>
+                    <span class="uc-stat-label">Children</span>
+                    <span class="uc-stat-value">{{ $uc['child_line_lists'] }}</span>
+                </div>
+                <div class="uc-stat-item">
+                    <span class="uc-stat-dot" style="background: #22c55e;"></span>
+                    <span class="uc-stat-label">FGDs-Community</span>
+                    <span class="uc-stat-value">{{ $uc['fgds_community'] }}</span>
+                </div>
+                <div class="uc-stat-item">
+                    <span class="uc-stat-dot" style="background: #f59e0b;"></span>
+                    <span class="uc-stat-label">FGDs-Health</span>
+                    <span class="uc-stat-value">{{ $uc['fgds_health_workers'] }}</span>
+                </div>
+                <div class="uc-stat-item">
+                    <span class="uc-stat-dot" style="background: #ec4899;"></span>
+                    <span class="uc-stat-label">Bridging Gap</span>
+                    <span class="uc-stat-value">{{ $uc['bridging_the_gap'] }}</span>
+                </div>
+            </div>
+            <div class="uc-card-footer">
+                <span class="view-details">View Details</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </div>
+        </a>
+        @endforeach
+    </div>
+
+    <!-- District Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h2>District-wise Distribution</h2>
+            <div class="chart-filters" id="district-filters">
+                <select class="date-preset" data-chart="district">
+                    <option value="all" selected>All Time</option>
+                    <option value="today">Today</option>
+                    <option value="yesterday">Yesterday</option>
+                    <option value="7days">Last 7 Days</option>
+                    <option value="30days">Last 30 Days</option>
+                    <option value="this_month">This Month</option>
+                    <option value="last_month">Last Month</option>
+                    <option value="custom">Custom Range</option>
+                </select>
+                <div class="custom-date-range" style="display: none;">
+                    <input type="date" class="start-date" placeholder="Start Date">
+                    <input type="date" class="end-date" placeholder="End Date">
+                    <button class="apply-filter btn btn-sm btn-primary" data-chart="district">Apply</button>
+                </div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h2>District-wise Distribution</h2>
-                <div class="chart-filters" id="district-filters">
-                    <select class="date-preset" data-chart="district">
-                        <option value="all" selected>All Time</option>
-                        <option value="today">Today</option>
-                        <option value="yesterday">Yesterday</option>
-                        <option value="7days">Last 7 Days</option>
-                        <option value="30days">Last 30 Days</option>
-                        <option value="this_month">This Month</option>
-                        <option value="last_month">Last Month</option>
-                        <option value="custom">Custom Range</option>
-                    </select>
-                    <div class="custom-date-range" style="display: none;">
-                        <input type="date" class="start-date" placeholder="Start Date">
-                        <input type="date" class="end-date" placeholder="End Date">
-                        <button class="apply-filter btn btn-sm btn-primary" data-chart="district">Apply</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                <canvas id="districtChart" height="80"></canvas>
-            </div>
+        <div class="card-body">
+            <canvas id="districtChart" height="80"></canvas>
         </div>
     </div>
 
-    <!-- Recent Submissions -->
+    <!-- Recent Activity -->
     <div class="card">
         <div class="card-header">
-            <h2>Recent Submissions</h2>
-            <a href="{{ route('admin.submissions.index') }}" class="btn btn-sm btn-secondary">View All</a>
+            <h2>Recent Activity</h2>
         </div>
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Form</th>
-                        <th>Submitted By</th>
-                        <th>Date</th>
-                        <th>Actions</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>District</th>
+                        <th>UC</th>
+                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($stats['recent_submissions'] as $submission)
+                    @forelse($stats['recent_activity'] as $activity)
                         <tr>
-                            <td><span class="badge badge-info">#{{ $submission->id }}</span></td>
-                            <td>{{ $submission->form->name }}</td>
-                            <td>{{ $submission->user->name ?? 'Anonymous' }}</td>
-                            <td>{{ $submission->created_at->diffForHumans() }}</td>
-                            <td>
-                                <a href="{{ route('admin.submissions.show', $submission) }}" class="btn btn-sm btn-secondary">View</a>
-                            </td>
+                            <td><span class="badge badge-{{ $activity['type'] === 'Child Line List' ? 'info' : ($activity['type'] === 'FGDs-Community' ? 'success' : ($activity['type'] === 'FGDs-Health Workers' ? 'warning' : 'primary')) }}">{{ $activity['type'] }}</span></td>
+                            <td>{{ \Illuminate\Support\Str::limit($activity['description'], 40) }}</td>
+                            <td>{{ $activity['district'] ?? 'N/A' }}</td>
+                            <td>{{ $activity['uc'] ?? 'N/A' }}</td>
+                            <td>{{ $activity['created_at']->diffForHumans() }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center text-secondary">No submissions yet</td>
+                            <td colspan="5" class="text-center text-secondary">No recent activity</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -167,6 +188,22 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+}
+
+.section-header {
+    margin-bottom: -8px;
+}
+
+.section-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 4px;
+}
+
+.section-header .text-muted {
+    font-size: 13px;
+    color: var(--gray-500);
 }
 
 .stats-row {
@@ -244,11 +281,160 @@
     font-weight: 500;
 }
 
+/* UC Cards Grid */
+.uc-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.uc-card {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid var(--gray-200);
+    padding: 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.uc-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--uc-color-1, #6366f1), var(--uc-color-2, #818cf8));
+}
+
+.uc-card[data-index="0"]::before { --uc-color-1: #6366f1; --uc-color-2: #818cf8; }
+.uc-card[data-index="1"]::before { --uc-color-1: #22c55e; --uc-color-2: #4ade80; }
+.uc-card[data-index="2"]::before { --uc-color-1: #f59e0b; --uc-color-2: #fbbf24; }
+.uc-card[data-index="3"]::before { --uc-color-1: #ec4899; --uc-color-2: #f472b6; }
+.uc-card[data-index="4"]::before { --uc-color-1: #06b6d4; --uc-color-2: #22d3ee; }
+.uc-card[data-index="5"]::before { --uc-color-1: #8b5cf6; --uc-color-2: #a78bfa; }
+.uc-card[data-index="6"]::before { --uc-color-1: #ef4444; --uc-color-2: #f87171; }
+.uc-card[data-index="7"]::before { --uc-color-1: #14b8a6; --uc-color-2: #2dd4bf; }
+.uc-card[data-index="8"]::before { --uc-color-1: #3b82f6; --uc-color-2: #60a5fa; }
+
+.uc-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-color: var(--gray-300);
+}
+
+.uc-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.uc-card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: var(--gray-100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.uc-card-icon svg {
+    width: 22px;
+    height: 22px;
+    color: var(--gray-600);
+}
+
+.uc-card-title h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin: 0 0 2px 0;
+    line-height: 1.3;
+}
+
+.uc-total-badge {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.uc-card-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.uc-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.uc-stat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.uc-stat-label {
+    color: var(--gray-500);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uc-stat-value {
+    font-weight: 700;
+    color: var(--gray-700);
+}
+
+.uc-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-100);
+    margin-top: auto;
+}
+
+.view-details {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-600);
+}
+
+.uc-card-footer svg {
+    color: var(--primary-600);
+    transition: transform 0.2s ease;
+}
+
+.uc-card:hover .uc-card-footer svg {
+    transform: translateX(3px);
+}
+
+/* Card styles */
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
 }
 
 .card-header h2 {
@@ -289,17 +475,6 @@
     text-align: center;
 }
 
-.charts-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--spacing-lg);
-}
-
-.card-header {
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-}
-
 .chart-filters {
     display: flex;
     align-items: center;
@@ -338,7 +513,15 @@
     font-size: 13px;
 }
 
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-primary { background: #fce7f3; color: #9d174d; }
+
 @media (max-width: 768px) {
+    .uc-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
     .card-header {
         flex-direction: column;
         align-items: flex-start;
@@ -356,8 +539,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Store chart instances for updates
-    let ucChart = null;
+    // Store chart instance for updates
     let districtChart = null;
 
     // Chart configuration
@@ -385,6 +567,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Dataset colors
     const datasetConfigs = [
+        { label: 'Child Line Lists', key: 'child_line_lists', color: 'rgba(99, 102, 241, 0.8)' },
         { label: 'FGDs-Community', key: 'fgds_community', color: 'rgba(34, 197, 94, 0.8)' },
         { label: 'FGDs-Health Workers', key: 'fgds_health_workers', color: 'rgba(245, 158, 11, 0.8)' },
         { label: 'Bridging The Gap', key: 'bridging_the_gap', color: 'rgba(236, 72, 153, 0.8)' }
@@ -497,11 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await fetchChartData(chartType, startDate, endDate);
 
         if (data) {
-            if (chartType === 'uc') {
-                updateChart(ucChart, data);
-            } else {
-                updateChart(districtChart, data);
-            }
+            updateChart(districtChart, data);
         }
     }
 
@@ -520,18 +699,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = await fetchChartData(chartType, startDate, endDate);
 
         if (data) {
-            if (chartType === 'uc') {
-                updateChart(ucChart, data);
-            } else {
-                updateChart(districtChart, data);
-            }
+            updateChart(districtChart, data);
         }
-    }
-
-    // Initialize UC Chart
-    const ucData = @json($stats['uc_wise_submissions']);
-    if (Object.keys(ucData).length > 0) {
-        ucChart = createChart('submissionsChart', ucData);
     }
 
     // Initialize District Chart

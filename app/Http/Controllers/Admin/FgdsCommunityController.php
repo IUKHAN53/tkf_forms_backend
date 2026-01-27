@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsCommunity;
+use App\Models\FgdsCommunityBarrier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class FgdsCommunityController extends Controller
 {
@@ -57,12 +63,27 @@ class FgdsCommunityController extends Controller
         // Calculate statistics
         $stats = [
             'total' => FgdsCommunity::count(),
-            'total_barriers' => 0, // TODO: Implement barriers count
+            'total_barriers' => FgdsCommunityBarrier::count(),
             'total_participants' => FgdsCommunity::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
             'total_males' => FgdsCommunity::sum('participants_males') ?? 0,
             'total_females' => FgdsCommunity::sum('participants_females') ?? 0,
             'districts_covered' => FgdsCommunity::distinct('district')->count('district'),
         ];
+
+        // Get barriers count by category for statistics
+        $barriersByCategory = FgdsCommunityBarrier::select('barrier_category_id', DB::raw('count(*) as count'))
+            ->groupBy('barrier_category_id')
+            ->pluck('count', 'barrier_category_id')
+            ->toArray();
+
+        $categories = BarrierCategory::ordered();
+        $stats['barriers_by_category'] = $categories->map(function ($cat) use ($barriersByCategory) {
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'count' => $barriersByCategory[$cat->id] ?? 0,
+            ];
+        });
 
         // Prepare map data
         $mapData = FgdsCommunity::whereNotNull('latitude')
@@ -235,7 +256,196 @@ class FgdsCommunityController extends Controller
             'barriers_file' => $path,
         ]);
 
+        // Parse the Excel file and extract barriers
+        try {
+            $importResult = $this->parseAndStoreBarriers($record, $file->getRealPath());
+            $message = "Barriers file uploaded successfully for record {$record->unique_id}. ";
+            $message .= "Imported {$importResult['imported']} barriers.";
+            if ($importResult['skipped'] > 0) {
+                $message .= " Skipped {$importResult['skipped']} empty rows.";
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.fgds-community.index')
+                ->with('error', "File uploaded but failed to parse barriers: " . $e->getMessage());
+        }
+
         return redirect()->route('admin.fgds-community.index')
-            ->with('success', "Barriers file uploaded successfully for record {$record->unique_id}.");
+            ->with('success', $message);
+    }
+
+    /**
+     * Parse Excel file and store barriers
+     */
+    private function parseAndStoreBarriers(FgdsCommunity $record, string $filePath): array
+    {
+        $spreadsheet = IOFactory::load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray();
+
+        // Get all barrier categories indexed by name (normalized for matching)
+        $categories = BarrierCategory::all()->keyBy(function ($cat) {
+            return $this->normalizeCategory($cat->name);
+        });
+
+        // Delete existing barriers for this record before importing new ones
+        FgdsCommunityBarrier::where('fgds_community_id', $record->id)->delete();
+
+        $imported = 0;
+        $skipped = 0;
+
+        // Skip header row (index 0), process data rows
+        foreach ($rows as $index => $row) {
+            if ($index === 0) continue; // Skip header
+
+            // Expected format: Sr. No | Identified Barriers | Category
+            $serialNumber = trim($row[0] ?? '');
+            $barrierText = trim($row[1] ?? '');
+            $categoryName = trim($row[2] ?? '');
+
+            // Skip empty barrier rows
+            if (empty($barrierText)) {
+                $skipped++;
+                continue;
+            }
+
+            // Find matching category
+            $normalizedCategory = $this->normalizeCategory($categoryName);
+            $category = $categories->get($normalizedCategory);
+
+            if (!$category) {
+                // Try partial match
+                $category = $this->findCategoryByPartialMatch($categoryName, $categories);
+            }
+
+            if (!$category) {
+                // If no category found, skip this row
+                $skipped++;
+                continue;
+            }
+
+            // Create the barrier record
+            FgdsCommunityBarrier::create([
+                'fgds_community_id' => $record->id,
+                'barrier_category_id' => $category->id,
+                'barrier_text' => $barrierText,
+                'serial_number' => is_numeric($serialNumber) ? (int)$serialNumber : null,
+            ]);
+
+            $imported++;
+        }
+
+        return [
+            'imported' => $imported,
+            'skipped' => $skipped,
+        ];
+    }
+
+    /**
+     * Normalize category name for comparison
+     */
+    private function normalizeCategory(string $name): string
+    {
+        // Remove extra spaces, lowercase, remove trailing punctuation
+        return strtolower(trim(preg_replace('/\s+/', ' ', rtrim($name, '.'))));
+    }
+
+    /**
+     * Find category by partial match
+     */
+    private function findCategoryByPartialMatch(string $categoryName, $categories)
+    {
+        $normalized = $this->normalizeCategory($categoryName);
+
+        foreach ($categories as $key => $category) {
+            // Check if one contains the other
+            if (str_contains($key, $normalized) || str_contains($normalized, $key)) {
+                return $category;
+            }
+
+            // Check first few words match
+            $searchWords = explode(' ', $normalized);
+            $categoryWords = explode(' ', $key);
+
+            if (count($searchWords) >= 2 && count($categoryWords) >= 2) {
+                if ($searchWords[0] === $categoryWords[0] && $searchWords[1] === $categoryWords[1]) {
+                    return $category;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Download sample barriers Excel template
+     */
+    public function barriersSample()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $headers = ['Sr. No', 'Identified Barriers', 'Category'];
+        $sheet->fromArray($headers, null, 'A1');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ];
+        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
+
+        // Get categories for reference
+        $categories = BarrierCategory::ordered()->pluck('name')->toArray();
+
+        // Add sample data with different categories
+        $sampleData = [
+            [1, 'Some community members believe vaccines cause harm', $categories[0] ?? 'Cultural Compatibility / Traditional Beliefs and Practices.'],
+            [2, 'Lack of awareness about vaccination schedule', $categories[1] ?? 'Communication / Information.'],
+            [3, 'Vaccination center is too far from the village', $categories[2] ?? 'Service Availability.'],
+            [4, 'Long waiting times at the health facility', $categories[3] ?? 'System and Procedures.'],
+            [5, 'Health workers are not friendly to mothers', $categories[4] ?? 'Client / Provider Relations.'],
+            [6, 'Vaccinators need more training on handling', $categories[5] ?? 'Provider Technical Competence.'],
+            [7, 'Frequent vaccine stock-outs', $categories[6] ?? 'Supplies and Equipment / Medicine.'],
+            [8, 'Vaccination room is not clean', $categories[7] ?? 'Place / Environment.'],
+        ];
+        $sheet->fromArray($sampleData, null, 'A2');
+
+        // Add empty rows for user to fill
+        for ($i = 9; $i <= 20; $i++) {
+            $sheet->setCellValue('A' . ($i + 1), $i);
+        }
+
+        // Auto-size columns
+        $sheet->getColumnDimension('A')->setWidth(10);
+        $sheet->getColumnDimension('B')->setWidth(50);
+        $sheet->getColumnDimension('C')->setWidth(50);
+
+        // Add categories reference sheet
+        $categoriesSheet = $spreadsheet->createSheet();
+        $categoriesSheet->setTitle('Categories Reference');
+        $categoriesSheet->setCellValue('A1', 'Available Categories');
+        $categoriesSheet->getStyle('A1')->getFont()->setBold(true);
+
+        foreach ($categories as $index => $category) {
+            $categoriesSheet->setCellValue('A' . ($index + 2), $category);
+        }
+        $categoriesSheet->getColumnDimension('A')->setWidth(60);
+
+        // Set first sheet as active
+        $spreadsheet->setActiveSheetIndex(0);
+        $sheet->setTitle('Barriers Template');
+
+        // Create the response
+        $writer = new Xlsx($spreadsheet);
+
+        $filename = 'barriers_sample_template.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }

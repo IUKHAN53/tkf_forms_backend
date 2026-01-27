@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\BridgingTheGapController;
 use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\ChildLineListController;
+use App\Http\Controllers\Admin\UcController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -24,6 +25,10 @@ Route::post('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logou
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->name('dashboard.chartData');
+
+    // UC Detail Pages
+    Route::get('/uc/{slug}', [UcController::class, 'show'])->name('uc.show');
+    Route::get('/uc/{slug}/data', [UcController::class, 'getData'])->name('uc.data');
 
     Route::resource('forms', AdminFormController::class);
     Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
@@ -39,6 +44,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     // Core Forms - FGDs-Community
     Route::get('fgds-community/export', [FgdsCommunityController::class, 'export'])->name('fgds-community.export');
     Route::get('fgds-community/template', [FgdsCommunityController::class, 'template'])->name('fgds-community.template');
+    Route::get('fgds-community/barriers-sample', [FgdsCommunityController::class, 'barriersSample'])->name('fgds-community.barriers-sample');
     Route::post('fgds-community/import', [FgdsCommunityController::class, 'import'])->name('fgds-community.import');
     Route::post('fgds-community/{id}/barriers', [FgdsCommunityController::class, 'uploadBarriers'])->name('fgds-community.upload-barriers');
     Route::resource('fgds-community', FgdsCommunityController::class)->only(['index', 'show', 'destroy']);
@@ -53,6 +59,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     // Core Forms - Bridging The Gap
     Route::get('bridging-the-gap/export', [BridgingTheGapController::class, 'export'])->name('bridging-the-gap.export');
     Route::get('bridging-the-gap/template', [BridgingTheGapController::class, 'template'])->name('bridging-the-gap.template');
+    Route::get('bridging-the-gap/action-plan-sample', [BridgingTheGapController::class, 'actionPlanSample'])->name('bridging-the-gap.action-plan-sample');
     Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
     Route::post('bridging-the-gap/{id}/action-plan', [BridgingTheGapController::class, 'uploadActionPlan'])->name('bridging-the-gap.upload-action-plan');
     Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'destroy']);

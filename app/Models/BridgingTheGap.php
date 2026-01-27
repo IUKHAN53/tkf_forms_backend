@@ -64,4 +64,12 @@ class BridgingTheGap extends Model
     {
         return $this->hasMany(BridgingTheGapTeamMember::class);
     }
+
+    /**
+     * Action Plans uploaded from Excel
+     */
+    public function actionPlans(): HasMany
+    {
+        return $this->hasMany(BridgingTheGapActionPlan::class);
+    }
 }

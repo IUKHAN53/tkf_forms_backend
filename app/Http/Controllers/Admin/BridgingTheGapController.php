@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BridgingTheGap;
+use App\Models\BridgingTheGapActionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class BridgingTheGapController extends Controller
 {
@@ -56,7 +60,7 @@ class BridgingTheGapController extends Controller
         // Calculate statistics
         $stats = [
             'total' => BridgingTheGap::count(),
-            'total_action_plans' => 0, // TODO: Implement action plans count
+            'total_action_plans' => BridgingTheGapActionPlan::count(),
             'total_attendance' => BridgingTheGap::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
             'total_males' => BridgingTheGap::sum('participants_males') ?? 0,
             'total_females' => BridgingTheGap::sum('participants_females') ?? 0,
@@ -228,7 +232,121 @@ class BridgingTheGapController extends Controller
             'action_plan_file' => $path,
         ]);
 
+        // Parse the Excel file and extract action plans
+        try {
+            $importResult = $this->parseAndStoreActionPlans($record, $file->getRealPath());
+            $message = "Action plan uploaded successfully for record {$record->unique_id}. ";
+            $message .= "Imported {$importResult['imported']} action items.";
+            if ($importResult['skipped'] > 0) {
+                $message .= " Skipped {$importResult['skipped']} empty rows.";
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.bridging-the-gap.index')
+                ->with('error', "File uploaded but failed to parse action plans: " . $e->getMessage());
+        }
+
         return redirect()->route('admin.bridging-the-gap.index')
-            ->with('success', "Action plan uploaded successfully for record {$record->unique_id}.");
+            ->with('success', $message);
+    }
+
+    /**
+     * Parse Excel file and store action plans
+     */
+    private function parseAndStoreActionPlans(BridgingTheGap $record, string $filePath): array
+    {
+        $spreadsheet = IOFactory::load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray();
+
+        // Delete existing action plans for this record before importing new ones
+        BridgingTheGapActionPlan::where('bridging_the_gap_id', $record->id)->delete();
+
+        $imported = 0;
+        $skipped = 0;
+        $serialNumber = 1;
+
+        // Skip header row (index 0), process data rows
+        foreach ($rows as $index => $row) {
+            if ($index === 0) continue; // Skip header
+
+            // Expected format: Problem | Solution | Action Needed | Who is Responsible | Timeline
+            $problem = trim($row[0] ?? '');
+            $solution = trim($row[1] ?? '');
+            $actionNeeded = trim($row[2] ?? '');
+            $whoIsResponsible = trim($row[3] ?? '');
+            $timeline = trim($row[4] ?? '');
+
+            // Skip empty problem rows (problem is required)
+            if (empty($problem)) {
+                $skipped++;
+                continue;
+            }
+
+            // Create the action plan record
+            BridgingTheGapActionPlan::create([
+                'bridging_the_gap_id' => $record->id,
+                'problem' => $problem,
+                'solution' => $solution ?: null,
+                'action_needed' => $actionNeeded ?: null,
+                'who_is_responsible' => $whoIsResponsible ?: null,
+                'timeline' => $timeline ?: null,
+                'serial_number' => $serialNumber++,
+            ]);
+
+            $imported++;
+        }
+
+        return [
+            'imported' => $imported,
+            'skipped' => $skipped,
+        ];
+    }
+
+    /**
+     * Download sample action plan Excel template
+     */
+    public function actionPlanSample()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $headers = ['Problem', 'Solution', 'Action Needed', 'Who is Responsible', 'Timeline'];
+        $sheet->fromArray($headers, null, 'A1');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ];
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+
+        // Add sample data
+        $sampleData = [
+            ['Low vaccination coverage in remote areas', 'Deploy mobile vaccination teams', 'Schedule weekly visits to remote villages', 'District Health Officer', '2 weeks'],
+            ['Vaccine hesitancy among parents', 'Community awareness sessions', 'Conduct awareness campaigns with religious leaders', 'Community Health Workers', '1 month'],
+            ['Cold chain maintenance issues', 'Upgrade refrigeration equipment', 'Procure new vaccine refrigerators', 'Logistics Manager', '3 weeks'],
+        ];
+        $sheet->fromArray($sampleData, null, 'A2');
+
+        // Auto-size columns
+        foreach (range('A', 'E') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Set sheet title
+        $sheet->setTitle('Action Plan Template');
+
+        // Create the response
+        $writer = new Xlsx($spreadsheet);
+
+        $filename = 'action_plan_sample_template.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }

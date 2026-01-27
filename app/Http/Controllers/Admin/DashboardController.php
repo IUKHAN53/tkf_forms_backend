@@ -17,6 +17,48 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    /**
+     * UC consolidation mapping - maps raw UC names to consolidated display names
+     */
+    private const UC_CONSOLIDATION = [
+        'Muslimabad' => ['Muslimabad'],
+        'Muzafrabad' => ['Muzafrabad'],
+        'Gujro' => ['Gujro A', 'Gujro B', 'Gujro C', 'Gujro E', 'Gujro Zone D', 'Zone D'],
+        'Songal' => ['05 Songal', 'Songal i1', 'Songal i2'],
+        'Ittehad Town-2' => ['Ittehad Town-2'],
+        'Islamia Colony-09' => ['Islamia colony-09', 'Islamia Colony-09'],
+        'Chishti Nagar-7' => ['Chishti Nagar-7', 'Chishti Nagar 7', 'Chisti Nagar-7', 'Chisti Nagar 7'],
+        'UC 8 Manghopir' => ['Uc 8 Manghopir', 'UC 8 Manghopir'],
+        'Zone E' => ['Zone E'],
+    ];
+
+    /**
+     * Get the consolidated UC name for a raw UC name
+     */
+    public static function getConsolidatedUcName(?string $rawUc): ?string
+    {
+        if (!$rawUc) return null;
+
+        foreach (self::UC_CONSOLIDATION as $consolidated => $variants) {
+            foreach ($variants as $variant) {
+                if (strcasecmp($rawUc, $variant) === 0) {
+                    return $consolidated;
+                }
+            }
+        }
+
+        // Return original if no mapping found
+        return $rawUc;
+    }
+
+    /**
+     * Get all raw UC names that belong to a consolidated UC
+     */
+    public static function getUcVariants(string $consolidatedUc): array
+    {
+        return self::UC_CONSOLIDATION[$consolidatedUc] ?? [$consolidatedUc];
+    }
+
     public function index()
     {
         // Core Forms Statistics
@@ -27,8 +69,8 @@ class DashboardController extends Controller
             'bridging_the_gap' => BridgingTheGap::count(),
         ];
 
-        // UC-wise submissions (stacked by form type)
-        $ucWiseSubmissions = $this->getUcWiseSubmissions();
+        // Get consolidated UC stats for dashboard cards
+        $ucStats = $this->getConsolidatedUcStats();
 
         // District-wise distribution
         $districtDistribution = $this->getDistrictDistribution();
@@ -42,12 +84,81 @@ class DashboardController extends Controller
             'total_submissions' => FormSubmission::count(),
             'recent_submissions' => FormSubmission::with('form', 'user')->latest()->take(10)->get(),
             'core_forms' => $coreFormsStats,
-            'uc_wise_submissions' => $ucWiseSubmissions,
+            'uc_stats' => $ucStats,
             'district_distribution' => $districtDistribution,
             'recent_activity' => $recentActivity,
         ];
 
         return view('admin.dashboard', compact('stats'));
+    }
+
+    /**
+     * Get consolidated UC statistics for dashboard cards
+     */
+    private function getConsolidatedUcStats(): array
+    {
+        $stats = [];
+
+        foreach (self::UC_CONSOLIDATION as $consolidatedName => $variants) {
+            $ucStats = [
+                'name' => $consolidatedName,
+                'slug' => \Illuminate\Support\Str::slug($consolidatedName),
+                'child_line_lists' => 0,
+                'fgds_community' => 0,
+                'fgds_health_workers' => 0,
+                'bridging_the_gap' => 0,
+                'total' => 0,
+            ];
+
+            // Count Child Line Lists
+            $ucStats['child_line_lists'] = ChildLineList::whereIn('uc', $variants)
+                ->orWhere(function ($q) use ($variants) {
+                    foreach ($variants as $variant) {
+                        $q->orWhere('uc', 'LIKE', $variant);
+                    }
+                })
+                ->count();
+
+            // Count FGDs Community
+            $ucStats['fgds_community'] = FgdsCommunity::whereIn('uc', $variants)
+                ->orWhere(function ($q) use ($variants) {
+                    foreach ($variants as $variant) {
+                        $q->orWhere('uc', 'LIKE', $variant);
+                    }
+                })
+                ->count();
+
+            // Count FGDs Health Workers
+            $ucStats['fgds_health_workers'] = FgdsHealthWorkers::whereIn('uc', $variants)
+                ->orWhere(function ($q) use ($variants) {
+                    foreach ($variants as $variant) {
+                        $q->orWhere('uc', 'LIKE', $variant);
+                    }
+                })
+                ->count();
+
+            // Count Bridging The Gap
+            $ucStats['bridging_the_gap'] = BridgingTheGap::whereIn('uc', $variants)
+                ->orWhere(function ($q) use ($variants) {
+                    foreach ($variants as $variant) {
+                        $q->orWhere('uc', 'LIKE', $variant);
+                    }
+                })
+                ->count();
+
+            // Calculate total
+            $ucStats['total'] = $ucStats['child_line_lists'] + $ucStats['fgds_community'] +
+                               $ucStats['fgds_health_workers'] + $ucStats['bridging_the_gap'];
+
+            $stats[] = $ucStats;
+        }
+
+        // Sort by total submissions descending
+        usort($stats, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+
+        return $stats;
     }
 
     /**
