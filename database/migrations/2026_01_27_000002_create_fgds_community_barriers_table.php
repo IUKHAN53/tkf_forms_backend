@@ -16,8 +16,8 @@ return new class extends Migration
             $table->integer('serial_number')->nullable(); // Sr. No from import
             $table->timestamps();
 
-            // Index for faster lookups
-            $table->index(['fgds_community_id', 'barrier_category_id']);
+            // Index for faster lookups (custom short name to avoid MySQL 64-char limit)
+            $table->index(['fgds_community_id', 'barrier_category_id'], 'fgds_barriers_community_category_idx');
         });
     }
 
