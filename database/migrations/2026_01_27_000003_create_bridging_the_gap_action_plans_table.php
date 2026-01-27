@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('bridging_the_gap_action_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('bridging_the_gap_id')->constrained('bridging_the_gap')->cascadeOnDelete();
+            $table->foreignId('bridging_the_gap_id')->constrained('bridging_the_gaps')->cascadeOnDelete();
             $table->text('problem');
             $table->text('solution')->nullable();
             $table->text('action_needed')->nullable();
