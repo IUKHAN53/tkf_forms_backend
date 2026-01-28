@@ -50,7 +50,6 @@
     </div>
 
     <!-- Interactive Map -->
-    @if(count($mapData) > 0)
     <div class="map-card">
         <div class="map-card-header">
             <div class="map-header-left">
@@ -82,6 +81,16 @@
         </div>
         <div class="map-wrapper">
             <div id="ucMap"></div>
+            @if(count($mapData) === 0)
+            <div class="map-empty-overlay">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <p>No location data available yet</p>
+                <span>GPS coordinates will appear here once forms with location data are submitted</span>
+            </div>
+            @endif
             <div class="map-legend">
                 <div class="legend-title">Form Types</div>
                 <div class="legend-items">
@@ -92,7 +101,6 @@
             </div>
         </div>
     </div>
-    @endif
 
     <!-- Filters Section -->
     <div class="filters-section">
@@ -451,6 +459,38 @@
     height: 10px;
     border-radius: 50%;
     display: inline-block;
+}
+
+.map-empty-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 500;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 24px 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.map-empty-overlay svg {
+    width: 48px;
+    height: 48px;
+    color: var(--gray-400);
+    margin-bottom: 12px;
+}
+
+.map-empty-overlay p {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 0 0 4px 0;
+}
+
+.map-empty-overlay span {
+    font-size: 13px;
+    color: var(--gray-500);
 }
 
 /* Filters Section */
@@ -820,8 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab buttons
     const tabBtns = document.querySelectorAll('.tab-btn');
 
-    // Map initialization
-    @if(count($mapData) > 0)
+    // Map initialization - always show map
     const mapData = @json($mapData);
     const map = L.map('ucMap').setView([24.8607, 67.0011], 11);
 
@@ -844,30 +883,32 @@ document.addEventListener('DOMContentLoaded', function() {
         bridging_the_gap: '#ec4899'
     };
 
-    // Create markers
-    mapData.forEach(loc => {
-        const color = markerColors[loc.type] || '#6366f1';
-        const icon = L.divIcon({
-            className: 'custom-marker',
-            html: `<div style="width:12px;height:12px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
-            iconSize: [12, 12],
-            iconAnchor: [6, 6]
+    // Create markers if we have data
+    if (mapData.length > 0) {
+        mapData.forEach(loc => {
+            const color = markerColors[loc.type] || '#6366f1';
+            const icon = L.divIcon({
+                className: 'custom-marker',
+                html: `<div style="width:12px;height:12px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+
+            const marker = L.marker([loc.lat, loc.lon], { icon: icon });
+            marker.bindPopup(loc.popup);
+            marker.ucVariant = loc.uc;
+            layers[loc.type].addLayer(marker);
         });
 
-        const marker = L.marker([loc.lat, loc.lon], { icon: icon });
-        marker.bindPopup(loc.popup);
-        marker.ucVariant = loc.uc;
-        layers[loc.type].addLayer(marker);
-    });
+        // Add all layers to map
+        Object.values(layers).forEach(layer => layer.addTo(map));
 
-    // Add all layers to map
-    Object.values(layers).forEach(layer => layer.addTo(map));
-
-    // Fit bounds
-    const allMarkers = [];
-    mapData.forEach(loc => allMarkers.push([loc.lat, loc.lon]));
-    if (allMarkers.length > 0) {
-        map.fitBounds(allMarkers, { padding: [30, 30] });
+        // Fit bounds
+        const allMarkers = [];
+        mapData.forEach(loc => allMarkers.push([loc.lat, loc.lon]));
+        if (allMarkers.length > 0) {
+            map.fitBounds(allMarkers, { padding: [30, 30] });
+        }
     }
 
     // Toggle layer buttons
@@ -896,7 +937,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    @endif
 
     // Tab click handler
     tabBtns.forEach(btn => {
@@ -912,9 +952,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (subsetUcSelect) {
         subsetUcSelect.addEventListener('change', function() {
             subsetUc = this.value;
-            @if(count($mapData) > 0)
-            filterMapBySubset(subsetUc);
-            @endif
+            if (mapData.length > 0) {
+                filterMapBySubset(subsetUc);
+            }
             loadData();
         });
     }

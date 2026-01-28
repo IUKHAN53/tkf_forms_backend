@@ -134,6 +134,8 @@ class FgdsCommunityController extends Controller
             'facilitator_govt' => 'nullable|string|max:255',
             'participants_males' => 'required|integer|min:0',
             'participants_females' => 'required|integer|min:0',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ]);
 
         $fgdsCommunity->update($validated);

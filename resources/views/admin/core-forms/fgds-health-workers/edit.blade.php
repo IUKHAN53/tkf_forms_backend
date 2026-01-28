@@ -106,6 +106,24 @@
                     <span class="error-message">{{ $message }}</span>
                 @enderror
             </div>
+
+            <div class="form-group">
+                <label for="latitude">Latitude</label>
+                <input type="text" id="latitude" name="latitude" class="form-input @error('latitude') is-invalid @enderror"
+                       value="{{ old('latitude', $fgdsHealthWorker->latitude) }}" placeholder="e.g., 24.8607">
+                @error('latitude')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="longitude">Longitude</label>
+                <input type="text" id="longitude" name="longitude" class="form-input @error('longitude') is-invalid @enderror"
+                       value="{{ old('longitude', $fgdsHealthWorker->longitude) }}" placeholder="e.g., 67.0011">
+                @error('longitude')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
         </div>
 
         <div class="form-actions">
