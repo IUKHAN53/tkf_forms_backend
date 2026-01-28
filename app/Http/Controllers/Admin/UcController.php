@@ -34,12 +34,78 @@ class UcController extends Controller
         // Get overall stats for the UC
         $stats = $this->getUcOverallStats($variants);
 
+        // Get map data for all form types in this UC
+        $mapData = $this->getMapData($variants);
+
+        // Check if UC has multiple subsets (for the filter dropdown)
+        $hasSubsets = count($variants) > 1;
+
         return view('admin.uc.show', [
             'ucName' => $ucName,
             'ucSlug' => $slug,
             'stats' => $stats,
             'variants' => $variants,
+            'mapData' => $mapData,
+            'hasSubsets' => $hasSubsets,
         ]);
+    }
+
+    /**
+     * Get map data for all form types in a UC
+     */
+    private function getMapData(array $variants): array
+    {
+        $mapData = [];
+
+        // FGDs Community data
+        $fgdsCommunity = FgdsCommunity::whereIn('uc', $variants)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        foreach ($fgdsCommunity as $item) {
+            $mapData[] = [
+                'lat' => (float) $item->latitude,
+                'lon' => (float) $item->longitude,
+                'type' => 'fgds_community',
+                'uc' => $item->uc,
+                'popup' => "<strong>FGDs-Community</strong><br>Venue: {$item->venue}<br>Date: " . ($item->date ? $item->date->format('M d, Y') : 'N/A') . "<br>UC: {$item->uc}",
+            ];
+        }
+
+        // FGDs Health Workers data
+        $fgdsHealthWorkers = FgdsHealthWorkers::whereIn('uc', $variants)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        foreach ($fgdsHealthWorkers as $item) {
+            $mapData[] = [
+                'lat' => (float) $item->latitude,
+                'lon' => (float) $item->longitude,
+                'type' => 'fgds_health_workers',
+                'uc' => $item->uc,
+                'popup' => "<strong>FGDs-Health Workers</strong><br>HFS: {$item->hfs}<br>Date: " . ($item->date ? $item->date->format('M d, Y') : 'N/A') . "<br>UC: {$item->uc}",
+            ];
+        }
+
+        // Bridging The Gap data
+        $bridgingTheGap = BridgingTheGap::whereIn('uc', $variants)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        foreach ($bridgingTheGap as $item) {
+            $mapData[] = [
+                'lat' => (float) $item->latitude,
+                'lon' => (float) $item->longitude,
+                'type' => 'bridging_the_gap',
+                'uc' => $item->uc,
+                'popup' => "<strong>Bridging The Gap</strong><br>Venue: {$item->venue}<br>Date: " . ($item->date ? $item->date->format('M d, Y') : 'N/A') . "<br>UC: {$item->uc}",
+            ];
+        }
+
+        return $mapData;
     }
 
     /**
@@ -53,10 +119,17 @@ class UcController extends Controller
             return response()->json(['error' => 'UC not found'], 404);
         }
 
-        $variants = DashboardController::getUcVariants($ucName);
+        $allVariants = DashboardController::getUcVariants($ucName);
         $tab = $request->get('tab', 'fgds_community');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
+        $subsetUc = $request->get('subset_uc'); // For filtering by specific subset
+
+        // If subset is specified and valid, use only that variant
+        $variants = $allVariants;
+        if ($subsetUc && $subsetUc !== 'all' && in_array($subsetUc, $allVariants)) {
+            $variants = [$subsetUc];
+        }
 
         // Parse dates
         if ($startDate) {
@@ -99,6 +172,7 @@ class UcController extends Controller
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'tab' => $tab,
+                'subset_uc' => $subsetUc,
             ],
         ]);
     }
@@ -117,7 +191,6 @@ class UcController extends Controller
             'islamia-colony-09' => 'Islamia Colony-09',
             'chishti-nagar-7' => 'Chishti Nagar-7',
             'uc-8-manghopir' => 'UC 8 Manghopir',
-            'zone-e' => 'Zone E',
         ];
 
         return $ucMapping[$slug] ?? null;

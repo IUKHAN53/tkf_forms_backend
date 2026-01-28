@@ -47,14 +47,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('fgds-community/barriers-sample', [FgdsCommunityController::class, 'barriersSample'])->name('fgds-community.barriers-sample');
     Route::post('fgds-community/import', [FgdsCommunityController::class, 'import'])->name('fgds-community.import');
     Route::post('fgds-community/{id}/barriers', [FgdsCommunityController::class, 'uploadBarriers'])->name('fgds-community.upload-barriers');
-    Route::resource('fgds-community', FgdsCommunityController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('fgds-community', FgdsCommunityController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Core Forms - FGDs-Health Workers
     Route::get('fgds-health-workers/export', [FgdsHealthWorkersController::class, 'export'])->name('fgds-health-workers.export');
     Route::get('fgds-health-workers/template', [FgdsHealthWorkersController::class, 'template'])->name('fgds-health-workers.template');
     Route::post('fgds-health-workers/import', [FgdsHealthWorkersController::class, 'import'])->name('fgds-health-workers.import');
     Route::post('fgds-health-workers/{id}/barriers', [FgdsHealthWorkersController::class, 'uploadBarriers'])->name('fgds-health-workers.upload-barriers');
-    Route::resource('fgds-health-workers', FgdsHealthWorkersController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('fgds-health-workers', FgdsHealthWorkersController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Core Forms - Bridging The Gap
     Route::get('bridging-the-gap/export', [BridgingTheGapController::class, 'export'])->name('bridging-the-gap.export');
@@ -62,7 +62,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('bridging-the-gap/action-plan-sample', [BridgingTheGapController::class, 'actionPlanSample'])->name('bridging-the-gap.action-plan-sample');
     Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
     Route::post('bridging-the-gap/{id}/action-plan', [BridgingTheGapController::class, 'uploadActionPlan'])->name('bridging-the-gap.upload-action-plan');
-    Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Outreach Sites Management
     Route::get('outreach-sites/export', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'export'])->name('outreach-sites.export');

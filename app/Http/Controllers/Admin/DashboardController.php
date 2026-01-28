@@ -23,13 +23,12 @@ class DashboardController extends Controller
     private const UC_CONSOLIDATION = [
         'Muslimabad' => ['Muslimabad'],
         'Muzafrabad' => ['Muzafrabad'],
-        'Gujro' => ['Gujro A', 'Gujro B', 'Gujro C', 'Gujro E', 'Gujro Zone D', 'Zone D'],
+        'Gujro' => ['Gujro A', 'Gujro B', 'Gujro C', 'Gujro E', 'Gujro Zone D', 'Zone D', 'Zone E'],
         'Songal' => ['05 Songal', 'Songal i1', 'Songal i2'],
         'Ittehad Town-2' => ['Ittehad Town-2'],
         'Islamia Colony-09' => ['Islamia colony-09', 'Islamia Colony-09'],
         'Chishti Nagar-7' => ['Chishti Nagar-7', 'Chishti Nagar 7', 'Chisti Nagar-7', 'Chisti Nagar 7'],
         'UC 8 Manghopir' => ['Uc 8 Manghopir', 'UC 8 Manghopir'],
-        'Zone E' => ['Zone E'],
     ];
 
     /**

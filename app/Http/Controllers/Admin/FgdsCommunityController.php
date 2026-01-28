@@ -116,6 +116,32 @@ class FgdsCommunityController extends Controller
         return view('admin.core-forms.fgds-community.show', compact('fgdsCommunity'));
     }
 
+    public function edit(FgdsCommunity $fgdsCommunity)
+    {
+        $fgdsCommunity->load('participants');
+        return view('admin.core-forms.fgds-community.edit', compact('fgdsCommunity'));
+    }
+
+    public function update(Request $request, FgdsCommunity $fgdsCommunity)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'district' => 'required|string|max:255',
+            'uc' => 'required|string|max:255',
+            'fix_site' => 'nullable|string|max:255',
+            'venue' => 'required|string|max:255',
+            'facilitator_tkf' => 'nullable|string|max:255',
+            'facilitator_govt' => 'nullable|string|max:255',
+            'participants_males' => 'required|integer|min:0',
+            'participants_females' => 'required|integer|min:0',
+        ]);
+
+        $fgdsCommunity->update($validated);
+
+        return redirect()->route('admin.fgds-community.show', $fgdsCommunity)
+            ->with('success', 'FGDs-Community session updated successfully.');
+    }
+
     public function destroy(FgdsCommunity $fgdsCommunity)
     {
         // Get participant IDs before deleting

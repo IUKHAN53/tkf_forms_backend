@@ -94,6 +94,30 @@ class BridgingTheGapController extends Controller
         return view('admin.core-forms.bridging-the-gap.show', compact('bridgingTheGap'));
     }
 
+    public function edit(BridgingTheGap $bridgingTheGap)
+    {
+        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user']);
+        return view('admin.core-forms.bridging-the-gap.edit', compact('bridgingTheGap'));
+    }
+
+    public function update(Request $request, BridgingTheGap $bridgingTheGap)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'district' => 'required|string|max:255',
+            'uc' => 'required|string|max:255',
+            'fix_site' => 'nullable|string|max:255',
+            'venue' => 'required|string|max:255',
+            'participants_males' => 'required|integer|min:0',
+            'participants_females' => 'required|integer|min:0',
+        ]);
+
+        $bridgingTheGap->update($validated);
+
+        return redirect()->route('admin.bridging-the-gap.show', $bridgingTheGap)
+            ->with('success', 'Bridging The Gap record updated successfully.');
+    }
+
     public function destroy(BridgingTheGap $bridgingTheGap)
     {
         // Delete team members first (references to external participants)

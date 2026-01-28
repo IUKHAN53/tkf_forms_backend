@@ -49,9 +49,65 @@
         </div>
     </div>
 
-    <!-- Date Filters -->
+    <!-- Interactive Map -->
+    @if(count($mapData) > 0)
+    <div class="map-card">
+        <div class="map-card-header">
+            <div class="map-header-left">
+                <div class="map-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                </div>
+                <div class="map-header-text">
+                    <h3>Geographic Distribution</h3>
+                    <span class="map-count">{{ count($mapData) }} locations</span>
+                </div>
+            </div>
+            <div class="map-header-actions">
+                <button type="button" class="map-btn active" id="toggleCommunity" data-type="fgds_community">
+                    <span class="marker-dot" style="background: #22c55e;"></span>
+                    <span>FGDs Community</span>
+                </button>
+                <button type="button" class="map-btn active" id="toggleHealth" data-type="fgds_health_workers">
+                    <span class="marker-dot" style="background: #f59e0b;"></span>
+                    <span>FGDs Health</span>
+                </button>
+                <button type="button" class="map-btn active" id="toggleBridging" data-type="bridging_the_gap">
+                    <span class="marker-dot" style="background: #ec4899;"></span>
+                    <span>Bridging Gap</span>
+                </button>
+            </div>
+        </div>
+        <div class="map-wrapper">
+            <div id="ucMap"></div>
+            <div class="map-legend">
+                <div class="legend-title">Form Types</div>
+                <div class="legend-items">
+                    <div class="legend-item"><span class="legend-dot" style="background: #22c55e;"></span> FGDs Community</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #f59e0b;"></span> FGDs Health Workers</div>
+                    <div class="legend-item"><span class="legend-dot" style="background: #ec4899;"></span> Bridging The Gap</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Filters Section -->
     <div class="filters-section">
         <div class="filters-row">
+            @if($hasSubsets)
+            <div class="filter-group">
+                <label>UC Subset:</label>
+                <select id="subsetUc" class="form-input">
+                    <option value="all" selected>All ({{ count($variants) }} areas)</option>
+                    @foreach($variants as $variant)
+                    <option value="{{ $variant }}">{{ $variant }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
             <div class="filter-group">
                 <label>Date Range:</label>
                 <select id="datePreset" class="form-input">
@@ -250,6 +306,151 @@
     font-size: 13px;
     color: var(--gray-500);
     margin-top: 4px;
+}
+
+/* Map Card */
+.map-card {
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--gray-100);
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.map-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.map-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-icon svg {
+    width: 18px;
+    height: 18px;
+    color: white;
+}
+
+.map-header-text h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin: 0;
+}
+
+.map-count {
+    font-size: 12px;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: 8px;
+}
+
+.map-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.map-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+    background: white;
+    color: var(--gray-500);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.map-btn:hover {
+    background: var(--gray-50);
+}
+
+.map-btn.active {
+    background: var(--gray-800);
+    border-color: var(--gray-800);
+    color: white;
+}
+
+.marker-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.map-wrapper {
+    position: relative;
+}
+
+#ucMap {
+    height: 350px;
+    width: 100%;
+    background: var(--gray-100);
+}
+
+.map-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    background: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    z-index: 500;
+}
+
+.legend-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray-600);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 /* Filters Section */
@@ -512,6 +713,11 @@
 .badge-warning { background: #fef3c7; color: #92400e; }
 .badge-primary { background: #ede9fe; color: #5b21b6; }
 
+.action-links {
+    display: flex;
+    gap: 12px;
+}
+
 .action-link {
     color: var(--primary-600);
     text-decoration: none;
@@ -521,6 +727,14 @@
 
 .action-link:hover {
     text-decoration: underline;
+}
+
+.action-link.edit-link {
+    color: var(--gray-600);
+}
+
+.action-link.edit-link:hover {
+    color: var(--gray-800);
 }
 
 .empty-state {
@@ -570,6 +784,14 @@
     .tab-stats {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    .map-header-actions {
+        width: 100%;
+    }
+
+    .map-btn span:not(.marker-dot) {
+        display: none;
+    }
 }
 </style>
 
@@ -579,12 +801,14 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentTab = 'fgds_community';
     let startDate = null;
     let endDate = null;
+    let subsetUc = 'all';
 
     // Elements
     const datePreset = document.getElementById('datePreset');
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     const applyBtn = document.getElementById('applyFilters');
+    const subsetUcSelect = document.getElementById('subsetUc');
     const customDateElements = document.querySelectorAll('.custom-date-range');
     const loadingState = document.getElementById('loadingState');
     const tabStats = document.getElementById('tabStats');
@@ -596,6 +820,84 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab buttons
     const tabBtns = document.querySelectorAll('.tab-btn');
 
+    // Map initialization
+    @if(count($mapData) > 0)
+    const mapData = @json($mapData);
+    const map = L.map('ucMap').setView([24.8607, 67.0011], 11);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Marker layers by type
+    const layers = {
+        fgds_community: L.layerGroup(),
+        fgds_health_workers: L.layerGroup(),
+        bridging_the_gap: L.layerGroup()
+    };
+
+    const markerColors = {
+        fgds_community: '#22c55e',
+        fgds_health_workers: '#f59e0b',
+        bridging_the_gap: '#ec4899'
+    };
+
+    // Create markers
+    mapData.forEach(loc => {
+        const color = markerColors[loc.type] || '#6366f1';
+        const icon = L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="width:12px;height:12px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+            iconSize: [12, 12],
+            iconAnchor: [6, 6]
+        });
+
+        const marker = L.marker([loc.lat, loc.lon], { icon: icon });
+        marker.bindPopup(loc.popup);
+        marker.ucVariant = loc.uc;
+        layers[loc.type].addLayer(marker);
+    });
+
+    // Add all layers to map
+    Object.values(layers).forEach(layer => layer.addTo(map));
+
+    // Fit bounds
+    const allMarkers = [];
+    mapData.forEach(loc => allMarkers.push([loc.lat, loc.lon]));
+    if (allMarkers.length > 0) {
+        map.fitBounds(allMarkers, { padding: [30, 30] });
+    }
+
+    // Toggle layer buttons
+    document.querySelectorAll('.map-btn[data-type]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const type = this.dataset.type;
+            if (this.classList.contains('active')) {
+                map.removeLayer(layers[type]);
+                this.classList.remove('active');
+            } else {
+                layers[type].addTo(map);
+                this.classList.add('active');
+            }
+        });
+    });
+
+    // Filter markers by subset UC
+    function filterMapBySubset(selectedUc) {
+        Object.entries(layers).forEach(([type, layer]) => {
+            layer.eachLayer(marker => {
+                if (selectedUc === 'all' || marker.ucVariant === selectedUc) {
+                    marker.setOpacity(1);
+                } else {
+                    marker.setOpacity(0.2);
+                }
+            });
+        });
+    }
+    @endif
+
     // Tab click handler
     tabBtns.forEach(btn => {
         btn.addEventListener('click', function() {
@@ -605,6 +907,17 @@ document.addEventListener('DOMContentLoaded', function() {
             loadData();
         });
     });
+
+    // Subset UC change
+    if (subsetUcSelect) {
+        subsetUcSelect.addEventListener('change', function() {
+            subsetUc = this.value;
+            @if(count($mapData) > 0)
+            filterMapBySubset(subsetUc);
+            @endif
+            loadData();
+        });
+    }
 
     // Date preset change
     datePreset.addEventListener('change', function() {
@@ -681,6 +994,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams({ tab: currentTab });
         if (startDate) params.append('start_date', startDate);
         if (endDate) params.append('end_date', endDate);
+        if (subsetUc && subsetUc !== 'all') params.append('subset_uc', subsetUc);
 
         try {
             const response = await fetch(`{{ route('admin.uc.data', $ucSlug) }}?${params.toString()}`);
@@ -768,7 +1082,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 bodyHtml += `<td>${value}</td>`;
             });
-            bodyHtml += `<td><a href="${getViewUrl(record.id)}" class="action-link">View</a></td>`;
+            bodyHtml += `<td class="action-links">
+                <a href="${getViewUrl(record.id)}" class="action-link">View</a>
+                <a href="${getEditUrl(record.id)}" class="action-link edit-link">Edit</a>
+            </td>`;
             bodyHtml += '</tr>';
         });
 
@@ -783,10 +1100,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'unique_id', label: 'Form ID' },
                     { key: 'date', label: 'Date' },
                     { key: 'venue', label: 'Venue' },
-                    { key: 'district', label: 'District' },
+                    { key: 'uc', label: 'UC' },
                     { key: 'total_participants', label: 'Participants' },
                     { key: 'barriers_count', label: 'Barriers' },
-                    { key: 'facilitator', label: 'Facilitator' },
                     { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }
                 ];
@@ -795,8 +1111,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'unique_id', label: 'Form ID' },
                     { key: 'date', label: 'Date' },
                     { key: 'hfs', label: 'Health Facility' },
+                    { key: 'uc', label: 'UC' },
                     { key: 'total_participants', label: 'Participants' },
-                    { key: 'facilitator', label: 'Facilitator' },
                     { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }
                 ];
@@ -805,11 +1121,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'unique_id', label: 'Form ID' },
                     { key: 'date', label: 'Date' },
                     { key: 'venue', label: 'Venue' },
-                    { key: 'district', label: 'District' },
+                    { key: 'uc', label: 'UC' },
                     { key: 'total_participants', label: 'Attendance' },
                     { key: 'iit_members_count', label: 'IIT Members' },
                     { key: 'action_plans_count', label: 'Action Plans' },
-                    { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }
                 ];
             case 'child_line_list':
@@ -820,8 +1135,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'gender', label: 'Gender' },
                     { key: 'age_in_months', label: 'Age (months)' },
                     { key: 'type', label: 'Type' },
-                    { key: 'district', label: 'District' },
-                    { key: 'submitted_by', label: 'Submitted By' },
+                    { key: 'uc', label: 'UC' },
                     { key: 'created_at', label: 'Created' }
                 ];
             default:
@@ -856,6 +1170,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 return `{{ url('admin/bridging-the-gap') }}/${id}`;
             case 'child_line_list':
                 return `{{ url('admin/child-line-list') }}/${id}`;
+            default:
+                return '#';
+        }
+    }
+
+    // Get edit URL based on tab
+    function getEditUrl(id) {
+        switch (currentTab) {
+            case 'fgds_community':
+                return `{{ url('admin/fgds-community') }}/${id}/edit`;
+            case 'fgds_health_workers':
+                return `{{ url('admin/fgds-health-workers') }}/${id}/edit`;
+            case 'bridging_the_gap':
+                return `{{ url('admin/bridging-the-gap') }}/${id}/edit`;
+            case 'child_line_list':
+                return `{{ url('admin/child-line-list') }}/${id}/edit`;
             default:
                 return '#';
         }

@@ -89,6 +89,32 @@ class FgdsHealthWorkersController extends Controller
         return view('admin.core-forms.fgds-health-workers.show', compact('fgdsHealthWorker'));
     }
 
+    public function edit(FgdsHealthWorkers $fgdsHealthWorker)
+    {
+        $fgdsHealthWorker->load('participants');
+        return view('admin.core-forms.fgds-health-workers.edit', compact('fgdsHealthWorker'));
+    }
+
+    public function update(Request $request, FgdsHealthWorkers $fgdsHealthWorker)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+            'district' => 'required|string|max:255',
+            'uc' => 'required|string|max:255',
+            'hfs' => 'required|string|max:255',
+            'group_type' => 'nullable|string|max:255',
+            'facilitator_tkf' => 'nullable|string|max:255',
+            'facilitator_govt' => 'nullable|string|max:255',
+            'participants_males' => 'required|integer|min:0',
+            'participants_females' => 'required|integer|min:0',
+        ]);
+
+        $fgdsHealthWorker->update($validated);
+
+        return redirect()->route('admin.fgds-health-workers.show', $fgdsHealthWorker)
+            ->with('success', 'FGDs-Health Workers session updated successfully.');
+    }
+
     public function destroy(FgdsHealthWorkers $fgdsHealthWorker)
     {
         // Get participant IDs before deleting
