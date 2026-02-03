@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\ChildLineListController;
 use App\Http\Controllers\Admin\UcController;
+use App\Http\Controllers\Admin\DebugController;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -69,4 +70,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('outreach-sites/template', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'template'])->name('outreach-sites.template');
     Route::post('outreach-sites/import', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'import'])->name('outreach-sites.import');
     Route::resource('outreach-sites', \App\Http\Controllers\Admin\OutreachSiteController::class);
+});
+
+Route::middleware(['auth', 'activity.log'])->group(function () {
+    Route::get('/debug', [DebugController::class, 'index'])->name('debug.index');
+    Route::post('/debug', [DebugController::class, 'store'])->name('debug.store');
 });

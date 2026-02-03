@@ -176,6 +176,8 @@ body {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--gray-300) transparent;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-nav::-webkit-scrollbar {
@@ -954,6 +956,23 @@ body {
                                     <line x1="12" y1="19" x2="20" y2="19"/>
                                 </svg>
                                 <span>Activity Logs</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Support Section -->
+                <div class="nav-section" style="margin-top: auto;">
+                    <div class="nav-section-title">Support</div>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="{{ route('debug.index') }}" class="nav-link {{ request()->routeIs('debug.*') ? 'active' : '' }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <path d="M12 16v-4"/>
+                                    <path d="M12 8h.01"/>
+                                </svg>
+                                <span>Debug Report</span>
                             </a>
                         </li>
                     </ul>
