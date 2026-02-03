@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Login - {{ config('app.name') }}</title>
     <style>
         * {
@@ -212,6 +213,12 @@
             </div>
         @endif
 
+        @if (session('session_expired'))
+            <div class="alert alert-danger">
+                Your session has expired. Please try again.
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
@@ -261,5 +268,90 @@
             <p>Powered by <strong>EPI & Tameer-e-Khalaq Foundation</strong></p>
         </div>
     </div>
+
+    <script>
+        // Refresh CSRF token every 10 minutes to prevent expiration
+        const CSRF_REFRESH_INTERVAL = 10 * 60 * 1000; // 10 minutes
+
+        async function refreshCsrfToken() {
+            try {
+                const response = await fetch('{{ url("/sanctum/csrf-cookie") }}', {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    // Get the new token from the cookie and update the form
+                    const cookies = document.cookie.split(';');
+                    for (let cookie of cookies) {
+                        const [name, value] = cookie.trim().split('=');
+                        if (name === 'XSRF-TOKEN') {
+                            const token = decodeURIComponent(value);
+                            // Update the hidden CSRF input in the form
+                            const csrfInput = document.querySelector('input[name="_token"]');
+                            if (csrfInput) {
+                                csrfInput.value = token;
+                            }
+                            // Update the meta tag
+                            const metaTag = document.querySelector('meta[name="csrf-token"]');
+                            if (metaTag) {
+                                metaTag.content = token;
+                            }
+                            console.log('CSRF token refreshed');
+                            break;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('Failed to refresh CSRF token:', error);
+            }
+        }
+
+        // Refresh token periodically
+        setInterval(refreshCsrfToken, CSRF_REFRESH_INTERVAL);
+
+        // Handle form submission with 419 error recovery
+        document.querySelector('form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = this;
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml'
+                    }
+                });
+
+                if (response.status === 419) {
+                    // CSRF token expired - reload page with message
+                    window.location.href = '{{ route("login") }}?session_expired=1';
+                    return;
+                }
+
+                // For successful response or other errors, follow the redirect
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    // Parse HTML response and update page (for validation errors)
+                    const html = await response.text();
+                    document.documentElement.innerHTML = html;
+                }
+            } catch (error) {
+                // Network error - submit form normally as fallback
+                form.submit();
+            }
+        });
+
+        // Check URL for session_expired parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('session_expired') === '1') {
+            // Clean up URL
+            window.history.replaceState({}, '', '{{ route("login") }}');
+        }
+    </script>
 </body>
 </html>

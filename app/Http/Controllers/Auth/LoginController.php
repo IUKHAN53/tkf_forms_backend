@@ -9,11 +9,17 @@ use Illuminate\Validation\ValidationException;
 
 class LoginController extends Controller
 {
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
         if (Auth::check()) {
             return redirect()->route('admin.dashboard');
         }
+
+        // Handle session expired notification
+        if ($request->query('session_expired')) {
+            return view('auth.login')->with('session_expired', true);
+        }
+
         return view('auth.login');
     }
 
