@@ -112,7 +112,7 @@ class FgdsCommunityController extends Controller
 
     public function show(FgdsCommunity $fgdsCommunity)
     {
-        $fgdsCommunity->load('participants');
+        $fgdsCommunity->load(['participants', 'barriers.category']);
         return view('admin.core-forms.fgds-community.show', compact('fgdsCommunity'));
     }
 
@@ -292,6 +292,9 @@ class FgdsCommunityController extends Controller
             if ($importResult['skipped'] > 0) {
                 $message .= " Skipped {$importResult['skipped']} empty rows.";
             }
+            if (isset($importResult['new_categories']) && $importResult['new_categories'] > 0) {
+                $message .= " Created {$importResult['new_categories']} new categories.";
+            }
         } catch (\Exception $e) {
             return redirect()->route('admin.fgds-community.index')
                 ->with('error', "File uploaded but failed to parse barriers: " . $e->getMessage());
@@ -320,6 +323,7 @@ class FgdsCommunityController extends Controller
 
         $imported = 0;
         $skipped = 0;
+        $newCategories = 0;
 
         // Skip header row (index 0), process data rows
         foreach ($rows as $index => $row) {
@@ -345,8 +349,20 @@ class FgdsCommunityController extends Controller
                 $category = $this->findCategoryByPartialMatch($categoryName, $categories);
             }
 
+            if (!$category && !empty($categoryName)) {
+                // Create new category if it doesn't exist
+                $maxSortOrder = BarrierCategory::max('sort_order') ?? 0;
+                $category = BarrierCategory::create([
+                    'name' => $categoryName,
+                    'sort_order' => $maxSortOrder + 1,
+                ]);
+                // Add to categories collection for subsequent rows
+                $categories[$normalizedCategory] = $category;
+                $newCategories++;
+            }
+
             if (!$category) {
-                // If no category found, skip this row
+                // If still no category (empty category name), skip this row
                 $skipped++;
                 continue;
             }
@@ -365,6 +381,7 @@ class FgdsCommunityController extends Controller
         return [
             'imported' => $imported,
             'skipped' => $skipped,
+            'new_categories' => $newCategories,
         ];
     }
 
@@ -374,7 +391,10 @@ class FgdsCommunityController extends Controller
     private function normalizeCategory(string $name): string
     {
         // Remove extra spaces, lowercase, remove trailing punctuation
-        return strtolower(trim(preg_replace('/\s+/', ' ', rtrim($name, '.'))));
+        $normalized = strtolower(trim(preg_replace('/\s+/', ' ', $name)));
+        // Remove trailing period or other punctuation
+        $normalized = rtrim($normalized, '.,;:');
+        return $normalized;
     }
 
     /**
@@ -390,12 +410,20 @@ class FgdsCommunityController extends Controller
                 return $category;
             }
 
-            // Check first few words match
+            // Check first few words match (at least first 2 words)
             $searchWords = explode(' ', $normalized);
             $categoryWords = explode(' ', $key);
 
             if (count($searchWords) >= 2 && count($categoryWords) >= 2) {
                 if ($searchWords[0] === $categoryWords[0] && $searchWords[1] === $categoryWords[1]) {
+                    return $category;
+                }
+            }
+
+            // Check for keyword matches (e.g., "communication", "cultural", "service")
+            $keywords = ['cultural', 'communication', 'service', 'system', 'client', 'provider', 'supplies', 'place', 'environment'];
+            foreach ($keywords as $keyword) {
+                if (str_contains($normalized, $keyword) && str_contains($key, $keyword)) {
                     return $category;
                 }
             }

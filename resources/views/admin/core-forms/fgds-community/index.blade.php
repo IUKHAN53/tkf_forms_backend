@@ -267,7 +267,7 @@
             <h3>Upload Barriers - <span id="barriersRecordId"></span></h3>
             <button type="button" class="modal-close" onclick="document.getElementById('barriersModal').close()">&times;</button>
         </div>
-        <form action="{{ route('admin.fgds-community.upload-barriers', ['id' => '__ID__']) }}" method="POST" enctype="multipart/form-data" id="barriersForm">
+        <form action="" method="POST" enctype="multipart/form-data" id="barriersForm" data-base-url="{{ url('admin/fgds-community') }}">
             @csrf
             <div class="modal-body">
                 <p class="mb-md text-muted">Upload an Excel file containing the identified immunization barriers from this FGD session.</p>
@@ -311,8 +311,8 @@ function openBarriersModal(id, uniqueId) {
     const recordIdSpan = document.getElementById('barriersRecordId');
 
     // Update the form action with the correct ID
-    const baseUrl = '{{ route('admin.fgds-community.upload-barriers', ['id' => '__ID__']) }}';
-    form.action = baseUrl.replace('__ID__', id);
+    const baseUrl = form.dataset.baseUrl;
+    form.action = baseUrl + '/' + id + '/barriers';
 
     // Update the modal title with the record ID
     recordIdSpan.textContent = uniqueId;

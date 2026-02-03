@@ -256,7 +256,7 @@
             <h3>Upload Action Plan - <span id="actionPlanRecordId"></span></h3>
             <button type="button" class="modal-close" onclick="document.getElementById('actionPlanModal').close()">&times;</button>
         </div>
-        <form action="{{ route('admin.bridging-the-gap.upload-action-plan', ['id' => '__ID__']) }}" method="POST" enctype="multipart/form-data" id="actionPlanForm">
+        <form action="" method="POST" enctype="multipart/form-data" id="actionPlanForm" data-base-url="{{ url('admin/bridging-the-gap') }}">
             @csrf
             <div class="modal-body">
                 <p class="mb-md text-muted">Upload an Excel file containing the action plan for this Bridging The Gap session.</p>
@@ -300,8 +300,8 @@ function openActionPlanModal(id, uniqueId) {
     const recordIdSpan = document.getElementById('actionPlanRecordId');
 
     // Update the form action with the correct ID
-    const baseUrl = '{{ route('admin.bridging-the-gap.upload-action-plan', ['id' => '__ID__']) }}';
-    form.action = baseUrl.replace('__ID__', id);
+    const baseUrl = form.dataset.baseUrl;
+    form.action = baseUrl + '/' + id + '/action-plan';
 
     // Update the modal title with the record ID
     recordIdSpan.textContent = uniqueId;
