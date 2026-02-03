@@ -12,8 +12,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(append: [
+        // Add Sanctum stateful middleware to API routes for SPA authentication
+        // This must be prepended so it runs before other middleware
+        $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+        ]);
+
+        $middleware->api(append: [
             \App\Http\Middleware\ApiRequestLogger::class,
         ]);
 
@@ -24,5 +29,15 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handle CSRF token mismatch (419) errors gracefully
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Your session has expired. Please refresh and try again.',
+                ], 419);
+            }
+
+            // For web requests, redirect to login with session_expired message
+            return redirect()->route('login', ['session_expired' => 1]);
+        });
     })->create();
