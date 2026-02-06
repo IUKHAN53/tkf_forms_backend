@@ -89,6 +89,26 @@
     </div>
 </div>
 
+<!-- Barriers by Category -->
+@if(isset($stats['barriers_by_category']) && $stats['total_barriers'] > 0)
+<div class="content-card" style="margin-bottom: 20px;">
+    <div class="card-header">
+        <div class="header-left">
+            <h2>Barriers by Category</h2>
+            <p class="text-muted">Distribution of identified barriers across categories</p>
+        </div>
+    </div>
+    <div class="barriers-category-grid">
+        @foreach($stats['barriers_by_category'] as $category)
+        <div class="barrier-category-card">
+            <div class="barrier-category-count">{{ $category['count'] }}</div>
+            <div class="barrier-category-name">{{ $category['name'] }}</div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 <div class="content-card">
     <div class="card-header">
         <div class="header-left">
@@ -250,11 +270,27 @@
             @csrf
             <div class="modal-body">
                 <p class="mb-md text-muted">Upload an Excel file containing the identified immunization barriers from this FGD session.</p>
+
+                <div style="background: #e0f2fe; border: 1px solid #7dd3fc; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <span style="font-size: 13px; color: #0369a1;">Need the correct format?</span>
+                        <a href="{{ route('admin.fgds-health-workers.barriers-sample') }}" class="btn btn-sm btn-info" style="margin-left: auto;">
+                            Download Sample Template
+                        </a>
+                    </div>
+                </div>
+
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label">Select Excel File</label>
                     <input type="file" name="barriers_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
                 </div>
                 <div class="upload-info" style="background: #f8f9fa; border-radius: 8px; padding: 12px; font-size: 13px; color: #666;">
+                    <p style="margin: 0 0 8px 0;"><strong>Expected columns:</strong> Sr. No | Identified Barriers | Category</p>
                     <p style="margin: 0 0 8px 0;"><strong>Accepted formats:</strong> .xlsx, .xls</p>
                     <p style="margin: 0;"><strong>Max file size:</strong> 5MB</p>
                 </div>

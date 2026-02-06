@@ -98,6 +98,36 @@
         </div>
     @endif
 
+    @if($fgdsHealthWorker->barriers && $fgdsHealthWorker->barriers->count() > 0)
+        <div class="barriers-section" style="margin-top: 24px;">
+            <h3 style="font-size: 16px; font-weight: 600; color: #374151; margin-bottom: 16px;">
+                Identified Barriers ({{ $fgdsHealthWorker->barriers->count() }})
+            </h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">Sr. No</th>
+                        <th>Barrier</th>
+                        <th style="width: 280px;">Category</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($fgdsHealthWorker->barriers->sortBy('serial_number') as $barrier)
+                        <tr>
+                            <td>{{ $barrier->serial_number ?? '-' }}</td>
+                            <td>{{ $barrier->barrier_text }}</td>
+                            <td>
+                                <span class="badge badge-warning" style="font-size: 11px;">
+                                    {{ $barrier->category->name ?? 'Uncategorized' }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
+
     <h3 style="margin: 24px 0 16px; font-size: 16px; font-weight: 600; color: #374151;">Submission Metadata</h3>
     <div class="detail-grid">
         <div class="detail-item">

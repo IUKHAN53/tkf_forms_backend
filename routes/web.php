@@ -53,6 +53,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     // Core Forms - FGDs-Health Workers
     Route::get('fgds-health-workers/export', [FgdsHealthWorkersController::class, 'export'])->name('fgds-health-workers.export');
     Route::get('fgds-health-workers/template', [FgdsHealthWorkersController::class, 'template'])->name('fgds-health-workers.template');
+    Route::get('fgds-health-workers/barriers-sample', [FgdsHealthWorkersController::class, 'barriersSample'])->name('fgds-health-workers.barriers-sample');
     Route::post('fgds-health-workers/import', [FgdsHealthWorkersController::class, 'import'])->name('fgds-health-workers.import');
     Route::post('fgds-health-workers/{id}/barriers', [FgdsHealthWorkersController::class, 'uploadBarriers'])->name('fgds-health-workers.upload-barriers');
     Route::resource('fgds-health-workers', FgdsHealthWorkersController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);

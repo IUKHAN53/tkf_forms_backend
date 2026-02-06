@@ -3,10 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsHealthWorkers;
+use App\Models\FgdsHealthWorkersBarrier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class FgdsHealthWorkersController extends Controller
 {
@@ -56,12 +62,27 @@ class FgdsHealthWorkersController extends Controller
         // Calculate statistics
         $stats = [
             'total' => FgdsHealthWorkers::count(),
-            'total_barriers' => 0, // TODO: Implement barriers count
+            'total_barriers' => FgdsHealthWorkersBarrier::count(),
             'total_participants' => FgdsHealthWorkers::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
             'total_males' => FgdsHealthWorkers::sum('participants_males') ?? 0,
             'total_females' => FgdsHealthWorkers::sum('participants_females') ?? 0,
             'ucs_covered' => FgdsHealthWorkers::distinct('uc')->count('uc'),
         ];
+
+        // Get barriers count by category for statistics
+        $barriersByCategory = FgdsHealthWorkersBarrier::select('barrier_category_id', DB::raw('count(*) as count'))
+            ->groupBy('barrier_category_id')
+            ->pluck('count', 'barrier_category_id')
+            ->toArray();
+
+        $categories = BarrierCategory::ordered();
+        $stats['barriers_by_category'] = $categories->map(function ($cat) use ($barriersByCategory) {
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'count' => $barriersByCategory[$cat->id] ?? 0,
+            ];
+        });
 
         // Prepare map data
         $mapData = FgdsHealthWorkers::whereNotNull('latitude')
@@ -85,7 +106,7 @@ class FgdsHealthWorkersController extends Controller
 
     public function show(FgdsHealthWorkers $fgdsHealthWorker)
     {
-        $fgdsHealthWorker->load('participants');
+        $fgdsHealthWorker->load(['participants', 'barriers.category']);
         return view('admin.core-forms.fgds-health-workers.show', compact('fgdsHealthWorker'));
     }
 
@@ -257,7 +278,224 @@ class FgdsHealthWorkersController extends Controller
             'barriers_file' => $path,
         ]);
 
+        // Parse the Excel file and extract barriers
+        try {
+            $importResult = $this->parseAndStoreBarriers($record, $file->getRealPath());
+            $message = "Barriers file uploaded successfully for record {$record->unique_id}. ";
+            $message .= "Imported {$importResult['imported']} barriers.";
+            if ($importResult['skipped'] > 0) {
+                $message .= " Skipped {$importResult['skipped']} empty rows.";
+            }
+            if (isset($importResult['new_categories']) && $importResult['new_categories'] > 0) {
+                $message .= " Created {$importResult['new_categories']} new categories.";
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('admin.fgds-health-workers.index')
+                ->with('error', "File uploaded but failed to parse barriers: " . $e->getMessage());
+        }
+
         return redirect()->route('admin.fgds-health-workers.index')
-            ->with('success', "Barriers file uploaded successfully for record {$record->unique_id}.");
+            ->with('success', $message);
+    }
+
+    /**
+     * Parse Excel file and store barriers
+     */
+    private function parseAndStoreBarriers(FgdsHealthWorkers $record, string $filePath): array
+    {
+        $spreadsheet = IOFactory::load($filePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $rows = $worksheet->toArray();
+
+        // Get all barrier categories indexed by name (normalized for matching)
+        $categories = BarrierCategory::all()->keyBy(function ($cat) {
+            return $this->normalizeCategory($cat->name);
+        });
+
+        // Delete existing barriers for this record before importing new ones
+        FgdsHealthWorkersBarrier::where('fgds_health_workers_id', $record->id)->delete();
+
+        $imported = 0;
+        $skipped = 0;
+        $newCategories = 0;
+
+        // Skip header row (index 0), process data rows
+        foreach ($rows as $index => $row) {
+            if ($index === 0) continue; // Skip header
+
+            // Expected format: Sr. No | Identified Barriers | Category
+            $serialNumber = trim($row[0] ?? '');
+            $barrierText = trim($row[1] ?? '');
+            $categoryName = trim($row[2] ?? '');
+
+            // Skip empty barrier rows
+            if (empty($barrierText)) {
+                $skipped++;
+                continue;
+            }
+
+            // Find matching category
+            $normalizedCategory = $this->normalizeCategory($categoryName);
+            $category = $categories->get($normalizedCategory);
+
+            if (!$category) {
+                // Try partial match
+                $category = $this->findCategoryByPartialMatch($categoryName, $categories);
+            }
+
+            if (!$category && !empty($categoryName)) {
+                // Create new category if it doesn't exist
+                $maxSortOrder = BarrierCategory::max('sort_order') ?? 0;
+                $category = BarrierCategory::create([
+                    'name' => $categoryName,
+                    'sort_order' => $maxSortOrder + 1,
+                ]);
+                // Add to categories collection for subsequent rows
+                $categories[$normalizedCategory] = $category;
+                $newCategories++;
+            }
+
+            if (!$category) {
+                // If still no category (empty category name), skip this row
+                $skipped++;
+                continue;
+            }
+
+            // Create the barrier record
+            FgdsHealthWorkersBarrier::create([
+                'fgds_health_workers_id' => $record->id,
+                'barrier_category_id' => $category->id,
+                'barrier_text' => $barrierText,
+                'serial_number' => is_numeric($serialNumber) ? (int)$serialNumber : null,
+            ]);
+
+            $imported++;
+        }
+
+        return [
+            'imported' => $imported,
+            'skipped' => $skipped,
+            'new_categories' => $newCategories,
+        ];
+    }
+
+    /**
+     * Normalize category name for comparison
+     */
+    private function normalizeCategory(string $name): string
+    {
+        // Remove extra spaces, lowercase, remove trailing punctuation
+        $normalized = strtolower(trim(preg_replace('/\s+/', ' ', $name)));
+        // Remove trailing period or other punctuation
+        $normalized = rtrim($normalized, '.,;:');
+        return $normalized;
+    }
+
+    /**
+     * Find category by partial match
+     */
+    private function findCategoryByPartialMatch(string $categoryName, $categories)
+    {
+        $normalized = $this->normalizeCategory($categoryName);
+
+        foreach ($categories as $key => $category) {
+            // Check if one contains the other
+            if (str_contains($key, $normalized) || str_contains($normalized, $key)) {
+                return $category;
+            }
+
+            // Check first few words match (at least first 2 words)
+            $searchWords = explode(' ', $normalized);
+            $categoryWords = explode(' ', $key);
+
+            if (count($searchWords) >= 2 && count($categoryWords) >= 2) {
+                if ($searchWords[0] === $categoryWords[0] && $searchWords[1] === $categoryWords[1]) {
+                    return $category;
+                }
+            }
+
+            // Check for keyword matches (e.g., "communication", "cultural", "service")
+            $keywords = ['cultural', 'communication', 'service', 'system', 'client', 'provider', 'supplies', 'place', 'environment'];
+            foreach ($keywords as $keyword) {
+                if (str_contains($normalized, $keyword) && str_contains($key, $keyword)) {
+                    return $category;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Download sample barriers Excel template
+     */
+    public function barriersSample()
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set headers
+        $headers = ['Sr. No', 'Identified Barriers', 'Category'];
+        $sheet->fromArray($headers, null, 'A1');
+
+        // Style headers
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
+        ];
+        $sheet->getStyle('A1:C1')->applyFromArray($headerStyle);
+
+        // Get categories for reference
+        $categories = BarrierCategory::ordered()->pluck('name')->toArray();
+
+        // Add sample data with different categories
+        $sampleData = [
+            [1, 'Health workers lack proper training on vaccination protocols', $categories[0] ?? 'Cultural Compatibility / Traditional Beliefs and Practices.'],
+            [2, 'No proper communication channels with community', $categories[1] ?? 'Communication / Information.'],
+            [3, 'Insufficient vaccination supplies at health facility', $categories[2] ?? 'Service Availability.'],
+            [4, 'Complex reporting procedures for vaccination data', $categories[3] ?? 'System and Procedures.'],
+            [5, 'Limited interaction time with caregivers', $categories[4] ?? 'Client / Provider Relations.'],
+            [6, 'Need for refresher training on cold chain management', $categories[5] ?? 'Provider Technical Competence.'],
+            [7, 'Frequent stock-outs of vaccines', $categories[6] ?? 'Supplies and Equipment / Medicine.'],
+            [8, 'Poor storage facilities for vaccines', $categories[7] ?? 'Place / Environment.'],
+        ];
+        $sheet->fromArray($sampleData, null, 'A2');
+
+        // Add empty rows for user to fill
+        for ($i = 9; $i <= 20; $i++) {
+            $sheet->setCellValue('A' . ($i + 1), $i);
+        }
+
+        // Auto-size columns
+        $sheet->getColumnDimension('A')->setWidth(10);
+        $sheet->getColumnDimension('B')->setWidth(50);
+        $sheet->getColumnDimension('C')->setWidth(50);
+
+        // Add categories reference sheet
+        $categoriesSheet = $spreadsheet->createSheet();
+        $categoriesSheet->setTitle('Categories Reference');
+        $categoriesSheet->setCellValue('A1', 'Available Categories');
+        $categoriesSheet->getStyle('A1')->getFont()->setBold(true);
+
+        foreach ($categories as $index => $category) {
+            $categoriesSheet->setCellValue('A' . ($index + 2), $category);
+        }
+        $categoriesSheet->getColumnDimension('A')->setWidth(60);
+
+        // Set first sheet as active
+        $spreadsheet->setActiveSheetIndex(0);
+        $sheet->setTitle('Barriers Template');
+
+        // Create the response
+        $writer = new Xlsx($spreadsheet);
+
+        $filename = 'barriers_health_workers_sample_template.xlsx';
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }
