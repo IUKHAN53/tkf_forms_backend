@@ -141,6 +141,20 @@ class OutreachSiteController extends Controller
             'comments' => 'nullable|string',
         ]);
 
+        // Generate hash for duplicate detection
+        $locationHash = md5(
+            strtolower(trim($validated['district'])) . '|' .
+            strtolower(trim($validated['union_council'])) . '|' .
+            strtolower(trim($validated['fix_site'])) . '|' .
+            strtolower(trim($validated['outreach_site']))
+        );
+
+        // Check if site already exists
+        if (OutreachSite::where('location_hash', $locationHash)->exists()) {
+            return redirect()->route('admin.outreach-sites.index')
+                ->with('warning', 'Vaccination site already exists with same location');
+        }
+
         OutreachSite::create($validated);
 
         return redirect()->route('admin.outreach-sites.index')
@@ -235,10 +249,26 @@ class OutreachSiteController extends Controller
         $header = array_shift($csv);
 
         $imported = 0;
+        $skipped = 0;
         foreach ($csv as $row) {
             if (count($row) < 4) continue;
 
             $data = array_combine($header, $row);
+
+            // Generate hash for duplicate detection
+            $locationHash = md5(
+                strtolower(trim($data['district'] ?? '')) . '|' .
+                strtolower(trim($data['union_council'] ?? '')) . '|' .
+                strtolower(trim($data['fix_site'] ?? '')) . '|' .
+                strtolower(trim($data['outreach_site'] ?? ''))
+            );
+
+            // Skip if duplicate exists
+            if (OutreachSite::where('location_hash', $locationHash)->exists()) {
+                $skipped++;
+                continue;
+            }
+
             OutreachSite::create([
                 'district' => $data['district'] ?? '',
                 'union_council' => $data['union_council'] ?? '',
@@ -250,7 +280,12 @@ class OutreachSiteController extends Controller
             $imported++;
         }
 
+        $message = "Successfully imported {$imported} vaccination sites";
+        if ($skipped > 0) {
+            $message .= " ({$skipped} duplicates skipped)";
+        }
+
         return redirect()->route('admin.outreach-sites.index')
-            ->with('success', "Successfully imported {$imported} vaccination sites");
+            ->with('success', $message);
     }
 }
