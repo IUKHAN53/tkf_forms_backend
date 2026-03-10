@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\BridgingTheGapController;
 use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\ChildLineListController;
+use App\Http\Controllers\Admin\VaccinationRecordController;
 use App\Http\Controllers\Admin\UcController;
 use App\Http\Controllers\Admin\DebugController;
 
@@ -65,6 +66,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
     Route::post('bridging-the-gap/{id}/action-plan', [BridgingTheGapController::class, 'uploadActionPlan'])->name('bridging-the-gap.upload-action-plan');
     Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+
+    // Core Forms - Vaccination Records (CLM Tracker)
+    Route::get('vaccination-records/export', [VaccinationRecordController::class, 'export'])->name('vaccination-records.export');
+    Route::get('vaccination-records/template', [VaccinationRecordController::class, 'template'])->name('vaccination-records.template');
+    Route::post('vaccination-records/import', [VaccinationRecordController::class, 'import'])->name('vaccination-records.import');
+    Route::resource('vaccination-records', VaccinationRecordController::class)->only(['index', 'show', 'destroy']);
 
     // Outreach Sites Management
     Route::get('outreach-sites/export', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'export'])->name('outreach-sites.export');

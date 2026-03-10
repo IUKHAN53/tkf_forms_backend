@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\FormIdController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\OutreachSiteController;
 use App\Http\Controllers\Api\SubmissionController;
+use App\Http\Controllers\Api\VaccinationRecordController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -67,5 +68,13 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/bridging-the-gap', [BridgingTheGapController::class, 'store']);
         Route::get('/bridging-the-gap/search-participants', [BridgingTheGapController::class, 'searchParticipants']);
         Route::get('/bridging-the-gap/{bridgingTheGap}', [BridgingTheGapController::class, 'show']);
+
+        // CLM Tracker - Vaccination Records
+        Route::get('/vaccination-records', [VaccinationRecordController::class, 'index']);
+        Route::post('/vaccination-records', [VaccinationRecordController::class, 'store']);
+        Route::get('/vaccination-records/stats', [VaccinationRecordController::class, 'stats']);
+        Route::get('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'show']);
+        Route::put('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'update']);
+        Route::delete('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'destroy']);
     });
 });

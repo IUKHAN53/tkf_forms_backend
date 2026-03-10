@@ -857,7 +857,7 @@ body {
                     <div class="nav-section-title">Data Collection</div>
                     <ul class="nav-menu">
                         <li class="nav-item nav-group">
-                            <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*') ? 'active expanded' : '' }}" data-toggle="core-forms-submenu">
+                            <button type="button" class="nav-link nav-toggle {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*', 'admin.vaccination-records.*') ? 'active expanded' : '' }}" data-toggle="core-forms-submenu">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M9 11l3 3L22 4"/>
                                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -867,7 +867,7 @@ body {
                                     <polyline points="6 9 12 15 18 9"/>
                                 </svg>
                             </button>
-                            <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*') ? 'open' : '' }}" id="core-forms-submenu">
+                            <ul class="nav-submenu {{ request()->routeIs('admin.child-line-list.*', 'admin.fgds-community.*', 'admin.fgds-health-workers.*', 'admin.bridging-the-gap.*', 'admin.outreach-sites.*', 'admin.vaccination-records.*') ? 'open' : '' }}" id="core-forms-submenu">
                                 <li class="nav-item">
                                     <a href="{{ route('admin.child-line-list.index') }}" class="nav-link {{ request()->routeIs('admin.child-line-list.*') ? 'active' : '' }}">
                                         Child Line List
@@ -897,6 +897,11 @@ body {
                                 <li class="nav-item">
                                     <a href="{{ route('admin.bridging-the-gap.index') }}" class="nav-link {{ request()->routeIs('admin.bridging-the-gap.*') ? 'active' : '' }}">
                                         Bridging The Gap
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{{ route('admin.vaccination-records.index') }}" class="nav-link {{ request()->routeIs('admin.vaccination-records.*') ? 'active' : '' }}">
+                                        Vaccination Records
                                     </a>
                                 </li>
                                 <li class="nav-item">

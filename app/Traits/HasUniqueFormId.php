@@ -42,6 +42,7 @@ trait HasUniqueFormId
             'FgdsHealthWorkers' => 'FH',
             'ChildLineList' => 'CL',
             'BridgingTheGap' => 'BG',
+            'VaccinationRecord' => 'VR',
             // Legacy names (kept for backwards compatibility)
             'AreaMapping' => 'AM',
             'DraftList' => 'DL',
