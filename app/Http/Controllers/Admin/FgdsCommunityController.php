@@ -7,6 +7,7 @@ use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsCommunity;
 use App\Models\FgdsCommunityBarrier;
+use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\DB;
@@ -60,13 +61,13 @@ class FgdsCommunityController extends Controller
         $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();
         $ucs = FgdsCommunity::distinct()->pluck('uc')->filter()->sort()->values();
 
-        // Calculate statistics
+        // Calculate statistics from actual participant records
         $stats = [
             'total' => FgdsCommunity::count(),
             'total_barriers' => FgdsCommunityBarrier::count(),
-            'total_participants' => FgdsCommunity::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
-            'total_males' => FgdsCommunity::sum('participants_males') ?? 0,
-            'total_females' => FgdsCommunity::sum('participants_females') ?? 0,
+            'total_participants' => Participant::where('participantable_type', FgdsCommunity::class)->count(),
+            'total_males' => Participant::where('participantable_type', FgdsCommunity::class)->where('gender', 'Male')->count(),
+            'total_females' => Participant::where('participantable_type', FgdsCommunity::class)->where('gender', 'Female')->count(),
             'districts_covered' => FgdsCommunity::distinct('district')->count('district'),
         ];
 

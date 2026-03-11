@@ -48,11 +48,11 @@
         </div>
         <div class="detail-item">
             <label>Participants (Males)</label>
-            <span>{{ $fgdsHealthWorker->participants_males }}</span>
+            <span>{{ $fgdsHealthWorker->participants->where('gender', 'Male')->count() }}</span>
         </div>
         <div class="detail-item">
             <label>Participants (Females)</label>
-            <span>{{ $fgdsHealthWorker->participants_females }}</span>
+            <span>{{ $fgdsHealthWorker->participants->where('gender', 'Female')->count() }}</span>
         </div>
         <div class="detail-item">
             <label>TKF Facilitator</label>

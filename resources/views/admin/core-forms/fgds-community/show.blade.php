@@ -64,11 +64,11 @@
         </div>
         <div class="detail-item">
             <label>Participants (Males)</label>
-            <span>{{ $fgdsCommunity->participants_males }}</span>
+            <span>{{ $fgdsCommunity->participants->where('gender', 'Male')->count() }}</span>
         </div>
         <div class="detail-item">
             <label>Participants (Females)</label>
-            <span>{{ $fgdsCommunity->participants_females }}</span>
+            <span>{{ $fgdsCommunity->participants->where('gender', 'Female')->count() }}</span>
         </div>
         <div class="detail-item">
             <label>TKF Facilitator</label>

@@ -7,6 +7,7 @@ use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapTeamMember;
 use App\Models\FgdsHealthWorkers;
 use App\Models\FgdsHealthWorkersBarrier;
+use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
@@ -59,13 +60,13 @@ class FgdsHealthWorkersController extends Controller
         $ucs = FgdsHealthWorkers::distinct()->pluck('uc')->filter()->sort()->values();
         $groupTypes = FgdsHealthWorkers::distinct()->pluck('group_type')->filter()->sort()->values();
 
-        // Calculate statistics
+        // Calculate statistics from actual participant records
         $stats = [
             'total' => FgdsHealthWorkers::count(),
             'total_barriers' => FgdsHealthWorkersBarrier::count(),
-            'total_participants' => FgdsHealthWorkers::selectRaw('SUM(participants_males + participants_females) as total')->value('total') ?? 0,
-            'total_males' => FgdsHealthWorkers::sum('participants_males') ?? 0,
-            'total_females' => FgdsHealthWorkers::sum('participants_females') ?? 0,
+            'total_participants' => Participant::where('participantable_type', FgdsHealthWorkers::class)->count(),
+            'total_males' => Participant::where('participantable_type', FgdsHealthWorkers::class)->where('gender', 'Male')->count(),
+            'total_females' => Participant::where('participantable_type', FgdsHealthWorkers::class)->where('gender', 'Female')->count(),
             'ucs_covered' => FgdsHealthWorkers::distinct('uc')->count('uc'),
         ];
 

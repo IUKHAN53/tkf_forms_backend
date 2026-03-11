@@ -49,8 +49,25 @@ class FgdsCommunityController extends Controller
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 
-        $record = DB::transaction(function () use ($validated, $request) {
-            $participantsData = $validated['participants'];
+        // Validate participant counts match actual participant data
+        $participantsData = $validated['participants'];
+        $actualMales = collect($participantsData)->where('gender', 'Male')->count();
+        $actualFemales = collect($participantsData)->where('gender', 'Female')->count();
+        $errors = [];
+        if ($validated['participants_males'] != $actualMales) {
+            $errors['participants_males'] = ["Males count ({$validated['participants_males']}) does not match actual male participants ({$actualMales})."];
+        }
+        if ($validated['participants_females'] != $actualFemales) {
+            $errors['participants_females'] = ["Females count ({$validated['participants_females']}) does not match actual female participants ({$actualFemales})."];
+        }
+        if (!empty($errors)) {
+            return response()->json([
+                'message' => 'Participant count does not match the participant data entered.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $record = DB::transaction(function () use ($validated, $request, $participantsData) {
             unset($validated['participants']);
             $validated['user_id'] = $request->user()->id;
             $validated['ip_address'] = $request->ip();

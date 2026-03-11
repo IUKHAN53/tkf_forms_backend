@@ -207,7 +207,7 @@
                                 {{ $item->group_type }}
                             </span>
                         </td>
-                        <td>{{ $item->participants_males + $item->participants_females }}</td>
+                        <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
                         <td>{{ $item->facilitator_tkf }}</td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td class="action-buttons">

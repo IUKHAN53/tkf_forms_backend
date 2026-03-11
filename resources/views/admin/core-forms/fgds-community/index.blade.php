@@ -208,7 +208,7 @@
                         <td>{{ $item->uc }}</td>
                         <td>{{ $item->venue }}</td>
                         <td>{{ is_array($item->community) ? implode(', ', $item->community) : $item->community }}</td>
-                        <td>{{ $item->participants_males + $item->participants_females }}</td>
+                        <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
                         <td>{{ $item->user->name ?? 'N/A' }}</td>
                         <td>{{ $item->created_at->format('M d, Y') }}</td>
                         <td class="action-buttons">
