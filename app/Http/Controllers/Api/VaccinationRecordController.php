@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\VaccinationRecord;
+use App\Services\LogActivity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -66,6 +67,14 @@ class VaccinationRecordController extends Controller
 
         $record = VaccinationRecord::create($validated);
 
+        LogActivity::record(
+            'vaccination_record.created',
+            "Created vaccination record for {$validated['child_name']}",
+            ['record_id' => $record->id, 'category' => $validated['category'], 'child_name' => $validated['child_name']],
+            $request->user()->id,
+            $request->ip()
+        );
+
         return response()->json([
             'message' => 'Vaccination record created successfully',
             'data' => $record,
@@ -101,14 +110,30 @@ class VaccinationRecordController extends Controller
 
         $vaccinationRecord->update($validated);
 
+        LogActivity::record(
+            'vaccination_record.updated',
+            "Updated vaccination record #{$vaccinationRecord->id} ({$vaccinationRecord->child_name})",
+            ['record_id' => $vaccinationRecord->id, 'changed_fields' => array_keys($validated)],
+            $request->user()->id,
+            $request->ip()
+        );
+
         return response()->json([
             'message' => 'Vaccination record updated successfully',
             'data' => $vaccinationRecord->fresh(),
         ]);
     }
 
-    public function destroy(VaccinationRecord $vaccinationRecord): JsonResponse
+    public function destroy(Request $request, VaccinationRecord $vaccinationRecord): JsonResponse
     {
+        LogActivity::record(
+            'vaccination_record.deleted',
+            "Deleted vaccination record #{$vaccinationRecord->id} ({$vaccinationRecord->child_name})",
+            ['record_id' => $vaccinationRecord->id, 'child_name' => $vaccinationRecord->child_name, 'father_name' => $vaccinationRecord->father_name],
+            $request->user()->id,
+            $request->ip()
+        );
+
         $vaccinationRecord->delete();
 
         return response()->json([
