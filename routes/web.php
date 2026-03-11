@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\ChildLineListController;
 use App\Http\Controllers\Admin\VaccinationRecordController;
 use App\Http\Controllers\Admin\UcController;
+use App\Http\Controllers\Admin\CommunityMemberController;
 use App\Http\Controllers\Admin\DebugController;
 
 Route::get('/', function () {
@@ -35,6 +36,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::resource('forms', AdminFormController::class);
     Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
     Route::resource('users', AdminUserController::class)->except(['show']);
+    Route::resource('community-members', CommunityMemberController::class)->except(['show']);
     Route::get('logs', [ActivityLogController::class, 'index'])->name('logs.index');
 
     // Core Forms - Child Line List

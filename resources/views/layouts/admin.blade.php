@@ -955,6 +955,17 @@ body {
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ route('admin.community-members.index') }}" class="nav-link {{ request()->routeIs('admin.community-members.*') ? 'active' : '' }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="9" cy="7" r="4"/>
+                                    <line x1="19" y1="8" x2="19" y2="14"/>
+                                    <line x1="22" y1="11" x2="16" y2="11"/>
+                                </svg>
+                                <span>Community Members</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ route('admin.logs.index') }}" class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="4 17 10 11 4 5"/>

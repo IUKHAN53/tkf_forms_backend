@@ -44,6 +44,10 @@ return [
             'driver' => 'sanctum',
             'provider' => 'users',
         ],
+        'community' => [
+            'driver' => 'sanctum',
+            'provider' => 'community_members',
+        ],
     ],
 
     /*
@@ -69,10 +73,10 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
+        'community_members' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CommunityMember::class,
+        ],
     ],
 
     /*

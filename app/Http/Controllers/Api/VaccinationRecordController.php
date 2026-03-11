@@ -12,7 +12,7 @@ class VaccinationRecordController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $query = VaccinationRecord::where('user_id', $request->user()->id)->latest();
+        $query = VaccinationRecord::where('community_member_id', $request->user()->getKey())->latest();
 
         if ($request->filled('category')) {
             $query->where('category', $request->category);
@@ -61,7 +61,7 @@ class VaccinationRecordController extends Controller
             'submitted_at' => 'nullable|date',
         ]);
 
-        $validated['user_id'] = $request->user()->id;
+        $validated['community_member_id'] = $request->user()->getKey();
         $validated['ip_address'] = $request->ip();
         $validated['submitted_at'] = $validated['submitted_at'] ?? now();
 
@@ -71,7 +71,7 @@ class VaccinationRecordController extends Controller
             'vaccination_record.created',
             "Created vaccination record for {$validated['child_name']}",
             ['record_id' => $record->id, 'category' => $validated['category'], 'child_name' => $validated['child_name']],
-            $request->user()->id,
+            $request->user()->getKey(),
             $request->ip()
         );
 
@@ -114,7 +114,7 @@ class VaccinationRecordController extends Controller
             'vaccination_record.updated',
             "Updated vaccination record #{$vaccinationRecord->id} ({$vaccinationRecord->child_name})",
             ['record_id' => $vaccinationRecord->id, 'changed_fields' => array_keys($validated)],
-            $request->user()->id,
+            $request->user()->getKey(),
             $request->ip()
         );
 
@@ -130,7 +130,7 @@ class VaccinationRecordController extends Controller
             'vaccination_record.deleted',
             "Deleted vaccination record #{$vaccinationRecord->id} ({$vaccinationRecord->child_name})",
             ['record_id' => $vaccinationRecord->id, 'child_name' => $vaccinationRecord->child_name, 'father_name' => $vaccinationRecord->father_name],
-            $request->user()->id,
+            $request->user()->getKey(),
             $request->ip()
         );
 
@@ -143,7 +143,7 @@ class VaccinationRecordController extends Controller
 
     public function stats(Request $request): JsonResponse
     {
-        $query = VaccinationRecord::where('user_id', $request->user()->id);
+        $query = VaccinationRecord::where('community_member_id', $request->user()->getKey());
 
         return response()->json([
             'total_defaulters' => (clone $query)->count(),

@@ -15,6 +15,7 @@ class VaccinationRecord extends Model
     protected $fillable = [
         'unique_id',
         'user_id',
+        'community_member_id',
         'fix_site',
         'uc',
         'district',
@@ -51,5 +52,10 @@ class VaccinationRecord extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function communityMember(): BelongsTo
+    {
+        return $this->belongsTo(CommunityMember::class);
     }
 }

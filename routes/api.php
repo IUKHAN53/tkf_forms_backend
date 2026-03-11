@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CommunityAuthController;
 use App\Http\Controllers\Api\BridgingTheGapController;
 use App\Http\Controllers\Api\ChildLineListController;
 use App\Http\Controllers\Api\DashboardController;
@@ -16,6 +17,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::post('/login', [AuthController::class, 'login']);
+
+    // CLM Tracker - Community Member Auth
+    Route::post('/clm/login', [CommunityAuthController::class, 'login']);
 
     // Form Builder Forms (public listing)
     Route::get('/forms', [FormController::class, 'index']);
@@ -69,12 +73,21 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/bridging-the-gap/search-participants', [BridgingTheGapController::class, 'searchParticipants']);
         Route::get('/bridging-the-gap/{bridgingTheGap}', [BridgingTheGapController::class, 'show']);
 
-        // CLM Tracker - Vaccination Records
-        Route::get('/vaccination-records', [VaccinationRecordController::class, 'index']);
-        Route::post('/vaccination-records', [VaccinationRecordController::class, 'store']);
-        Route::get('/vaccination-records/stats', [VaccinationRecordController::class, 'stats']);
-        Route::get('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'show']);
-        Route::put('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'update']);
-        Route::delete('/vaccination-records/{vaccinationRecord}', [VaccinationRecordController::class, 'destroy']);
+    });
+
+    // CLM Tracker - Vaccination Records (community member auth)
+    Route::middleware('auth:community')->prefix('vaccination-records')->group(function (): void {
+        Route::get('/', [VaccinationRecordController::class, 'index']);
+        Route::post('/', [VaccinationRecordController::class, 'store']);
+        Route::get('/stats', [VaccinationRecordController::class, 'stats']);
+        Route::get('/{vaccinationRecord}', [VaccinationRecordController::class, 'show']);
+        Route::put('/{vaccinationRecord}', [VaccinationRecordController::class, 'update']);
+        Route::delete('/{vaccinationRecord}', [VaccinationRecordController::class, 'destroy']);
+        Route::get('/{vaccinationRecord}/sync', [VaccinationRecordController::class, 'show']);
+    });
+
+    // CLM Tracker - Community Member Profile
+    Route::middleware('auth:community')->group(function (): void {
+        Route::get('/clm/me', [CommunityAuthController::class, 'me']);
     });
 });
