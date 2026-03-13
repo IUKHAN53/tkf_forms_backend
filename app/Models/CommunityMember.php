@@ -10,6 +10,7 @@ class CommunityMember extends Authenticatable
     use HasApiTokens;
 
     protected $fillable = [
+        'participant_id',
         'name',
         'phone',
         'password',
@@ -29,6 +30,11 @@ class CommunityMember extends Authenticatable
             'password' => 'hashed',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function participant()
+    {
+        return $this->belongsTo(Participant::class);
     }
 
     public function vaccinationRecords()

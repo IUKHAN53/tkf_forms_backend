@@ -36,6 +36,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::resource('forms', AdminFormController::class);
     Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
     Route::resource('users', AdminUserController::class)->except(['show']);
+    Route::get('community-members/search-participants', [CommunityMemberController::class, 'searchParticipants'])->name('community-members.search-participants');
     Route::resource('community-members', CommunityMemberController::class)->except(['show']);
     Route::get('logs', [ActivityLogController::class, 'index'])->name('logs.index');
 

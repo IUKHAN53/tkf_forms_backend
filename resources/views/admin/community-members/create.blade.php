@@ -15,14 +15,44 @@
 
     <form action="{{ route('admin.community-members.store') }}" method="POST" class="form-container">
         @csrf
+
+        {{-- Source Selection --}}
+        <div class="form-group">
+            <label class="form-label">Member Source</label>
+            <div style="display: flex; gap: 16px;">
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                    <input type="radio" name="source_type" value="new" checked onchange="toggleSource('new')">
+                    Create New
+                </label>
+                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
+                    <input type="radio" name="source_type" value="existing" onchange="toggleSource('existing')">
+                    Select from FGD Participants
+                </label>
+            </div>
+        </div>
+
+        {{-- Participant Search (hidden by default) --}}
+        <div class="form-group" id="participantSearchSection" style="display: none;">
+            <label class="form-label">Search Participant</label>
+            <div style="position: relative;">
+                <input type="text" id="participantSearch" class="form-input" placeholder="Type name or phone (min 2 characters)..." autocomplete="off">
+                <input type="hidden" name="participant_id" id="participantId" value="">
+                <div id="searchResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
+                    background: white; border: 1px solid var(--neutral-200); border-radius: 8px; margin-top: 4px;
+                    max-height: 260px; overflow-y: auto; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);"></div>
+            </div>
+            <div id="selectedParticipant" style="display: none; margin-top: 8px; padding: 10px 14px;
+                background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; font-size: 13px; color: #1e40af;"></div>
+        </div>
+
         <div class="form-group">
             <label class="form-label">Name *</label>
-            <input type="text" name="name" class="form-input" value="{{ old('name') }}" required>
+            <input type="text" name="name" id="nameInput" class="form-input" value="{{ old('name') }}" required>
             @error('name')<span class="form-error">{{ $message }}</span>@enderror
         </div>
         <div class="form-group">
             <label class="form-label">Phone *</label>
-            <input type="text" name="phone" class="form-input" value="{{ old('phone') }}" placeholder="03XXXXXXXXX" required>
+            <input type="text" name="phone" id="phoneInput" class="form-input" value="{{ old('phone') }}" placeholder="03XXXXXXXXX" required>
             @error('phone')<span class="form-error">{{ $message }}</span>@enderror
         </div>
         <div class="form-group">
@@ -40,15 +70,39 @@
             <input type="text" name="fix_site" class="form-input" value="{{ old('fix_site') }}">
             @error('fix_site')<span class="form-error">{{ $message }}</span>@enderror
         </div>
+
+        {{-- Password with Generate & Copy --}}
         <div class="form-group">
             <label class="form-label">Password *</label>
-            <input type="password" name="password" class="form-input" required>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="text" name="password" id="passwordInput" class="form-input" style="flex: 1;" required
+                       placeholder="Enter or generate a password" autocomplete="new-password">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="generatePassword()" title="Generate random password"
+                        style="white-space: nowrap;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;">
+                        <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                    </svg>
+                    Generate
+                </button>
+                <button type="button" class="btn btn-outline btn-sm" onclick="copyPassword()" title="Copy password"
+                        style="white-space: nowrap;" id="copyBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px;">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                    </svg>
+                    Copy
+                </button>
+            </div>
+            <input type="hidden" name="password_generated" id="passwordGenerated" value="0">
             @error('password')<span class="form-error">{{ $message }}</span>@enderror
         </div>
-        <div class="form-group">
+
+        {{-- Password Confirmation (hidden when generated) --}}
+        <div class="form-group" id="confirmPasswordSection">
             <label class="form-label">Confirm Password *</label>
-            <input type="password" name="password_confirmation" class="form-input" required>
+            <input type="password" name="password_confirmation" id="passwordConfirmation" class="form-input" required>
         </div>
+
         <div class="form-group">
             <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
                 <input type="hidden" name="is_active" value="0">
@@ -63,3 +117,122 @@
     </form>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+let searchTimeout = null;
+
+function toggleSource(value) {
+    const section = document.getElementById('participantSearchSection');
+    const selected = document.getElementById('selectedParticipant');
+    if (value === 'existing') {
+        section.style.display = 'block';
+    } else {
+        section.style.display = 'none';
+        document.getElementById('participantId').value = '';
+        selected.style.display = 'none';
+        document.getElementById('participantSearch').value = '';
+        document.getElementById('searchResults').style.display = 'none';
+    }
+}
+
+document.getElementById('participantSearch').addEventListener('input', function () {
+    clearTimeout(searchTimeout);
+    const query = this.value.trim();
+    const results = document.getElementById('searchResults');
+    if (query.length < 2) { results.style.display = 'none'; return; }
+
+    searchTimeout = setTimeout(() => {
+        fetch(`{{ route('admin.community-members.search-participants') }}?q=${encodeURIComponent(query)}`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            results.innerHTML = '';
+            if (!data.length) {
+                results.innerHTML = '<div style="padding: 12px 14px; font-size: 13px; color: #9ca3af;">No participants found</div>';
+            } else {
+                data.forEach(p => {
+                    const item = document.createElement('div');
+                    item.style.cssText = 'padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f3f4f6;';
+                    item.innerHTML = `<div style="font-size: 13px; font-weight: 600;">${escHtml(p.name)}</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${escHtml(p.contact_no)} &middot; ${escHtml(p.source)}${p.occupation ? ' &middot; ' + escHtml(p.occupation) : ''}</div>`;
+                    item.onmouseenter = () => item.style.background = '#f9fafb';
+                    item.onmouseleave = () => item.style.background = '';
+                    item.onclick = () => selectParticipant(p);
+                    results.appendChild(item);
+                });
+            }
+            results.style.display = 'block';
+        });
+    }, 300);
+});
+
+function selectParticipant(p) {
+    document.getElementById('nameInput').value = p.name || '';
+    document.getElementById('phoneInput').value = p.contact_no || '';
+    document.getElementById('participantId').value = p.id;
+
+    const el = document.getElementById('selectedParticipant');
+    el.innerHTML = `<strong>Selected:</strong> ${escHtml(p.name)} (${escHtml(p.contact_no)}) &mdash; ${escHtml(p.source)}
+        <button type="button" onclick="clearParticipant()" style="margin-left: 8px; background: none; border: none; color: #1d4ed8; cursor: pointer; text-decoration: underline; font-size: 12px;">Clear</button>`;
+    el.style.display = 'block';
+    document.getElementById('searchResults').style.display = 'none';
+    document.getElementById('participantSearch').value = '';
+}
+
+function clearParticipant() {
+    document.getElementById('participantId').value = '';
+    document.getElementById('selectedParticipant').style.display = 'none';
+    document.getElementById('nameInput').value = '';
+    document.getElementById('phoneInput').value = '';
+}
+
+document.addEventListener('click', function (e) {
+    if (!document.getElementById('participantSearchSection').contains(e.target)) {
+        document.getElementById('searchResults').style.display = 'none';
+    }
+});
+
+function generatePassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pw = '';
+    for (let i = 0; i < 8; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('passwordInput').value = pw;
+    document.getElementById('passwordGenerated').value = '1';
+    document.getElementById('confirmPasswordSection').style.display = 'none';
+    document.getElementById('passwordConfirmation').removeAttribute('required');
+}
+
+function copyPassword() {
+    const pw = document.getElementById('passwordInput').value;
+    if (!pw) return;
+    navigator.clipboard.writeText(pw).then(() => {
+        const btn = document.getElementById('copyBtn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.style.color = '#059669';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; }, 2000);
+    }).catch(() => {
+        const input = document.getElementById('passwordInput');
+        input.select();
+        document.execCommand('copy');
+    });
+}
+
+document.getElementById('passwordInput').addEventListener('input', function () {
+    if (this.value === '' && document.getElementById('passwordGenerated').value === '1') {
+        document.getElementById('passwordGenerated').value = '0';
+        document.getElementById('confirmPasswordSection').style.display = 'block';
+        document.getElementById('passwordConfirmation').setAttribute('required', 'required');
+    }
+});
+
+function escHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+</script>
+@endpush

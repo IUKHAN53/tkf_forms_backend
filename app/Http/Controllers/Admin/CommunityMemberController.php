@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommunityMember;
+use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Services\LogActivity;
@@ -41,15 +42,20 @@ class CommunityMemberController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
+            'participant_id' => 'nullable|integer|exists:participants,id',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:50|unique:community_members,phone',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => $request->boolean('password_generated')
+                ? 'required|string|min:6'
+                : 'required|string|min:6|confirmed',
             'district' => 'nullable|string|max:255',
             'uc' => 'nullable|string|max:255',
             'fix_site' => 'nullable|string|max:255',
             'is_active' => 'boolean',
-        ]);
+        ];
+
+        $validated = $request->validate($rules);
 
         $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -68,15 +74,21 @@ class CommunityMemberController extends Controller
 
     public function update(Request $request, CommunityMember $communityMember)
     {
-        $validated = $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:50|unique:community_members,phone,' . $communityMember->id,
-            'password' => 'nullable|string|min:6|confirmed',
+            'password' => 'nullable|string|min:6',
             'district' => 'nullable|string|max:255',
             'uc' => 'nullable|string|max:255',
             'fix_site' => 'nullable|string|max:255',
             'is_active' => 'boolean',
-        ]);
+        ];
+
+        if (!empty($request->password) && !$request->boolean('password_generated')) {
+            $rules['password'] = 'nullable|string|min:6|confirmed';
+        }
+
+        $validated = $request->validate($rules);
 
         $communityMember->name = $validated['name'];
         $communityMember->phone = $validated['phone'];
@@ -105,5 +117,45 @@ class CommunityMemberController extends Controller
         LogActivity::record('community_member.deleted', "Deleted community member {$name}", ['member_id' => $id]);
 
         return redirect()->route('admin.community-members.index')->with('success', 'Community member deleted');
+    }
+
+    public function searchParticipants(Request $request)
+    {
+        $request->validate(['q' => 'required|string|min:2']);
+
+        $search = $request->q;
+
+        $participants = Participant::query()
+            ->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('contact_no', 'like', "%{$search}%");
+            })
+            ->whereNotNull('contact_no')
+            ->where('contact_no', '!=', '')
+            ->select('id', 'name', 'contact_no', 'occupation', 'gender', 'participantable_type')
+            ->orderBy('name')
+            ->limit(50)
+            ->get()
+            ->unique('contact_no')
+            ->values()
+            ->map(function ($p) {
+                $sourceLabel = match (class_basename($p->participantable_type)) {
+                    'FgdsCommunity' => 'FGDs-Community',
+                    'FgdsHealthWorkers' => 'FGDs-Health Workers',
+                    'BridgingTheGap' => 'Bridging The Gap',
+                    default => 'Other',
+                };
+
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'contact_no' => $p->contact_no,
+                    'occupation' => $p->occupation,
+                    'gender' => $p->gender,
+                    'source' => $sourceLabel,
+                ];
+            });
+
+        return response()->json($participants);
     }
 }
