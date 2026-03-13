@@ -11,7 +11,7 @@ class VaccinationRecordController extends Controller
 {
     public function index(Request $request)
     {
-        $query = VaccinationRecord::query()->with('user')->latest();
+        $query = VaccinationRecord::query()->with(['user', 'communityMember'])->latest();
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -63,8 +63,35 @@ class VaccinationRecordController extends Controller
 
     public function show(VaccinationRecord $vaccinationRecord)
     {
-        $vaccinationRecord->load('user');
+        $vaccinationRecord->load(['user', 'communityMember']);
         return view('admin.core-forms.vaccination-records.show', compact('vaccinationRecord'));
+    }
+
+    public function edit(VaccinationRecord $vaccinationRecord)
+    {
+        return view('admin.core-forms.vaccination-records.edit', compact('vaccinationRecord'));
+    }
+
+    public function update(Request $request, VaccinationRecord $vaccinationRecord)
+    {
+        $validated = $request->validate([
+            'child_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'age' => 'nullable|string|max:100',
+            'address' => 'nullable|string|max:500',
+            'contact_number' => 'nullable|string|max:50',
+            'category' => 'required|string|in:Defaulter,Refusal,Zero Dose',
+            'vaccinated' => 'required|string|in:YES,NO',
+            'date_of_vaccination' => 'nullable|date',
+            'district' => 'nullable|string|max:255',
+            'uc' => 'nullable|string|max:255',
+            'fix_site' => 'nullable|string|max:255',
+        ]);
+
+        $vaccinationRecord->update($validated);
+
+        return redirect()->route('admin.vaccination-records.show', $vaccinationRecord)
+            ->with('success', 'Vaccination record updated successfully.');
     }
 
     public function destroy(VaccinationRecord $vaccinationRecord)

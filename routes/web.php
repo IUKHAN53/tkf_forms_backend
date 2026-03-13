@@ -74,7 +74,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('vaccination-records/export', [VaccinationRecordController::class, 'export'])->name('vaccination-records.export');
     Route::get('vaccination-records/template', [VaccinationRecordController::class, 'template'])->name('vaccination-records.template');
     Route::post('vaccination-records/import', [VaccinationRecordController::class, 'import'])->name('vaccination-records.import');
-    Route::resource('vaccination-records', VaccinationRecordController::class)->only(['index', 'show', 'destroy']);
+    Route::resource('vaccination-records', VaccinationRecordController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Outreach Sites Management
     Route::get('outreach-sites/export', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'export'])->name('outreach-sites.export');
