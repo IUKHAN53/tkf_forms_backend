@@ -193,6 +193,12 @@
             <!-- Stats Cards -->
             <div class="tab-stats" id="tabStats"></div>
 
+            <!-- Barriers by Category -->
+            <div id="barriersCategorySection" style="display: none; margin-bottom: 24px;">
+                <div style="font-size: 15px; font-weight: 600; color: var(--gray-800); margin-bottom: 12px;">Barriers by Category</div>
+                <div id="barriersCategoryGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;"></div>
+            </div>
+
             <!-- Data Table -->
             <div class="tab-table-container">
                 <div class="table-header">
@@ -1030,6 +1036,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tabStats.innerHTML = '';
         tableHead.innerHTML = '';
         tableBody.innerHTML = '';
+        document.getElementById('barriersCategorySection').style.display = 'none';
 
         const params = new URLSearchParams({ tab: currentTab });
         if (startDate) params.append('start_date', startDate);
@@ -1042,6 +1049,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (result.success) {
                 renderStats(result.data.stats);
+                renderBarriersByCategory(result.data.barriers_by_category);
                 renderTable(result.data.records);
             }
         } catch (error) {
@@ -1050,6 +1058,41 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             loadingState.classList.remove('active');
         }
+    }
+
+    // Render barriers by category grid
+    function renderBarriersByCategory(categories) {
+        const section = document.getElementById('barriersCategorySection');
+        const grid = document.getElementById('barriersCategoryGrid');
+        if (!categories || !categories.length) {
+            section.style.display = 'none';
+            return;
+        }
+        const totalBarriers = categories.reduce((sum, c) => sum + c.count, 0);
+        if (totalBarriers === 0) {
+            section.style.display = 'none';
+            return;
+        }
+        const categoryColors = [
+            { bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
+            { bg: '#fff7ed', border: '#fed7aa', text: '#9a3412' },
+            { bg: '#fffbeb', border: '#fde68a', text: '#92400e' },
+            { bg: '#f0fdf4', border: '#bbf7d0', text: '#166534' },
+            { bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af' },
+            { bg: '#eef2ff', border: '#c7d2fe', text: '#3730a3' },
+            { bg: '#faf5ff', border: '#e9d5ff', text: '#6b21a8' },
+            { bg: '#fdf2f8', border: '#fbcfe8', text: '#9d174d' },
+        ];
+        let html = '';
+        categories.forEach((cat, i) => {
+            const color = categoryColors[i % categoryColors.length];
+            html += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; border-radius: 10px; padding: 14px 16px; text-align: center;">
+                <div style="font-size: 22px; font-weight: 700; color: ${color.text}; line-height: 1.2;">${cat.count}</div>
+                <div style="font-size: 12px; color: ${color.text}; margin-top: 4px; opacity: 0.85; line-height: 1.3;">${cat.name}</div>
+            </div>`;
+        });
+        grid.innerHTML = html;
+        section.style.display = 'block';
     }
 
     // Render stats cards
@@ -1153,6 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'hfs', label: 'Health Facility' },
                     { key: 'uc', label: 'UC' },
                     { key: 'total_participants', label: 'Participants' },
+                    { key: 'barriers_count', label: 'Barriers' },
                     { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }
                 ];

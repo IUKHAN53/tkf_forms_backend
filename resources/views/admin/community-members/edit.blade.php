@@ -28,17 +28,23 @@
         </div>
         <div class="form-group">
             <label class="form-label">District</label>
-            <input type="text" name="district" class="form-input" value="{{ old('district', $member->district) }}">
+            <select name="district" id="districtSelect" class="form-input">
+                <option value="">-- Select District --</option>
+            </select>
             @error('district')<span class="form-error">{{ $message }}</span>@enderror
         </div>
         <div class="form-group">
             <label class="form-label">Union Council</label>
-            <input type="text" name="uc" class="form-input" value="{{ old('uc', $member->uc) }}">
+            <select name="uc" id="ucSelect" class="form-input" disabled>
+                <option value="">-- Select District first --</option>
+            </select>
             @error('uc')<span class="form-error">{{ $message }}</span>@enderror
         </div>
         <div class="form-group">
             <label class="form-label">Fix Site</label>
-            <input type="text" name="fix_site" class="form-input" value="{{ old('fix_site', $member->fix_site) }}">
+            <select name="fix_site" id="fixSiteSelect" class="form-input" disabled>
+                <option value="">-- Select UC first --</option>
+            </select>
             @error('fix_site')<span class="form-error">{{ $message }}</span>@enderror
         </div>
 
@@ -121,5 +127,96 @@ document.getElementById('passwordInput').addEventListener('input', function () {
         document.getElementById('confirmPasswordSection').style.display = 'block';
     }
 });
+
+// --- Dependent Dropdowns ---
+const API_BASE = '/api/v1/outreach-sites';
+const districtSelect = document.getElementById('districtSelect');
+const ucSelect = document.getElementById('ucSelect');
+const fixSiteSelect = document.getElementById('fixSiteSelect');
+const currentDistrict = @json(old('district', $member->district));
+const currentUc = @json(old('uc', $member->uc));
+const currentFixSite = @json(old('fix_site', $member->fix_site));
+
+async function loadDistricts() {
+    try {
+        const res = await fetch(`${API_BASE}/districts`);
+        const districts = await res.json();
+        districts.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            if (d === currentDistrict) opt.selected = true;
+            districtSelect.appendChild(opt);
+        });
+        if (currentDistrict) {
+            await loadUCs(currentDistrict, currentUc);
+        }
+    } catch (e) {
+        console.error('Failed to load districts:', e);
+    }
+}
+
+async function loadUCs(district, preselect) {
+    ucSelect.innerHTML = '<option value="">-- Loading... --</option>';
+    ucSelect.disabled = true;
+    fixSiteSelect.innerHTML = '<option value="">-- Select UC first --</option>';
+    fixSiteSelect.disabled = true;
+    if (!district) {
+        ucSelect.innerHTML = '<option value="">-- Select District first --</option>';
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/union-councils?district=${encodeURIComponent(district)}`);
+        const ucs = await res.json();
+        ucSelect.innerHTML = '<option value="">-- Select Union Council --</option>';
+        ucs.forEach(uc => {
+            const opt = document.createElement('option');
+            opt.value = uc;
+            opt.textContent = uc;
+            if (uc === (preselect || '')) opt.selected = true;
+            ucSelect.appendChild(opt);
+        });
+        ucSelect.disabled = false;
+        if (preselect) {
+            await loadFixSites(district, preselect, currentFixSite);
+        }
+    } catch (e) {
+        ucSelect.innerHTML = '<option value="">-- Failed to load --</option>';
+    }
+}
+
+async function loadFixSites(district, uc, preselect) {
+    fixSiteSelect.innerHTML = '<option value="">-- Loading... --</option>';
+    fixSiteSelect.disabled = true;
+    if (!uc) {
+        fixSiteSelect.innerHTML = '<option value="">-- Select UC first --</option>';
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/fix-sites?district=${encodeURIComponent(district)}&union_council=${encodeURIComponent(uc)}`);
+        const sites = await res.json();
+        fixSiteSelect.innerHTML = '<option value="">-- Select Fix Site --</option>';
+        sites.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            if (s === (preselect || '')) opt.selected = true;
+            fixSiteSelect.appendChild(opt);
+        });
+        fixSiteSelect.disabled = false;
+    } catch (e) {
+        fixSiteSelect.innerHTML = '<option value="">-- Failed to load --</option>';
+    }
+}
+
+districtSelect.addEventListener('change', function () {
+    loadUCs(this.value);
+});
+
+ucSelect.addEventListener('change', function () {
+    loadFixSites(districtSelect.value, this.value);
+});
+
+loadDistricts();
 </script>
 @endpush

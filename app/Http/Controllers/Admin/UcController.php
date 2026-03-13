@@ -8,6 +8,8 @@ use App\Models\FgdsCommunity;
 use App\Models\FgdsHealthWorkers;
 use App\Models\BridgingTheGap;
 use App\Models\FgdsCommunityBarrier;
+use App\Models\FgdsHealthWorkersBarrier;
+use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapActionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -260,6 +262,22 @@ class UcController extends Controller
         $recordIds = $records->pluck('id');
         $totalBarriers = FgdsCommunityBarrier::whereIn('fgds_community_id', $recordIds)->count();
 
+        // Barriers by category
+        $barriersByCategory = FgdsCommunityBarrier::whereIn('fgds_community_id', $recordIds)
+            ->select('barrier_category_id', DB::raw('count(*) as count'))
+            ->groupBy('barrier_category_id')
+            ->pluck('count', 'barrier_category_id')
+            ->toArray();
+
+        $categories = BarrierCategory::ordered();
+        $barriersCategorized = $categories->map(function ($cat) use ($barriersByCategory) {
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'count' => $barriersByCategory[$cat->id] ?? 0,
+            ];
+        })->values();
+
         // Recent submissions (last 7 days)
         $recentCount = FgdsCommunity::where(function ($q) use ($variants) {
                 $q->whereIn('uc', $variants);
@@ -279,6 +297,7 @@ class UcController extends Controller
                 'total_barriers' => $totalBarriers,
                 'recent' => $recentCount,
             ],
+            'barriers_by_category' => $barriersCategorized,
             'records' => $records->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -304,7 +323,7 @@ class UcController extends Controller
      */
     private function getFgdsHealthWorkersData(array $variants, ?string $startDate, ?string $endDate): array
     {
-        $query = FgdsHealthWorkers::with(['participants', 'user'])
+        $query = FgdsHealthWorkers::with(['participants', 'barriers.category', 'user'])
             ->where(function ($q) use ($variants) {
                 $q->whereIn('uc', $variants);
                 foreach ($variants as $variant) {
@@ -326,6 +345,26 @@ class UcController extends Controller
         $totalFemales = $records->sum('participants_females');
         $totalParticipants = $totalMales + $totalFemales;
 
+        // Get barriers count
+        $recordIds = $records->pluck('id');
+        $totalBarriers = FgdsHealthWorkersBarrier::whereIn('fgds_health_workers_id', $recordIds)->count();
+
+        // Barriers by category
+        $barriersByCategory = FgdsHealthWorkersBarrier::whereIn('fgds_health_workers_id', $recordIds)
+            ->select('barrier_category_id', DB::raw('count(*) as count'))
+            ->groupBy('barrier_category_id')
+            ->pluck('count', 'barrier_category_id')
+            ->toArray();
+
+        $categories = BarrierCategory::ordered();
+        $barriersCategorized = $categories->map(function ($cat) use ($barriersByCategory) {
+            return [
+                'id' => $cat->id,
+                'name' => $cat->name,
+                'count' => $barriersByCategory[$cat->id] ?? 0,
+            ];
+        })->values();
+
         // Recent submissions (last 7 days)
         $recentCount = FgdsHealthWorkers::where(function ($q) use ($variants) {
                 $q->whereIn('uc', $variants);
@@ -342,8 +381,10 @@ class UcController extends Controller
                 'total_males' => $totalMales,
                 'total_females' => $totalFemales,
                 'total_participants' => $totalParticipants,
+                'total_barriers' => $totalBarriers,
                 'recent' => $recentCount,
             ],
+            'barriers_by_category' => $barriersCategorized,
             'records' => $records->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -354,6 +395,7 @@ class UcController extends Controller
                     'participants_males' => $item->participants_males,
                     'participants_females' => $item->participants_females,
                     'total_participants' => $item->participants_males + $item->participants_females,
+                    'barriers_count' => $item->barriers->count(),
                     'facilitator' => $item->facilitator_tkf,
                     'submitted_by' => $item->user->name ?? 'N/A',
                     'created_at' => $item->created_at->format('M d, Y'),
