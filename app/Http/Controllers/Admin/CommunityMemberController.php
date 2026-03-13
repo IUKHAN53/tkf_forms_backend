@@ -57,7 +57,6 @@ class CommunityMemberController extends Controller
 
         $validated = $request->validate($rules);
 
-        $validated['password'] = Hash::make($validated['password']);
         $validated['is_active'] = $request->boolean('is_active', true);
 
         $member = CommunityMember::create($validated);
@@ -98,7 +97,7 @@ class CommunityMemberController extends Controller
         $communityMember->is_active = $request->boolean('is_active', false);
 
         if (!empty($validated['password'])) {
-            $communityMember->password = Hash::make($validated['password']);
+            $communityMember->password = $validated['password'];
         }
 
         $communityMember->save();
