@@ -39,4 +39,20 @@ class CommunityAuthController extends Controller
     {
         return response()->json($request->user());
     }
+
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'district' => 'nullable|string|max:255',
+            'uc' => 'nullable|string|max:255',
+            'fix_site' => 'nullable|string|max:255',
+        ]);
+
+        $request->user()->update($validated);
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => $request->user()->fresh(),
+        ]);
+    }
 }

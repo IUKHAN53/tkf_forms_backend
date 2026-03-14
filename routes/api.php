@@ -89,5 +89,6 @@ Route::prefix('v1')->group(function (): void {
     // CLM Tracker - Community Member Profile
     Route::middleware('auth:community')->group(function (): void {
         Route::get('/clm/me', [CommunityAuthController::class, 'me']);
+        Route::put('/clm/profile', [CommunityAuthController::class, 'updateProfile']);
     });
 });
