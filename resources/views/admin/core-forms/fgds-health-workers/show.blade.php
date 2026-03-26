@@ -88,7 +88,7 @@
                     @foreach($fgdsHealthWorker->participants as $participant)
                         <tr>
                             <td>{{ $participant->name }}</td>
-                            <td>{{ $participant->title_designation ?? 'N/A' }}</td>
+                            <td>{{ $participant->designation ?? $participant->title_designation ?? 'N/A' }}</td>
                             <td>{{ $participant->contact_no ?? 'N/A' }}</td>
                             <td>{{ $participant->gender ?? 'N/A' }}</td>
                         </tr>

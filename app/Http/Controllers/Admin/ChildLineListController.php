@@ -64,6 +64,9 @@ class ChildLineListController extends Controller
             'gender' => 'required|in:male,female',
             'date_of_birth' => 'required|date',
             'age_in_months' => 'required|integer|min:0',
+            'vaccinator_name' => 'nullable|string|max:255',
+            'iit_member_name' => 'nullable|string|max:255',
+            'iit_member_contact' => 'nullable|string|max:255',
             'father_cnic' => 'nullable|string|max:255',
             'house_number' => 'nullable|string|max:255',
             'address' => 'required|string',
@@ -72,6 +75,7 @@ class ChildLineListController extends Controller
             'missed_vaccines' => 'required|array|min:1',
             'reasons_of_missing' => 'required|string|max:255',
             'plan_for_coverage' => 'required|string',
+            'date_of_coverage' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -104,6 +108,9 @@ class ChildLineListController extends Controller
             'gender' => 'required|in:male,female',
             'date_of_birth' => 'required|date',
             'age_in_months' => 'required|integer|min:0',
+            'vaccinator_name' => 'nullable|string|max:255',
+            'iit_member_name' => 'nullable|string|max:255',
+            'iit_member_contact' => 'nullable|string|max:255',
             'father_cnic' => 'nullable|string|max:255',
             'house_number' => 'nullable|string|max:255',
             'address' => 'required|string',
@@ -112,6 +119,7 @@ class ChildLineListController extends Controller
             'missed_vaccines' => 'required|array|min:1',
             'reasons_of_missing' => 'required|string|max:255',
             'plan_for_coverage' => 'required|string',
+            'date_of_coverage' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
         ]);
@@ -143,13 +151,26 @@ class ChildLineListController extends Controller
             'Content-Disposition' => 'attachment; filename="child_line_list_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERAGE'];
+        $columns = [
+            'DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH',
+            'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS',
+            'NAME OF VACCINATOR', 'NAME OF IIT TEAM MEMBER', 'CONTACT NUMBER OF IIT TEAM MEMBER',
+            'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION',
+            'GPS Coordinates (To be fetched automatically)', 'PHONE # OF GUARDIAN',
+            'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING',
+            'PLAN FOR COVERAGE', 'DATE OF COVERAGE',
+        ];
 
         $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
             foreach ($records as $item) {
+                $gps = $item->gps_coordinates;
+                if (!$gps && $item->latitude && $item->longitude) {
+                    $gps = $item->latitude . ',' . $item->longitude;
+                }
+
                 fputcsv($file, [
                     $item->division,
                     $item->district,
@@ -159,16 +180,21 @@ class ChildLineListController extends Controller
                     $item->child_name,
                     $item->father_name,
                     ucfirst($item->gender),
-                    $item->date_of_birth?->format('Y-m-d'),
+                    $item->date_of_birth?->format('m/d/Y'),
                     $item->age_in_months,
+                    $item->vaccinator_name,
+                    $item->iit_member_name,
+                    $item->iit_member_contact,
                     $item->father_cnic,
                     $item->house_number,
                     $item->address,
+                    $gps,
                     $item->guardian_phone,
                     $item->type,
                     is_array($item->missed_vaccines) ? implode(', ', $item->missed_vaccines) : $item->missed_vaccines,
                     $item->reasons_of_missing,
                     $item->plan_for_coverage,
+                    $item->date_of_coverage?->format('m/d/Y'),
                 ]);
             }
 
@@ -185,12 +211,28 @@ class ChildLineListController extends Controller
             'Content-Disposition' => 'attachment; filename="child_line_list_template.csv"',
         ];
 
-        $columns = ['DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH', 'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS', 'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION', 'PHONE # OF GUARDIAN', 'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING', 'PLAN FOR COVERAGE'];
+        $columns = [
+            'DIVISION', 'DISTRICT', 'TOWN', 'UC', 'OUTREACH',
+            'CHILD NAME', 'FATHER NAME', 'GENDER', 'DATE OF BIRTH', 'AGE IN MONTHS',
+            'NAME OF VACCINATOR', 'NAME OF IIT TEAM MEMBER', 'CONTACT NUMBER OF IIT TEAM MEMBER',
+            'FATHER CNIC/B-FORM', 'HOUSE #', 'ADDRESS/ LOCATION',
+            'GPS Coordinates (To be fetched automatically)', 'PHONE # OF GUARDIAN',
+            'TYPE ( ZD/DEFAULTER)', 'MISSED VACCINE', 'REASONS OF MISSING',
+            'PLAN FOR COVERAGE', 'DATE OF COVERAGE',
+        ];
 
         $callback = function () use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
-            fputcsv($file, ['Karachi', 'Karachi Central', 'Liaquatabad', 'UC-1', 'Outreach Site 1', 'Ali Ahmed', 'Ahmed Khan', 'Male', '2024-01-15', '12', '12345-1234567-1', 'House 123', 'Street 5, Block A', '03001234567', 'Zero Dose', 'BCG, OPV0, HepB', 'Refusal', 'Follow-up visit scheduled']);
+            fputcsv($file, [
+                'Karachi', 'Karachi Central', 'Liaquatabad', 'UC-1', 'Outreach Site 1',
+                'Ali Ahmed', 'Ahmed Khan', 'Male', '1/15/2024', '12',
+                'Tayyaba Afridi', 'Ameen', '3181032760',
+                '12345-1234567-1', 'House 123', 'Street 5, Block A',
+                'to be fetched automatically from app', '3001234567',
+                'Zero Dose', 'BCG, OPV0, HepB', 'Refusal',
+                'Follow-up visit scheduled', '',
+            ]);
             fclose($file);
         };
 
@@ -209,13 +251,49 @@ class ChildLineListController extends Controller
         $header = fgetcsv($handle);
         $imported = 0;
         $errors = [];
+        $rowNum = 1;
 
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 18 || empty($row[0])) continue;
+            $rowNum++;
+            if (count($row) < 22 || empty($row[0])) continue;
 
             try {
-                // Parse missed vaccines from comma-separated string to array
-                $missedVaccines = !empty($row[15]) ? array_map('trim', explode(',', $row[15])) : [];
+                // Column mapping (0-indexed):
+                // 0=DIVISION, 1=DISTRICT, 2=TOWN, 3=UC, 4=OUTREACH
+                // 5=CHILD NAME, 6=FATHER NAME, 7=GENDER, 8=DOB, 9=AGE IN MONTHS
+                // 10=VACCINATOR, 11=IIT MEMBER, 12=IIT CONTACT
+                // 13=CNIC, 14=HOUSE#, 15=ADDRESS, 16=GPS, 17=PHONE
+                // 18=TYPE, 19=MISSED VACCINE, 20=REASONS, 21=PLAN, 22=DATE OF COVERAGE
+
+                $missedVaccines = !empty($row[19]) ? array_map('trim', explode(',', $row[19])) : [];
+
+                // Parse GPS coordinates into lat/lng
+                $latitude = null;
+                $longitude = null;
+                $gpsCoordinates = trim($row[16] ?? '');
+                if ($gpsCoordinates && str_contains($gpsCoordinates, ',')) {
+                    $parts = array_map('trim', explode(',', $gpsCoordinates));
+                    if (count($parts) === 2 && is_numeric($parts[0]) && is_numeric($parts[1])) {
+                        $latitude = (float) $parts[0];
+                        $longitude = (float) $parts[1];
+                    }
+                }
+
+                // Parse date of birth - support multiple formats
+                $dob = $row[8];
+                if ($dob) {
+                    $parsedDate = date_create($dob);
+                    $dob = $parsedDate ? $parsedDate->format('Y-m-d') : $dob;
+                }
+
+                // Parse date of coverage
+                $dateCoverage = isset($row[22]) && !empty(trim($row[22])) ? trim($row[22]) : null;
+                if ($dateCoverage && !in_array(strtolower($dateCoverage), ['to be fetched from app', ''])) {
+                    $parsedDate = date_create($dateCoverage);
+                    $dateCoverage = $parsedDate ? $parsedDate->format('Y-m-d') : null;
+                } else {
+                    $dateCoverage = null;
+                }
 
                 ChildLineList::create([
                     'division' => $row[0],
@@ -226,23 +304,30 @@ class ChildLineListController extends Controller
                     'child_name' => $row[5],
                     'father_name' => $row[6],
                     'gender' => strtolower($row[7]),
-                    'date_of_birth' => $row[8],
+                    'date_of_birth' => $dob,
                     'age_in_months' => (int) $row[9],
-                    'father_cnic' => $row[10],
-                    'house_number' => $row[11],
-                    'address' => $row[12],
-                    'guardian_phone' => $row[13],
-                    'type' => $row[14],
+                    'vaccinator_name' => $row[10] ?: null,
+                    'iit_member_name' => $row[11] ?: null,
+                    'iit_member_contact' => $row[12] ?: null,
+                    'father_cnic' => $row[13] ?: null,
+                    'house_number' => $row[14] ?: null,
+                    'address' => $row[15],
+                    'gps_coordinates' => ($latitude && $longitude) ? $gpsCoordinates : null,
+                    'guardian_phone' => $row[17] ?: null,
+                    'type' => $row[18],
                     'missed_vaccines' => $missedVaccines,
-                    'reasons_of_missing' => $row[16],
-                    'plan_for_coverage' => $row[17],
+                    'reasons_of_missing' => $row[20],
+                    'plan_for_coverage' => $row[21],
+                    'date_of_coverage' => $dateCoverage,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
                     'user_id' => auth()->id(),
                     'submitted_at' => now(),
                     'started_at' => now(),
                 ]);
                 $imported++;
             } catch (\Exception $e) {
-                $errors[] = "Row " . ($imported + 2) . ": " . $e->getMessage();
+                $errors[] = "Row {$rowNum}: " . $e->getMessage();
             }
         }
 

@@ -98,7 +98,7 @@
                             <tr>
                                 <td>{{ $participant->sr_no }}</td>
                                 <td>{{ $participant->name }}</td>
-                                <td>{{ $participant->title_designation ?? '-' }}</td>
+                                <td>{{ $participant->designation ?? $participant->title_designation ?? '-' }}</td>
                                 <td>{{ $participant->occupation ?? '-' }}</td>
                                 <td>{{ $participant->address ?? '-' }}</td>
                                 <td>{{ $participant->contact_no ?? '-' }}</td>
