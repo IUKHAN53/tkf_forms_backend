@@ -36,6 +36,7 @@ class FgdsHealthWorkersController extends Controller
             'device_info' => 'nullable|array',
             'started_at' => 'nullable|date',
             'submitted_at' => 'nullable|date',
+            'unique_id' => 'nullable|string',
             'participants' => 'required|array|min:1',
             'participants.*.name' => 'required|string',
             'participants.*.designation' => 'nullable|string',

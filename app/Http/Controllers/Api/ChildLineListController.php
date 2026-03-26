@@ -40,11 +40,16 @@ class ChildLineListController extends Controller
             'missed_vaccines.*' => 'string',
             'reasons_of_missing' => 'required|string',
             'plan_for_coverage' => 'required|string',
+            'vaccinator_name' => 'nullable|string',
+            'iit_member_name' => 'nullable|string',
+            'iit_member_contact' => 'nullable|string',
+            'date_of_coverage' => 'nullable|date',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
             'device_info' => 'nullable|array',
             'started_at' => 'nullable|date',
             'submitted_at' => 'nullable|date',
+            'unique_id' => 'nullable|string',
         ]);
 
         $validated['user_id'] = $request->user()->id;
