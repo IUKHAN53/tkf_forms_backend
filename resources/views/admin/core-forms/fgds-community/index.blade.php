@@ -183,54 +183,65 @@
         </form>
     </div>
 
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Form ID</th>
-                    <th>Date</th>
-                    <th>District</th>
-                    <th>UC</th>
-                    <th>Venue</th>
-                    <th>Community</th>
-                    <th>Participants</th>
-                    <th>Submitted By</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($fgdsCommunity as $item)
+    <form id="bulkDeleteForm" action="{{ route('admin.fgds-community.bulk-destroy') }}" method="POST">
+        @csrf
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="return confirm('Are you sure you want to delete the selected records?')">
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><code>{{ $item->unique_id }}</code></td>
-                        <td>{{ $item->date ? $item->date->format('M d, Y') : 'N/A' }}</td>
-                        <td>{{ $item->district }}</td>
-                        <td>{{ $item->uc }}</td>
-                        <td>{{ $item->venue }}</td>
-                        <td>{{ is_array($item->community) ? implode(', ', $item->community) : $item->community }}</td>
-                        <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
-                        <td>{{ $item->user->name ?? 'N/A' }}</td>
-                        <td>{{ $item->created_at->format('M d, Y') }}</td>
-                        <td class="action-buttons">
-                            <a href="{{ route('admin.fgds-community.show', $item) }}" class="btn btn-sm btn-outline">View</a>
-                            <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
-                                Barriers
-                            </button>
-                            <form action="{{ route('admin.fgds-community.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th>Form ID</th>
+                        <th>Date</th>
+                        <th>District</th>
+                        <th>UC</th>
+                        <th>Venue</th>
+                        <th>Community</th>
+                        <th>Participants</th>
+                        <th>Submitted By</th>
+                        <th>Created</th>
+                        <th>Actions</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="10" class="text-center text-muted">No FGDs-Community records found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse($fgdsCommunity as $item)
+                        <tr>
+                            <td><input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-checkbox" onclick="updateBulkDeleteBtn()"></td>
+                            <td><code>{{ $item->unique_id }}</code></td>
+                            <td>{{ $item->date ? $item->date->format('M d, Y') : 'N/A' }}</td>
+                            <td>{{ $item->district }}</td>
+                            <td>{{ $item->uc }}</td>
+                            <td>{{ $item->venue }}</td>
+                            <td>{{ is_array($item->community) ? implode(', ', $item->community) : $item->community }}</td>
+                            <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
+                            <td>{{ $item->user->name ?? 'N/A' }}</td>
+                            <td>{{ $item->created_at->format('M d, Y') }}</td>
+                            <td class="action-buttons">
+                                <a href="{{ route('admin.fgds-community.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
+                                    Barriers
+                                </button>
+                                <form action="{{ route('admin.fgds-community.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">No FGDs-Community records found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
 
     @if($fgdsCommunity->hasPages())
         <div class="card-footer">
@@ -305,6 +316,21 @@
 </dialog>
 
 <script>
+function toggleSelectAll(source) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateBulkDeleteBtn();
+}
+
+function updateBulkDeleteBtn() {
+    const checked = document.querySelectorAll('.row-checkbox:checked').length;
+    const btn = document.getElementById('bulkDeleteBtn');
+    const count = document.getElementById('selectedCount');
+    btn.style.display = checked > 0 ? 'inline-flex' : 'none';
+    count.textContent = checked;
+    document.getElementById('selectAll').checked = checked === document.querySelectorAll('.row-checkbox').length && checked > 0;
+}
+
 function openBarriersModal(id, uniqueId) {
     const modal = document.getElementById('barriersModal');
     const form = document.getElementById('barriersForm');

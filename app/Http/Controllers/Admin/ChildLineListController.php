@@ -135,6 +135,19 @@ class ChildLineListController extends Controller
         return view('admin.core-forms.child-line-list.show', compact('childLineList'));
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+        ]);
+
+        $deleted = ChildLineList::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('admin.child-line-list.index')
+            ->with('success', "{$deleted} record(s) deleted successfully.");
+    }
+
     public function destroy(ChildLineList $childLineList)
     {
         $childLineList->delete();

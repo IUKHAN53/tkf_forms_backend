@@ -11,6 +11,12 @@ class OutreachSitesSeeder extends Seeder
     {
         $sites = require database_path('data/sites.php');
 
-        DB::table('outreach_sites')->insert($sites);
+        foreach (array_chunk($sites, 50) as $chunk) {
+            DB::table('outreach_sites')->upsert(
+                $chunk,
+                ['location_hash'],
+                ['district', 'union_council', 'fix_site', 'outreach_site', 'coordinates', 'comments']
+            );
+        }
     }
 }

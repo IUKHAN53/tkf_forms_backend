@@ -58,73 +58,101 @@
         </form>
     </div>
 
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Form ID</th>
-                    <th>District</th>
-                    <th>UC</th>
-                    <th>Child Name</th>
-                    <th>Father Name</th>
-                    <th>Type</th>
-                    <th>Age (Months)</th>
-                    <th>Gender</th>
-                    <th>Submitted By</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($childLineLists as $item)
+    <form id="bulkDeleteForm" action="{{ route('admin.child-line-list.bulk-destroy') }}" method="POST">
+        @csrf
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="return confirm('Are you sure you want to delete the selected records?')">
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><code>{{ $item->unique_id }}</code></td>
-                        <td>{{ $item->district }}</td>
-                        <td>{{ $item->uc }}</td>
-                        <td>{{ $item->child_name }}</td>
-                        <td>{{ $item->father_name }}</td>
-                        <td>
-                            <span class="badge {{ $item->type === 'Zero Dose' ? 'badge-danger' : 'badge-warning' }}">
-                                {{ $item->type }}
-                            </span>
-                        </td>
-                        <td>{{ $item->age_in_months }}</td>
-                        <td>{{ ucfirst($item->gender) }}</td>
-                        <td>{{ $item->user->name ?? 'N/A' }}</td>
-                        <td>
-                            <div class="action-buttons">
-                                <a href="{{ route('admin.child-line-list.show', $item) }}" class="btn-icon" title="View">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                        <circle cx="12" cy="12" r="3"/>
-                                    </svg>
-                                </a>
-                                <a href="{{ route('admin.child-line-list.edit', $item) }}" class="btn-icon" title="Edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                    </svg>
-                                </a>
-                                <form action="{{ route('admin.child-line-list.destroy', $item) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-icon" title="Delete">
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th>Form ID</th>
+                        <th>District</th>
+                        <th>UC</th>
+                        <th>Child Name</th>
+                        <th>Father Name</th>
+                        <th>Type</th>
+                        <th>Age (Months)</th>
+                        <th>Gender</th>
+                        <th>Submitted By</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($childLineLists as $item)
+                        <tr>
+                            <td><input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-checkbox" onclick="updateBulkDeleteBtn()"></td>
+                            <td><code>{{ $item->unique_id }}</code></td>
+                            <td>{{ $item->district }}</td>
+                            <td>{{ $item->uc }}</td>
+                            <td>{{ $item->child_name }}</td>
+                            <td>{{ $item->father_name }}</td>
+                            <td>
+                                <span class="badge {{ $item->type === 'Zero Dose' ? 'badge-danger' : 'badge-warning' }}">
+                                    {{ $item->type }}
+                                </span>
+                            </td>
+                            <td>{{ $item->age_in_months }}</td>
+                            <td>{{ ucfirst($item->gender) }}</td>
+                            <td>{{ $item->user->name ?? 'N/A' }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <a href="{{ route('admin.child-line-list.show', $item) }}" class="btn-icon" title="View">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3 6 5 6 21 6"/>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                            <circle cx="12" cy="12" r="3"/>
                                         </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="10" class="text-center text-muted">No child line list entries found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                                    </a>
+                                    <a href="{{ route('admin.child-line-list.edit', $item) }}" class="btn-icon" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                        </svg>
+                                    </a>
+                                    <form action="{{ route('admin.child-line-list.destroy', $item) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this entry?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn-icon" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="3 6 5 6 21 6"/>
+                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">No child line list entries found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    <script>
+    function toggleSelectAll(source) {
+        const checkboxes = document.querySelectorAll('.row-checkbox');
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateBulkDeleteBtn();
+    }
+
+    function updateBulkDeleteBtn() {
+        const checked = document.querySelectorAll('.row-checkbox:checked').length;
+        const btn = document.getElementById('bulkDeleteBtn');
+        const count = document.getElementById('selectedCount');
+        btn.style.display = checked > 0 ? 'inline-flex' : 'none';
+        count.textContent = checked;
+        document.getElementById('selectAll').checked = checked === document.querySelectorAll('.row-checkbox').length && checked > 0;
+    }
+    </script>
 
     @if($childLineLists->hasPages())
         <div class="card-footer">

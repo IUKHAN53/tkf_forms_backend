@@ -145,6 +145,27 @@ class FgdsCommunityController extends Controller
             ->with('success', 'FGDs-Community session updated successfully.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate(['ids' => 'required|array', 'ids.*' => 'integer']);
+
+        $records = FgdsCommunity::whereIn('id', $request->ids)->get();
+        $deleted = 0;
+
+        foreach ($records as $record) {
+            $participantIds = $record->participants()->pluck('id');
+            if ($participantIds->isNotEmpty()) {
+                BridgingTheGapTeamMember::whereIn('participant_id', $participantIds)->delete();
+            }
+            $record->participants()->delete();
+            $record->delete();
+            $deleted++;
+        }
+
+        return redirect()->route('admin.fgds-community.index')
+            ->with('success', "{$deleted} record(s) deleted successfully.");
+    }
+
     public function destroy(FgdsCommunity $fgdsCommunity)
     {
         // Get participant IDs before deleting

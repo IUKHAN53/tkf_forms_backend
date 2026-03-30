@@ -120,6 +120,27 @@ class BridgingTheGapController extends Controller
             ->with('success', 'Bridging The Gap record updated successfully.');
     }
 
+    public function bulkDestroy(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer',
+        ]);
+
+        $records = BridgingTheGap::whereIn('id', $request->ids)->get();
+        $deleted = 0;
+
+        foreach ($records as $record) {
+            $record->teamMembers()->delete();
+            $record->participants()->delete();
+            $record->delete();
+            $deleted++;
+        }
+
+        return redirect()->route('admin.bridging-the-gap.index')
+            ->with('success', "{$deleted} record(s) deleted successfully.");
+    }
+
     public function destroy(BridgingTheGap $bridgingTheGap)
     {
         // Delete team members first (references to external participants)

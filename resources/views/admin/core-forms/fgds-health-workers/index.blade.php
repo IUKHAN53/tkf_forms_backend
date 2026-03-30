@@ -180,56 +180,67 @@
         </form>
     </div>
 
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Form ID</th>
-                    <th>Date</th>
-                    <th>UC</th>
-                    <th>HFS</th>
-                    <th>Group Type</th>
-                    <th>Participants</th>
-                    <th>Facilitator</th>
-                    <th>Submitted By</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($fgdsHealthWorkers as $item)
+    <form id="bulkDeleteForm" action="{{ route('admin.fgds-health-workers.bulk-destroy') }}" method="POST">
+        @csrf
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="return confirm('Are you sure you want to delete the selected records?')">
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><code>{{ $item->unique_id }}</code></td>
-                        <td>{{ $item->date ? $item->date->format('M d, Y') : 'N/A' }}</td>
-                        <td>{{ $item->uc }}</td>
-                        <td>{{ $item->hfs }}</td>
-                        <td>
-                            <span class="badge badge-primary">
-                                {{ $item->group_type }}
-                            </span>
-                        </td>
-                        <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
-                        <td>{{ $item->facilitator_tkf }}</td>
-                        <td>{{ $item->user->name ?? 'N/A' }}</td>
-                        <td class="action-buttons">
-                            <a href="{{ route('admin.fgds-health-workers.show', $item) }}" class="btn btn-sm btn-outline">View</a>
-                            <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
-                                Barriers
-                            </button>
-                            <form action="{{ route('admin.fgds-health-workers.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th>Form ID</th>
+                        <th>Date</th>
+                        <th>UC</th>
+                        <th>HFS</th>
+                        <th>Group Type</th>
+                        <th>Participants</th>
+                        <th>Facilitator</th>
+                        <th>Submitted By</th>
+                        <th>Actions</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" class="text-center text-muted">No FGDs-Health Workers records found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse($fgdsHealthWorkers as $item)
+                        <tr>
+                            <td><input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-checkbox" onclick="updateBulkDeleteBtn()"></td>
+                            <td><code>{{ $item->unique_id }}</code></td>
+                            <td>{{ $item->date ? $item->date->format('M d, Y') : 'N/A' }}</td>
+                            <td>{{ $item->uc }}</td>
+                            <td>{{ $item->hfs }}</td>
+                            <td>
+                                <span class="badge badge-primary">
+                                    {{ $item->group_type }}
+                                </span>
+                            </td>
+                            <td>{{ $item->participants->count() }} (M: {{ $item->participants->where('gender', 'Male')->count() }}, F: {{ $item->participants->where('gender', 'Female')->count() }})</td>
+                            <td>{{ $item->facilitator_tkf }}</td>
+                            <td>{{ $item->user->name ?? 'N/A' }}</td>
+                            <td class="action-buttons">
+                                <a href="{{ route('admin.fgds-health-workers.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                                <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
+                                    Barriers
+                                </button>
+                                <form action="{{ route('admin.fgds-health-workers.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">No FGDs-Health Workers records found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
 
     @if($fgdsHealthWorkers->hasPages())
         <div class="card-footer">
@@ -304,6 +315,21 @@
 </dialog>
 
 <script>
+function toggleSelectAll(source) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateBulkDeleteBtn();
+}
+
+function updateBulkDeleteBtn() {
+    const checked = document.querySelectorAll('.row-checkbox:checked').length;
+    const btn = document.getElementById('bulkDeleteBtn');
+    const count = document.getElementById('selectedCount');
+    btn.style.display = checked > 0 ? 'inline-flex' : 'none';
+    count.textContent = checked;
+    document.getElementById('selectAll').checked = checked === document.querySelectorAll('.row-checkbox').length && checked > 0;
+}
+
 function openBarriersModal(id, uniqueId) {
     const modal = document.getElementById('barriersModal');
     const form = document.getElementById('barriersForm');

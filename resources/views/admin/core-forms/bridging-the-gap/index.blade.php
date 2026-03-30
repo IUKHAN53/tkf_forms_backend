@@ -167,59 +167,70 @@
         </form>
     </div>
 
-    <div class="table-container">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Form ID</th>
-                    <th>Date</th>
-                    <th>District</th>
-                    <th>UC</th>
-                    <th>Venue</th>
-                    <th>Attendance</th>
-                    <th>IIT Members</th>
-                    <th>Submitted By</th>
-                    <th>Created</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($records as $item)
+    <form id="bulkDeleteForm" action="{{ route('admin.bridging-the-gap.bulk-destroy') }}" method="POST">
+        @csrf
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <button type="submit" class="btn btn-sm btn-danger" id="bulkDeleteBtn" style="display: none;" onclick="return confirm('Are you sure you want to delete the selected records?')">
+                Delete Selected (<span id="selectedCount">0</span>)
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
                     <tr>
-                        <td><code>{{ $item->unique_id }}</code></td>
-                        <td>{{ $item->date->format('M d, Y') }}</td>
-                        <td>{{ $item->district }}</td>
-                        <td>{{ $item->uc }}</td>
-                        <td>{{ $item->venue }}</td>
-                        <td>
-                            <span class="badge badge-info">{{ $item->participants->count() }}</span>
-                            <small class="text-muted">(M:{{ $item->participants_males }}/F:{{ $item->participants_females }})</small>
-                        </td>
-                        <td>
-                            <span class="badge badge-success">{{ $item->teamMembers->count() }}</span>
-                        </td>
-                        <td>{{ $item->user->name ?? 'N/A' }}</td>
-                        <td>{{ $item->created_at->format('M d, Y') }}</td>
-                        <td class="action-buttons">
-                            <a href="{{ route('admin.bridging-the-gap.show', $item) }}" class="btn btn-sm btn-outline">View</a>
-                            <button type="button" class="btn btn-sm btn-success" onclick="openActionPlanModal({{ $item->id }}, '{{ $item->unique_id }}')">
-                                Action Plan
-                            </button>
-                            <form action="{{ route('admin.bridging-the-gap.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        </td>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                        <th>Form ID</th>
+                        <th>Date</th>
+                        <th>District</th>
+                        <th>UC</th>
+                        <th>Venue</th>
+                        <th>Attendance</th>
+                        <th>IIT Members</th>
+                        <th>Submitted By</th>
+                        <th>Created</th>
+                        <th>Actions</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="10" class="text-center text-muted">No Bridging The Gap records found</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @forelse($records as $item)
+                        <tr>
+                            <td><input type="checkbox" name="ids[]" value="{{ $item->id }}" class="row-checkbox" onclick="updateBulkDeleteBtn()"></td>
+                            <td><code>{{ $item->unique_id }}</code></td>
+                            <td>{{ $item->date->format('M d, Y') }}</td>
+                            <td>{{ $item->district }}</td>
+                            <td>{{ $item->uc }}</td>
+                            <td>{{ $item->venue }}</td>
+                            <td>
+                                <span class="badge badge-info">{{ $item->participants->count() }}</span>
+                                <small class="text-muted">(M:{{ $item->participants_males }}/F:{{ $item->participants_females }})</small>
+                            </td>
+                            <td>
+                                <span class="badge badge-success">{{ $item->teamMembers->count() }}</span>
+                            </td>
+                            <td>{{ $item->user->name ?? 'N/A' }}</td>
+                            <td>{{ $item->created_at->format('M d, Y') }}</td>
+                            <td class="action-buttons">
+                                <a href="{{ route('admin.bridging-the-gap.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                                <button type="button" class="btn btn-sm btn-success" onclick="openActionPlanModal({{ $item->id }}, '{{ $item->unique_id }}')">
+                                    Action Plan
+                                </button>
+                                <form action="{{ route('admin.bridging-the-gap.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="11" class="text-center text-muted">No Bridging The Gap records found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </form>
 
     @if($records->hasPages())
         <div class="card-footer">
@@ -294,6 +305,21 @@
 </dialog>
 
 <script>
+function toggleSelectAll(source) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = source.checked);
+    updateBulkDeleteBtn();
+}
+
+function updateBulkDeleteBtn() {
+    const checked = document.querySelectorAll('.row-checkbox:checked').length;
+    const btn = document.getElementById('bulkDeleteBtn');
+    const count = document.getElementById('selectedCount');
+    btn.style.display = checked > 0 ? 'inline-flex' : 'none';
+    count.textContent = checked;
+    document.getElementById('selectAll').checked = checked === document.querySelectorAll('.row-checkbox').length && checked > 0;
+}
+
 function openActionPlanModal(id, uniqueId) {
     const modal = document.getElementById('actionPlanModal');
     const form = document.getElementById('actionPlanForm');
