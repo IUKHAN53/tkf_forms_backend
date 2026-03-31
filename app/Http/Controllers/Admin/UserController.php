@@ -10,9 +10,11 @@ use App\Services\LogActivity;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::orderByDesc('created_at')->paginate(15);
+        $perPage = $request->input('per_page', 15);
+        $query = User::orderByDesc('created_at');
+        $users = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
         return view('admin.users.index', compact('users'));
     }
 

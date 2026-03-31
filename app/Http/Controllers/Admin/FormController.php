@@ -11,9 +11,11 @@ use App\Services\LogActivity;
 
 class FormController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $forms = Form::withCount('submissions')->latest()->paginate(15);
+        $perPage = $request->input('per_page', 15);
+        $query = Form::withCount('submissions')->latest();
+        $forms = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
         return view('admin.forms.index', compact('forms'));
     }
 

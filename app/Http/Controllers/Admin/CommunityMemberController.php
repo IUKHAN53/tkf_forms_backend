@@ -29,7 +29,8 @@ class CommunityMemberController extends Controller
             $query->where('district', $request->district);
         }
 
-        $members = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $members = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
         $districts = CommunityMember::distinct()->whereNotNull('district')->pluck('district')->sort()->values();
 
         return view('admin.community-members.index', compact('members', 'districts'));

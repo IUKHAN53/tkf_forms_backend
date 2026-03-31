@@ -31,7 +31,8 @@ class VaccinationRecordController extends Controller
             $query->where('vaccinated', $request->vaccinated);
         }
 
-        $records = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $records = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         $stats = [
             'total' => VaccinationRecord::count(),

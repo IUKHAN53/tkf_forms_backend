@@ -189,11 +189,9 @@
         </table>
     </div>
 
-    @if($outreachSites->hasPages())
-        <div class="card-footer">
-            {{ $outreachSites->links() }}
-        </div>
-    @endif
+    <div class="card-footer">
+        {{ $outreachSites->links() }}
+    </div>
 </div>
 
 <!-- Import Modal -->

@@ -23,7 +23,8 @@ class ChildLineListController extends Controller
             });
         }
 
-        $childLineLists = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $childLineLists = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         // Prepare map data
         $mapData = ChildLineList::whereNotNull('latitude')

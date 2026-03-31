@@ -1,13 +1,26 @@
-@if ($paginator->hasPages())
-    <nav class="pagination-nav">
-        <div class="pagination-info">
+<nav class="pagination-nav">
+    <div class="pagination-info" style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+        <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--gray-600, #4b5563);">
+            <span>Show</span>
+            <select onchange="changePerPage(this.value)" style="padding: 4px 8px; border: 1px solid var(--gray-200, #e5e7eb); border-radius: 6px; font-size: 13px; background: white; color: var(--gray-700, #374151); cursor: pointer; min-width: 60px;">
+                @foreach([15, 25, 50, 100, 'all'] as $option)
+                    <option value="{{ $option }}" {{ request('per_page', $paginator->perPage()) == $option ? 'selected' : '' }}>
+                        {{ $option === 'all' ? 'All' : $option }}
+                    </option>
+                @endforeach
+            </select>
+            <span>entries</span>
+        </div>
+        @if($paginator->total())
             <p>
                 Showing <span class="font-medium">{{ $paginator->firstItem() }}</span>
                 to <span class="font-medium">{{ $paginator->lastItem() }}</span>
                 of <span class="font-medium">{{ $paginator->total() }}</span> results
             </p>
-        </div>
+        @endif
+    </div>
 
+    @if ($paginator->hasPages())
         <div class="pagination-controls">
             {{-- Previous Page Link --}}
             @if ($paginator->onFirstPage())
@@ -60,5 +73,14 @@
                 @endif
             @endforeach
         </div>
-    </nav>
-@endif
+    @endif
+</nav>
+
+<script>
+function changePerPage(value) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', value);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+</script>

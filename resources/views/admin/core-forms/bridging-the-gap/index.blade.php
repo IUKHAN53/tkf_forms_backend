@@ -215,11 +215,7 @@
                                 <button type="button" class="btn btn-sm btn-success" onclick="openActionPlanModal({{ $item->id }}, '{{ $item->unique_id }}')">
                                     Action Plan
                                 </button>
-                                <form action="{{ route('admin.bridging-the-gap.destroy', $item) }}" method="POST" onsubmit="return confirm('Are you sure?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteRecord('{{ route('admin.bridging-the-gap.destroy', $item) }}')">Delete</button>
                             </td>
                         </tr>
                     @empty
@@ -232,11 +228,9 @@
         </div>
     </form>
 
-    @if($records->hasPages())
-        <div class="card-footer">
-            {{ $records->links() }}
-        </div>
-    @endif
+    <div class="card-footer">
+        {{ $records->links() }}
+    </div>
 </div>
 
 <!-- Import Modal -->
@@ -304,6 +298,11 @@
     </div>
 </dialog>
 
+<form id="individualDeleteForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
 <script>
 function toggleSelectAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
@@ -318,6 +317,14 @@ function updateBulkDeleteBtn() {
     btn.style.display = checked > 0 ? 'inline-flex' : 'none';
     count.textContent = checked;
     document.getElementById('selectAll').checked = checked === document.querySelectorAll('.row-checkbox').length && checked > 0;
+}
+
+function deleteRecord(url) {
+    if (confirm('Are you sure?')) {
+        const form = document.getElementById('individualDeleteForm');
+        form.action = url;
+        form.submit();
+    }
 }
 
 function openActionPlanModal(id, uniqueId) {

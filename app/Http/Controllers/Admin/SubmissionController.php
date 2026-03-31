@@ -17,7 +17,8 @@ class SubmissionController extends Controller
             $query->where('form_id', $request->form_id);
         }
 
-        $submissions = $query->latest()->paginate(20);
+        $perPage = $request->input('per_page', 20);
+        $submissions = $query->latest()->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         return view('admin.submissions.index', compact('submissions'));
     }

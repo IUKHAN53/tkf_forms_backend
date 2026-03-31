@@ -55,7 +55,8 @@ class FgdsCommunityController extends Controller
             $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
         }
 
-        $fgdsCommunity = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $fgdsCommunity = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         // Get distinct values for filter dropdowns
         $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();

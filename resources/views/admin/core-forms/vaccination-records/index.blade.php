@@ -161,11 +161,9 @@
         </table>
     </div>
 
-    @if($records->hasPages())
-        <div class="card-footer">
-            {{ $records->links() }}
-        </div>
-    @endif
+    <div class="card-footer">
+        {{ $records->links() }}
+    </div>
 </div>
 
 <!-- Import Modal -->

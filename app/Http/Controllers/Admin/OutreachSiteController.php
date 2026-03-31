@@ -37,7 +37,8 @@ class OutreachSiteController extends Controller
             });
         }
 
-        $outreachSites = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $outreachSites = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         // Add coordinate validation status to each site
         $outreachSites->getCollection()->transform(function ($site) {

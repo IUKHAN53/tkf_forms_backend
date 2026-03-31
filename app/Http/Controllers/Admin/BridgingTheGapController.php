@@ -51,7 +51,8 @@ class BridgingTheGapController extends Controller
             $query->where('venue', 'like', "%{$request->venue}%");
         }
 
-        $records = $query->paginate(15)->withQueryString();
+        $perPage = $request->input('per_page', 15);
+        $records = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
 
         // Get distinct values for filter dropdowns
         $districts = BridgingTheGap::distinct()->pluck('district')->filter()->sort()->values();
