@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BridgingTheGap;
 use App\Models\BridgingTheGapActionPlan;
+use App\Models\BridgingTheGapTeamMember;
+use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -140,6 +142,34 @@ class BridgingTheGapController extends Controller
 
         return redirect()->route('admin.bridging-the-gap.index')
             ->with('success', "{$deleted} record(s) deleted successfully.");
+    }
+
+    public function toggleIitMember(BridgingTheGap $bridgingTheGap, Participant $participant)
+    {
+        if (
+            $participant->participantable_type !== BridgingTheGap::class ||
+            (int) $participant->participantable_id !== (int) $bridgingTheGap->id
+        ) {
+            return back()->with('error', 'Participant does not belong to this session.');
+        }
+
+        $existing = BridgingTheGapTeamMember::where('bridging_the_gap_id', $bridgingTheGap->id)
+            ->where('participant_id', $participant->id)
+            ->first();
+
+        if ($existing) {
+            $existing->delete();
+            return back()->with('success', "{$participant->name} removed from IIT team members.");
+        }
+
+        BridgingTheGapTeamMember::create([
+            'bridging_the_gap_id' => $bridgingTheGap->id,
+            'participant_id' => $participant->id,
+            'source_type' => 'bridging_the_gap',
+            'source_id' => $bridgingTheGap->id,
+        ]);
+
+        return back()->with('success', "{$participant->name} marked as IIT team member.");
     }
 
     public function destroy(BridgingTheGap $bridgingTheGap)

@@ -212,6 +212,7 @@
                             <td>{{ $item->created_at->format('M d, Y') }}</td>
                             <td class="action-buttons">
                                 <a href="{{ route('admin.bridging-the-gap.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                                <a href="{{ route('admin.bridging-the-gap.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
                                 <button type="button" class="btn btn-sm btn-success" onclick="openActionPlanModal({{ $item->id }}, '{{ $item->unique_id }}')">
                                     Action Plan
                                 </button>

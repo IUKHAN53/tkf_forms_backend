@@ -223,6 +223,7 @@
                             <td>{{ $item->created_at->format('M d, Y') }}</td>
                             <td class="action-buttons">
                                 <a href="{{ route('admin.fgds-community.show', $item) }}" class="btn btn-sm btn-outline">View</a>
+                                <a href="{{ route('admin.fgds-community.edit', $item) }}" class="btn btn-sm btn-primary">Edit</a>
                                 <button type="button" class="btn btn-sm btn-warning" onclick="openBarriersModal({{ $item->id }}, '{{ $item->unique_id }}')">
                                     Barriers
                                 </button>

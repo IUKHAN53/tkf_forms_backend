@@ -69,6 +69,9 @@
     </div>
 
     @if($bridgingTheGap->participants && $bridgingTheGap->participants->count() > 0)
+        @php
+            $iitParticipantIds = $bridgingTheGap->teamMembers->pluck('participant_id')->all();
+        @endphp
         <div class="participants-section">
             <h3>Attendance Participants ({{ $bridgingTheGap->participants->count() }})</h3>
             <table class="data-table">
@@ -78,15 +81,35 @@
                         <th>Name</th>
                         <th>Occupation</th>
                         <th>Contact</th>
+                        <th>IIT Member</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach($bridgingTheGap->participants as $participant)
+                        @php $isIit = in_array($participant->id, $iitParticipantIds); @endphp
                         <tr>
                             <td>{{ $participant->sr_no }}</td>
                             <td>{{ $participant->name }}</td>
                             <td>{{ $participant->occupation ?? 'N/A' }}</td>
                             <td>{{ $participant->contact_no ?? 'N/A' }}</td>
+                            <td>
+                                @if($isIit)
+                                    <span class="badge badge-success">Yes</span>
+                                @else
+                                    <span class="badge badge-secondary">No</span>
+                                @endif
+                            </td>
+                            <td>
+                                <form action="{{ route('admin.bridging-the-gap.toggle-iit', ['bridgingTheGap' => $bridgingTheGap->id, 'participant' => $participant->id]) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @if($isIit)
+                                        <button type="submit" class="btn btn-sm btn-outline" title="Remove from IIT team">Remove IIT</button>
+                                    @else
+                                        <button type="submit" class="btn btn-sm btn-primary" title="Mark as IIT team member">Mark as IIT</button>
+                                    @endif
+                                </form>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -118,6 +141,8 @@
                                     <span class="badge badge-info">FGDs-Community</span>
                                 @elseif($member->source_type === 'fgds_health_workers' || $member->source_type === 'healthcare_barrier')
                                     <span class="badge badge-success">FGDs-Health Workers</span>
+                                @elseif($member->source_type === 'bridging_the_gap')
+                                    <span class="badge badge-primary">Attendance Participant</span>
                                 @else
                                     <span class="badge badge-warning">{{ $member->source_type }}</span>
                                 @endif

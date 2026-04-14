@@ -21,14 +21,14 @@ class DashboardController extends Controller
      * UC consolidation mapping - maps raw UC names to consolidated display names
      */
     private const UC_CONSOLIDATION = [
-        'Muslimabad' => ['Muslimabad'],
-        'Muzafrabad' => ['Muzafrabad'],
-        'Gujro' => ['Gujro A', 'Gujro B', 'Gujro C', 'Gujro E', 'Gujro Zone D', 'Zone D', 'Zone E'],
-        'Songal' => ['05 Songal', 'Songal i1', 'Songal i2'],
-        'Ittehad Town-2' => ['Ittehad Town-2'],
-        'Islamia Colony-09' => ['Islamia colony-09', 'Islamia Colony-09'],
-        'Chishti Nagar-7' => ['Chishti Nagar-7', 'Chishti Nagar 7', 'Chisti Nagar-7', 'Chisti Nagar 7'],
-        'UC 8 Manghopir' => ['Uc 8 Manghopir', 'UC 8 Manghopir'],
+        'Muslimabad' => ['Muslimabad', 'Muslimabad-2', 'Muslimabad 2', 'Muslimabad-02'],
+        'Muzafrabad' => ['Muzafrabad', 'Muzafarabad', 'Muzafarabad-1', 'Muzafarabad 1', 'Muzafarabad-01', 'Muzafrabad-1'],
+        'Gujro' => ['Gujro A', 'Gujro B', 'Gujro C', 'Gujro E', 'Gujro Zone A', 'Gujro Zone B', 'Gujro Zone C', 'Gujro Zone D', 'Gujro Zone E', 'Zone A', 'Zone B', 'Zone C', 'Zone D', 'Zone E'],
+        'Songal' => ['05 Songal', 'Songal', 'Songal-5', 'Songal 5', 'Songal-05', 'Songal i1', 'Songal i2'],
+        'Ittehad Town-2' => ['Ittehad Town-2', 'Ittehad Town 2', 'Ittehad Town-02'],
+        'Islamia Colony-09' => ['Islamia colony-09', 'Islamia Colony-09', 'Islamia Colony-9', 'Islamia colony-9', 'Islamia Colony 9', 'Islamia Colony 09'],
+        'Chishti Nagar-7' => ['Chishti Nagar-7', 'Chishti Nagar 7', 'Chishti Nagar-07', 'Chisti Nagar-7', 'Chisti Nagar 7', 'Chisti Nagar-07'],
+        'UC 8 Manghopir' => ['Uc 8 Manghopir', 'UC 8 Manghopir', 'Manghopir-8', 'Manghopir 8', 'Manghopir-08', 'Mangopir-8', 'Mangopir 8', 'Mangopir - 8', 'Mangopir-08'],
     ];
 
     /**

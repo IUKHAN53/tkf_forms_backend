@@ -72,6 +72,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('bridging-the-gap/bulk-delete', [BridgingTheGapController::class, 'bulkDestroy'])->name('bridging-the-gap.bulk-destroy');
     Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
     Route::post('bridging-the-gap/{id}/action-plan', [BridgingTheGapController::class, 'uploadActionPlan'])->name('bridging-the-gap.upload-action-plan');
+    Route::post('bridging-the-gap/{bridgingTheGap}/participants/{participant}/toggle-iit', [BridgingTheGapController::class, 'toggleIitMember'])->name('bridging-the-gap.toggle-iit');
     Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Core Forms - Vaccination Records (CLM Tracker)
