@@ -187,6 +187,7 @@
                         <th>Venue</th>
                         <th>Attendance</th>
                         <th>IIT Members</th>
+                        <th>Action Plans</th>
                         <th>Submitted By</th>
                         <th>Created</th>
                         <th>Actions</th>
@@ -208,6 +209,9 @@
                             <td>
                                 <span class="badge badge-success">{{ $item->teamMembers->count() }}</span>
                             </td>
+                            <td>
+                                <span class="badge badge-warning">{{ $item->action_plans_count }}</span>
+                            </td>
                             <td>{{ $item->user->name ?? 'N/A' }}</td>
                             <td>{{ $item->created_at->format('M d, Y') }}</td>
                             <td class="action-buttons">
@@ -221,7 +225,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="text-center text-muted">No Bridging The Gap records found</td>
+                            <td colspan="12" class="text-center text-muted">No Bridging The Gap records found</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -255,47 +259,75 @@
     </div>
 </dialog>
 
-<!-- Upload Action Plan Modal -->
-<dialog id="actionPlanModal" class="modal">
+<!-- Manage Action Plans Modal -->
+<dialog id="actionPlanModal" class="modal" style="max-width: 900px;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3>Upload Action Plan - <span id="actionPlanRecordId"></span></h3>
+            <h3>Manage Action Plans - <span id="actionPlanRecordId"></span></h3>
             <button type="button" class="modal-close" onclick="document.getElementById('actionPlanModal').close()">&times;</button>
         </div>
-        <form action="" method="POST" enctype="multipart/form-data" id="actionPlanForm" data-base-url="{{ url('admin/bridging-the-gap') }}">
-            @csrf
-            <div class="modal-body">
-                <p class="mb-md text-muted">Upload an Excel file containing the action plan for this Bridging The Gap session.</p>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+            {{-- Existing Action Plans List --}}
+            <div id="actionPlansList" style="margin-bottom: 20px;">
+                <div style="text-align: center; padding: 20px; color: #9ca3af;">Loading action plans...</div>
+            </div>
 
-                <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        <span style="font-size: 13px; color: #166534;">Need the correct format?</span>
-                        <a href="{{ route('admin.bridging-the-gap.action-plan-sample') }}" class="btn btn-sm btn-success" style="margin-left: auto;">
-                            Download Sample Template
-                        </a>
+            {{-- Add New Action Plan --}}
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 16px; margin-top: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Add New Action Plan</h4>
+                <div class="form-grid-2" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Problem *</label>
+                        <textarea id="newApProblem" class="form-input" style="width:100%; min-height:60px;" placeholder="Describe the problem..."></textarea>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Solution</label>
+                        <textarea id="newApSolution" class="form-input" style="width:100%; min-height:60px;" placeholder="Proposed solution..."></textarea>
                     </div>
                 </div>
+                <div class="form-grid-3" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Action Needed</label>
+                        <input type="text" id="newApAction" class="form-input" style="width:100%;" placeholder="Action needed...">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Responsible</label>
+                        <input type="text" id="newApResponsible" class="form-input" style="width:100%;" placeholder="Who is responsible...">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Timeline</label>
+                        <input type="text" id="newApTimeline" class="form-input" style="width:100%;" placeholder="e.g. 2 weeks...">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addActionPlan()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Add Action Plan
+                </button>
+            </div>
 
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="form-label">Select Excel File</label>
-                    <input type="file" name="action_plan_file" accept=".xlsx,.xls" required class="form-input" style="width: 100%;">
+            {{-- Excel Upload Section --}}
+            <div style="border-top: 2px solid #e5e7eb; padding-top: 16px; margin-top: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px;">Or Upload via Excel</h4>
+                <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 13px; color: #166534;">Need the correct format?</span>
+                        <a href="{{ route('admin.bridging-the-gap.action-plan-sample') }}" class="btn btn-sm btn-success" style="margin-left: auto;">Download Sample</a>
+                    </div>
                 </div>
-                <div class="upload-info" style="background: #f8f9fa; border-radius: 8px; padding: 12px; font-size: 13px; color: #666;">
-                    <p style="margin: 0 0 8px 0;"><strong>Expected columns:</strong> Problem | Solution | Action Needed | Who is Responsible | Timeline</p>
-                    <p style="margin: 0 0 8px 0;"><strong>Accepted formats:</strong> .xlsx, .xls</p>
-                    <p style="margin: 0;"><strong>Max file size:</strong> 5MB</p>
+                <div style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <input type="file" id="apExcelFile" accept=".xlsx,.xls" class="form-input" style="width: 100%;">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" onclick="uploadActionPlanExcel()">Upload Excel</button>
                 </div>
+                <p style="font-size: 11px; color: #9ca3af; margin-top: 6px;">Uploading an Excel file will replace all existing action plans for this record.</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline" onclick="document.getElementById('actionPlanModal').close()">Cancel</button>
-                <button type="submit" class="btn btn-success">Upload Action Plan</button>
-            </div>
-        </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('actionPlanModal').close()">Close</button>
+        </div>
     </div>
 </dialog>
 
@@ -305,6 +337,10 @@
 </form>
 
 <script>
+let currentApRecordId = null;
+const apBaseUrl = '{{ url("admin/bridging-the-gap") }}';
+const apCsrfToken = '{{ csrf_token() }}';
+
 function toggleSelectAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     checkboxes.forEach(cb => cb.checked = source.checked);
@@ -329,18 +365,225 @@ function deleteRecord(url) {
 }
 
 function openActionPlanModal(id, uniqueId) {
-    const modal = document.getElementById('actionPlanModal');
-    const form = document.getElementById('actionPlanForm');
-    const recordIdSpan = document.getElementById('actionPlanRecordId');
+    currentApRecordId = id;
+    document.getElementById('actionPlanRecordId').textContent = uniqueId;
+    document.getElementById('actionPlanModal').showModal();
+    loadActionPlans();
+}
 
-    // Update the form action with the correct ID
-    const baseUrl = form.dataset.baseUrl;
-    form.action = baseUrl + '/' + id + '/action-plan';
+function loadActionPlans() {
+    const listEl = document.getElementById('actionPlansList');
+    listEl.innerHTML = '<div style="text-align: center; padding: 20px; color: #9ca3af;">Loading...</div>';
 
-    // Update the modal title with the record ID
-    recordIdSpan.textContent = uniqueId;
+    fetch(apBaseUrl + '/' + currentApRecordId + '/action-plans', {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (!data.action_plans || data.action_plans.length === 0) {
+            listEl.innerHTML = '<div style="text-align: center; padding: 16px; color: #9ca3af; font-style: italic;">No action plans yet. Add one below or upload an Excel file.</div>';
+            return;
+        }
+        let html = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-size:13px; font-weight:600; color:#374151;">' + data.action_plans.length + ' Action Plan(s)</span>';
+        html += '<button class="btn btn-sm btn-danger" onclick="deleteAllActionPlans()">Delete All</button></div>';
+        html += '<table class="data-table"><thead><tr><th style="width:40px">#</th><th>Problem</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th><th style="width:110px">Actions</th></tr></thead><tbody>';
+        data.action_plans.forEach(plan => {
+            html += '<tr id="ap-row-' + plan.id + '">';
+            html += '<td>' + (plan.serial_number || '-') + '</td>';
+            html += '<td>' + escHtml(plan.problem) + '</td>';
+            html += '<td>' + escHtml(plan.solution || '-') + '</td>';
+            html += '<td>' + escHtml(plan.action_needed || '-') + '</td>';
+            html += '<td>' + escHtml(plan.who_is_responsible || '-') + '</td>';
+            html += '<td>' + escHtml(plan.timeline || '-') + '</td>';
+            html += '<td class="action-buttons">';
+            html += '<button class="btn btn-sm btn-outline" onclick="editActionPlan(' + plan.id + ')">Edit</button> ';
+            html += '<button class="btn btn-sm btn-danger" onclick="deleteActionPlan(' + plan.id + ')">Delete</button>';
+            html += '</td></tr>';
+        });
+        html += '</tbody></table>';
+        listEl.innerHTML = html;
+    })
+    .catch(() => {
+        listEl.innerHTML = '<div style="text-align:center;padding:16px;color:#ef4444;">Failed to load action plans.</div>';
+    });
+}
 
-    modal.showModal();
+function escHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function escAttr(str) {
+    return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addActionPlan() {
+    const problem = document.getElementById('newApProblem').value.trim();
+    if (!problem) { alert('Problem field is required.'); return; }
+
+    const body = {
+        problem: problem,
+        solution: document.getElementById('newApSolution').value.trim() || null,
+        action_needed: document.getElementById('newApAction').value.trim() || null,
+        who_is_responsible: document.getElementById('newApResponsible').value.trim() || null,
+        timeline: document.getElementById('newApTimeline').value.trim() || null,
+    };
+
+    fetch(apBaseUrl + '/' + currentApRecordId + '/action-plans', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': apCsrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify(body),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('newApProblem').value = '';
+            document.getElementById('newApSolution').value = '';
+            document.getElementById('newApAction').value = '';
+            document.getElementById('newApResponsible').value = '';
+            document.getElementById('newApTimeline').value = '';
+            loadActionPlans();
+        } else {
+            alert(data.message || 'Failed to add action plan.');
+        }
+    })
+    .catch(() => alert('Error adding action plan.'));
+}
+
+function editActionPlan(id) {
+    const row = document.getElementById('ap-row-' + id);
+    const cells = row.querySelectorAll('td');
+
+    const problem = cells[1].textContent === '-' ? '' : cells[1].textContent;
+    const solution = cells[2].textContent === '-' ? '' : cells[2].textContent;
+    const actionNeeded = cells[3].textContent === '-' ? '' : cells[3].textContent;
+    const responsible = cells[4].textContent === '-' ? '' : cells[4].textContent;
+    const timeline = cells[5].textContent === '-' ? '' : cells[5].textContent;
+
+    cells[1].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(problem) + '</textarea>';
+    cells[2].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(solution) + '</textarea>';
+    cells[3].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(actionNeeded) + '">';
+    cells[4].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(responsible) + '">';
+    cells[5].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(timeline) + '">';
+    cells[6].innerHTML = '<button class="btn btn-sm btn-success" onclick="saveActionPlan(' + id + ')">Save</button> <button class="btn btn-sm btn-outline" onclick="loadActionPlans()">Cancel</button>';
+}
+
+function saveActionPlan(id) {
+    const row = document.getElementById('ap-row-' + id);
+    const textareas = row.querySelectorAll('textarea');
+    const inputs = row.querySelectorAll('input[type="text"]');
+
+    const body = {
+        problem: textareas[0].value.trim(),
+        solution: textareas[1].value.trim() || null,
+        action_needed: inputs[0].value.trim() || null,
+        who_is_responsible: inputs[1].value.trim() || null,
+        timeline: inputs[2].value.trim() || null,
+    };
+
+    if (!body.problem) { alert('Problem field is required.'); return; }
+
+    fetch(apBaseUrl + '/action-plans/' + id, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': apCsrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify(body),
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            loadActionPlans();
+        } else {
+            alert(data.message || 'Failed to update action plan.');
+        }
+    })
+    .catch(() => alert('Error updating action plan.'));
+}
+
+function deleteActionPlan(id) {
+    if (!confirm('Are you sure you want to delete this action plan?')) return;
+
+    fetch(apBaseUrl + '/action-plans/' + id, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': apCsrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            loadActionPlans();
+        } else {
+            alert(data.message || 'Failed to delete action plan.');
+        }
+    })
+    .catch(() => alert('Error deleting action plan.'));
+}
+
+function deleteAllActionPlans() {
+    if (!confirm('Are you sure you want to delete ALL action plans for this record? This cannot be undone.')) return;
+
+    fetch(apBaseUrl + '/' + currentApRecordId + '/action-plans', {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': apCsrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            loadActionPlans();
+        } else {
+            alert(data.message || 'Failed to delete action plans.');
+        }
+    })
+    .catch(() => alert('Error deleting action plans.'));
+}
+
+function uploadActionPlanExcel() {
+    const fileInput = document.getElementById('apExcelFile');
+    if (!fileInput.files.length) { alert('Please select an Excel file.'); return; }
+    if (!confirm('Uploading an Excel file will replace all existing action plans for this record. Continue?')) return;
+
+    const formData = new FormData();
+    formData.append('action_plan_file', fileInput.files[0]);
+    formData.append('_token', apCsrfToken);
+
+    fetch(apBaseUrl + '/' + currentApRecordId + '/action-plan', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: formData,
+    })
+    .then(r => {
+        if (r.redirected) {
+            window.location.reload();
+            return;
+        }
+        return r.text();
+    })
+    .then(() => {
+        fileInput.value = '';
+        loadActionPlans();
+    })
+    .catch(() => {
+        window.location.reload();
+    });
 }
 </script>
 

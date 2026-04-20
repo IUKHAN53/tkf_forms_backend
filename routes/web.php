@@ -72,6 +72,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('bridging-the-gap/bulk-delete', [BridgingTheGapController::class, 'bulkDestroy'])->name('bridging-the-gap.bulk-destroy');
     Route::post('bridging-the-gap/import', [BridgingTheGapController::class, 'import'])->name('bridging-the-gap.import');
     Route::post('bridging-the-gap/{id}/action-plan', [BridgingTheGapController::class, 'uploadActionPlan'])->name('bridging-the-gap.upload-action-plan');
+    Route::get('bridging-the-gap/{id}/action-plans', [BridgingTheGapController::class, 'getActionPlans'])->name('bridging-the-gap.action-plans');
+    Route::post('bridging-the-gap/{id}/action-plans', [BridgingTheGapController::class, 'storeActionPlan'])->name('bridging-the-gap.store-action-plan');
+    Route::put('bridging-the-gap/action-plans/{actionPlan}', [BridgingTheGapController::class, 'updateActionPlan'])->name('bridging-the-gap.update-action-plan');
+    Route::delete('bridging-the-gap/action-plans/{actionPlan}', [BridgingTheGapController::class, 'deleteActionPlan'])->name('bridging-the-gap.delete-action-plan');
+    Route::delete('bridging-the-gap/{id}/action-plans', [BridgingTheGapController::class, 'deleteAllActionPlans'])->name('bridging-the-gap.delete-all-action-plans');
     Route::post('bridging-the-gap/{bridgingTheGap}/participants/{participant}/toggle-iit', [BridgingTheGapController::class, 'toggleIitMember'])->name('bridging-the-gap.toggle-iit');
     Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 

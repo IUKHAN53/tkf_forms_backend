@@ -18,7 +18,9 @@ class BridgingTheGapController extends Controller
     public function index(Request $request)
     {
         // Use withCount instead of eager loading participant relationship to avoid issues with deleted participants
-        $query = BridgingTheGap::with(['participants', 'teamMembers', 'user'])->latest();
+        $query = BridgingTheGap::with(['participants', 'teamMembers', 'user'])
+            ->withCount('actionPlans')
+            ->latest();
 
         // Text search filter
         if ($request->filled('search')) {
@@ -93,13 +95,13 @@ class BridgingTheGapController extends Controller
 
     public function show(BridgingTheGap $bridgingTheGap)
     {
-        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user']);
+        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user', 'actionPlans']);
         return view('admin.core-forms.bridging-the-gap.show', compact('bridgingTheGap'));
     }
 
     public function edit(BridgingTheGap $bridgingTheGap)
     {
-        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user']);
+        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user', 'actionPlans']);
         return view('admin.core-forms.bridging-the-gap.edit', compact('bridgingTheGap'));
     }
 
@@ -136,6 +138,7 @@ class BridgingTheGapController extends Controller
         foreach ($records as $record) {
             $record->teamMembers()->delete();
             $record->participants()->delete();
+            $record->actionPlans()->delete();
             $record->delete();
             $deleted++;
         }
@@ -179,6 +182,9 @@ class BridgingTheGapController extends Controller
 
         // Delete attendance participants (morphMany relationship)
         $bridgingTheGap->participants()->delete();
+
+        // Delete action plans
+        $bridgingTheGap->actionPlans()->delete();
 
         // Delete the main record
         $bridgingTheGap->delete();
@@ -378,6 +384,110 @@ class BridgingTheGapController extends Controller
             'imported' => $imported,
             'skipped' => $skipped,
         ];
+    }
+
+    /**
+     * Get action plans for a specific Bridging The Gap record (JSON)
+     */
+    public function getActionPlans($id)
+    {
+        $record = BridgingTheGap::findOrFail($id);
+        $actionPlans = $record->actionPlans()->orderBy('serial_number')->get();
+
+        return response()->json([
+            'action_plans' => $actionPlans,
+            'record' => [
+                'id' => $record->id,
+                'unique_id' => $record->unique_id,
+            ],
+        ]);
+    }
+
+    /**
+     * Store a single action plan for a Bridging The Gap record
+     */
+    public function storeActionPlan(Request $request, $id)
+    {
+        $record = BridgingTheGap::findOrFail($id);
+
+        $validated = $request->validate([
+            'problem' => 'required|string',
+            'solution' => 'nullable|string',
+            'action_needed' => 'nullable|string',
+            'who_is_responsible' => 'nullable|string|max:255',
+            'timeline' => 'nullable|string|max:255',
+        ]);
+
+        $maxSerial = $record->actionPlans()->max('serial_number') ?? 0;
+
+        $actionPlan = BridgingTheGapActionPlan::create([
+            'bridging_the_gap_id' => $record->id,
+            'problem' => $validated['problem'],
+            'solution' => $validated['solution'] ?? null,
+            'action_needed' => $validated['action_needed'] ?? null,
+            'who_is_responsible' => $validated['who_is_responsible'] ?? null,
+            'timeline' => $validated['timeline'] ?? null,
+            'serial_number' => $maxSerial + 1,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Action plan added successfully.',
+            'action_plan' => $actionPlan,
+        ]);
+    }
+
+    /**
+     * Update an individual action plan
+     */
+    public function updateActionPlan(Request $request, $actionPlanId)
+    {
+        $actionPlan = BridgingTheGapActionPlan::findOrFail($actionPlanId);
+
+        $validated = $request->validate([
+            'problem' => 'required|string',
+            'solution' => 'nullable|string',
+            'action_needed' => 'nullable|string',
+            'who_is_responsible' => 'nullable|string|max:255',
+            'timeline' => 'nullable|string|max:255',
+        ]);
+
+        $actionPlan->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Action plan updated successfully.',
+            'action_plan' => $actionPlan->fresh(),
+        ]);
+    }
+
+    /**
+     * Delete an individual action plan
+     */
+    public function deleteActionPlan($actionPlanId)
+    {
+        $actionPlan = BridgingTheGapActionPlan::findOrFail($actionPlanId);
+        $actionPlan->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Action plan deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Delete all action plans for a specific Bridging The Gap record
+     */
+    public function deleteAllActionPlans($id)
+    {
+        $record = BridgingTheGap::findOrFail($id);
+        $count = $record->actionPlans()->count();
+        $record->actionPlans()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$count} action plan(s) deleted successfully.",
+        ]);
     }
 
     /**
