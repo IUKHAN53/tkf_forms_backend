@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BridgingTheGapTeamMember;
 use App\Models\CommunityMember;
-use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Services\LogActivity;
@@ -125,26 +125,30 @@ class CommunityMemberController extends Controller
 
         $search = $request->q;
 
-        $participants = Participant::query()
-            ->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                      ->orWhere('contact_no', 'like', "%{$search}%");
+        $teamMembers = BridgingTheGapTeamMember::query()
+            ->with(['participant', 'bridgingTheGap'])
+            ->whereHas('participant', function ($q) use ($search) {
+                $q->where(function ($qq) use ($search) {
+                    $qq->where('name', 'like', "%{$search}%")
+                       ->orWhere('contact_no', 'like', "%{$search}%");
+                })
+                ->whereNotNull('contact_no')
+                ->where('contact_no', '!=', '');
             })
-            ->whereNotNull('contact_no')
-            ->where('contact_no', '!=', '')
-            ->select('id', 'name', 'contact_no', 'occupation', 'gender', 'participantable_type')
-            ->orderBy('name')
-            ->limit(50)
-            ->get()
-            ->unique('contact_no')
+            ->latest()
+            ->limit(100)
+            ->get();
+
+        $results = $teamMembers
+            ->filter(fn ($tm) => $tm->participant)
+            ->unique('participant_id')
             ->values()
-            ->map(function ($p) {
-                $sourceLabel = match (class_basename($p->participantable_type)) {
-                    'FgdsCommunity' => 'FGDs-Community',
-                    'FgdsHealthWorkers' => 'FGDs-Health Workers',
-                    'BridgingTheGap' => 'Bridging The Gap',
-                    default => 'Other',
-                };
+            ->map(function ($tm) {
+                $p = $tm->participant;
+                $btg = $tm->bridgingTheGap;
+
+                $venue = $btg?->venue;
+                $sourceLabel = 'Bridging the Gap' . ($venue ? ' — ' . $venue : '');
 
                 return [
                     'id' => $p->id,
@@ -152,10 +156,13 @@ class CommunityMemberController extends Controller
                     'contact_no' => $p->contact_no,
                     'occupation' => $p->occupation,
                     'gender' => $p->gender,
+                    'district' => $btg?->district,
+                    'uc' => $btg?->uc,
+                    'fix_site' => $btg?->fix_site,
                     'source' => $sourceLabel,
                 ];
             });
 
-        return response()->json($participants);
+        return response()->json($results);
     }
 }

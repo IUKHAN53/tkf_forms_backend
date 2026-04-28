@@ -26,16 +26,16 @@
                 </label>
                 <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500;">
                     <input type="radio" name="source_type" value="existing" onchange="toggleSource('existing')">
-                    Select from FGD Participants
+                    Select from Bridging the Gap
                 </label>
             </div>
         </div>
 
-        {{-- Participant Search (hidden by default) --}}
+        {{-- IIT Team Member Search (hidden by default) --}}
         <div class="form-group" id="participantSearchSection" style="display: none;">
-            <label class="form-label">Search Participant</label>
+            <label class="form-label">Search IIT Team Member</label>
             <div style="position: relative;">
-                <input type="text" id="participantSearch" class="form-input" placeholder="Type name or phone (min 2 characters)..." autocomplete="off">
+                <input type="text" id="participantSearch" class="form-input" placeholder="Search IIT members by name or phone (min 2 characters)..." autocomplete="off">
                 <input type="hidden" name="participant_id" id="participantId" value="">
                 <div id="searchResults" style="display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 100;
                     background: white; border: 1px solid var(--neutral-200); border-radius: 8px; margin-top: 4px;
@@ -161,8 +161,10 @@ document.getElementById('participantSearch').addEventListener('input', function 
                 data.forEach(p => {
                     const item = document.createElement('div');
                     item.style.cssText = 'padding: 10px 14px; cursor: pointer; border-bottom: 1px solid #f3f4f6;';
+                    const locationParts = [p.district, p.uc, p.fix_site].filter(Boolean).map(escHtml).join(' &rsaquo; ');
                     item.innerHTML = `<div style="font-size: 13px; font-weight: 600;">${escHtml(p.name)}</div>
-                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${escHtml(p.contact_no)} &middot; ${escHtml(p.source)}${p.occupation ? ' &middot; ' + escHtml(p.occupation) : ''}</div>`;
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">${escHtml(p.contact_no)}${p.occupation ? ' &middot; ' + escHtml(p.occupation) : ''}</div>
+                        ${locationParts ? `<div style="font-size: 11px; color: #9ca3af; margin-top: 2px;">${locationParts}</div>` : ''}`;
                     item.onmouseenter = () => item.style.background = '#f9fafb';
                     item.onmouseleave = () => item.style.background = '';
                     item.onclick = () => selectParticipant(p);
@@ -174,7 +176,7 @@ document.getElementById('participantSearch').addEventListener('input', function 
     }, 300);
 });
 
-function selectParticipant(p) {
+async function selectParticipant(p) {
     document.getElementById('nameInput').value = p.name || '';
     document.getElementById('phoneInput').value = p.contact_no || '';
     document.getElementById('participantId').value = p.id;
@@ -185,6 +187,25 @@ function selectParticipant(p) {
     el.style.display = 'block';
     document.getElementById('searchResults').style.display = 'none';
     document.getElementById('participantSearch').value = '';
+
+    await applyLocationFromParticipant(p);
+}
+
+async function applyLocationFromParticipant(p) {
+    if (!p.district) return;
+    if ([...districtSelect.options].some(o => o.value === p.district)) {
+        districtSelect.value = p.district;
+    } else {
+        return;
+    }
+    await loadUCs(p.district);
+    if (p.uc && [...ucSelect.options].some(o => o.value === p.uc)) {
+        ucSelect.value = p.uc;
+        await loadFixSites(p.district, p.uc);
+        if (p.fix_site && [...fixSiteSelect.options].some(o => o.value === p.fix_site)) {
+            fixSiteSelect.value = p.fix_site;
+        }
+    }
 }
 
 function clearParticipant() {
@@ -192,6 +213,11 @@ function clearParticipant() {
     document.getElementById('selectedParticipant').style.display = 'none';
     document.getElementById('nameInput').value = '';
     document.getElementById('phoneInput').value = '';
+    districtSelect.value = '';
+    ucSelect.innerHTML = '<option value="">-- Select District first --</option>';
+    ucSelect.disabled = true;
+    fixSiteSelect.innerHTML = '<option value="">-- Select UC first --</option>';
+    fixSiteSelect.disabled = true;
 }
 
 document.addEventListener('click', function (e) {
