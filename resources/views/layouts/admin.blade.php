@@ -940,6 +940,24 @@ body {
                     </ul>
                 </div>
 
+                <!-- Reports Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Reports</div>
+                    <ul class="nav-menu">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.reports.fixed-site') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M3 3v18h18"/>
+                                    <path d="M18 17V9"/>
+                                    <path d="M13 17V5"/>
+                                    <path d="M8 17v-3"/>
+                                </svg>
+                                <span>Fixed Site Report</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
                 <!-- Administration Section -->
                 <div class="nav-section">
                     <div class="nav-section-title">Administration</div>

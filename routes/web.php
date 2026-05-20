@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ChildLineListController;
 use App\Http\Controllers\Admin\VaccinationRecordController;
 use App\Http\Controllers\Admin\UcController;
 use App\Http\Controllers\Admin\CommunityMemberController;
+use App\Http\Controllers\Admin\FixedSiteReportController;
 use App\Http\Controllers\Admin\DebugController;
 
 Route::get('/', function () {
@@ -91,6 +92,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('outreach-sites/template', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'template'])->name('outreach-sites.template');
     Route::post('outreach-sites/import', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'import'])->name('outreach-sites.import');
     Route::resource('outreach-sites', \App\Http\Controllers\Admin\OutreachSiteController::class);
+
+    // Reports - Fixed Site Report
+    Route::get('reports/fixed-site', [FixedSiteReportController::class, 'index'])->name('reports.fixed-site');
+    Route::get('reports/fixed-site/export', [FixedSiteReportController::class, 'export'])->name('reports.fixed-site.export');
 });
 
 Route::middleware(['auth', 'activity.log'])->group(function () {
