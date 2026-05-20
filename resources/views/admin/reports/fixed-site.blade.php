@@ -232,11 +232,11 @@
                     <h2>FGDs — Health Workers</h2>
                     <span class="fsr-count">{{ $report['fgds_health_workers']->count() }}</span>
                 </div>
-                <span class="fsr-scope fsr-scope-uc">UC level</span>
+                <span class="fsr-scope fsr-scope-site">Site-specific</span>
             </div>
             <p class="fsr-section-note">
-                Health-worker FGDs are recorded per health facility, not per fixed site, so all
-                sessions for Union Council <strong>{{ $report['uc'] }}</strong> are shown here.
+                Health-worker focus group discussions held at this fixed site
+                (matched on Health Facility).
             </p>
 
             @forelse ($report['fgds_health_workers'] as $r)

@@ -33,8 +33,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  *    column, so they are filtered exactly to the selected fixed site.
  *  - Child Line List has no `fix_site` column; it is linked through its
  *    `outreach` value against the outreach sites that belong to the fixed site.
- *  - FGDs-Health Workers are recorded per health facility (`hfs`) and have no
- *    fixed-site link, so they are shown at UC level (clearly labelled).
+ *  - FGDs-Health Workers carry the fixed site in their `hfs` (Health Facility)
+ *    column, which is matched directly against the selected fixed site.
  */
 class FixedSiteReportController extends Controller
 {
@@ -110,7 +110,7 @@ class FixedSiteReportController extends Controller
             ['', ''],
             ['FGDs-Community sessions', $s['fgds_community']],
             ['FGDs-Community barriers', $s['fgds_community_barriers']],
-            ['FGDs-Health Workers sessions (UC level)', $s['fgds_health_workers']],
+            ['FGDs-Health Workers sessions', $s['fgds_health_workers']],
             ['FGDs-Health Workers barriers', $s['fgds_health_workers_barriers']],
             ['Bridging the Gap sessions', $s['bridging']],
             ['Bridging the Gap action plans', $s['action_plans']],
@@ -316,9 +316,11 @@ class FixedSiteReportController extends Controller
             ->orderByDesc('date')
             ->get();
 
-        // FGDs-Health Workers — UC level (no fix_site / outreach link in schema).
+        // FGDs-Health Workers — site-specific: the `hfs` (Health Facility) value
+        // is the fixed site, so it is matched directly against the selection.
         $fgdsHealthWorkers = FgdsHealthWorkers::with(['barriers.category', 'participants', 'user'])
             ->whereIn('uc', $variants)
+            ->where('hfs', $fixSite)
             ->orderByDesc('date')
             ->get();
 
