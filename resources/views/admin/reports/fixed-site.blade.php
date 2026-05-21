@@ -326,7 +326,13 @@
                         <span class="fsr-rh-cell">{{ $d($r->date) }}</span>
                         <span class="fsr-rh-cell">{{ $r->venue ?: '—' }}</span>
                         <span class="fsr-rh-cell"><span class="fsr-badge fsr-badge-primary">{{ $r->participants->count() }} attendance</span></span>
-                        <span class="fsr-rh-cell"><span class="fsr-badge fsr-badge-purple">{{ $r->actionPlans->count() }} action plans</span></span>
+                        <span class="fsr-rh-cell">
+                            @if ($r->actionPlans->count())
+                                <span class="fsr-badge fsr-badge-purple">1 action plan ({{ $r->actionPlans->count() }} points)</span>
+                            @else
+                                <span class="fsr-badge fsr-badge-purple">No action plan</span>
+                            @endif
+                        </span>
                         <svg class="fsr-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
                     </button>
                     <div class="fsr-record-body">
@@ -345,7 +351,7 @@
                         ]])
 
                         @if ($r->actionPlans->count())
-                            <div class="fsr-subhead">Action Plans ({{ $r->actionPlans->count() }})</div>
+                            <div class="fsr-subhead">Action Plan — {{ $r->actionPlans->count() }} {{ \Illuminate\Support\Str::plural('point', $r->actionPlans->count()) }}</div>
                             <div class="fsr-subtable-wrap">
                                 <table class="fsr-subtable">
                                     <thead><tr><th>#</th><th>Problem</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th></tr></thead>
