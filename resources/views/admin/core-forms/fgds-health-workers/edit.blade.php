@@ -44,10 +44,23 @@
                 @enderror
             </div>
 
+            @php
+                $currentUc = old('uc', $fgdsHealthWorker->uc);
+                $currentFixSite = old('fix_site', $fgdsHealthWorker->fix_site);
+                $ucInCatalogue = in_array($currentUc, $unionCouncils, true);
+            @endphp
+
             <div class="form-group">
                 <label for="uc">UC <span class="required">*</span></label>
-                <input type="text" id="uc" name="uc" class="form-input @error('uc') is-invalid @enderror"
-                       value="{{ old('uc', $fgdsHealthWorker->uc) }}" required>
+                <select id="uc" name="uc" class="form-input @error('uc') is-invalid @enderror" required>
+                    <option value="">— Select Union Council —</option>
+                    @if ($currentUc !== '' && $currentUc !== null && ! $ucInCatalogue)
+                        <option value="{{ $currentUc }}" selected>{{ $currentUc }} (current — not in catalogue)</option>
+                    @endif
+                    @foreach ($unionCouncils as $ucOpt)
+                        <option value="{{ $ucOpt }}" @selected($ucOpt === $currentUc)>{{ $ucOpt }}</option>
+                    @endforeach
+                </select>
                 @error('uc')
                     <span class="error-message">{{ $message }}</span>
                 @enderror
@@ -64,18 +77,15 @@
 
             <div class="form-group">
                 <label for="fix_site">Fixed Site</label>
-                <input type="text" id="fix_site" name="fix_site" list="fix-site-options"
-                       class="form-input @error('fix_site') is-invalid @enderror"
-                       value="{{ old('fix_site', $fgdsHealthWorker->fix_site) }}"
-                       placeholder="Pick the matching fixed site from the catalogue">
-                <datalist id="fix-site-options">
-                    @foreach ($fixSites ?? [] as $fs)
-                        <option value="{{ $fs }}"></option>
-                    @endforeach
-                </datalist>
+                <select id="fix_site" name="fix_site" class="form-input @error('fix_site') is-invalid @enderror"
+                        data-current="{{ $currentFixSite }}">
+                    <option value="">— Select Fixed Site —</option>
+                    {{-- Options are filled by JS based on the selected UC. --}}
+                </select>
                 <small style="font-size: 12px; color: var(--gray-500);">
-                    Used to link this session to its fixed site in the Fixed Site Report when the
-                    health facility name doesn't exactly match a catalogue entry.
+                    Options come from the OutreachSite catalogue for the selected UC. Used to link this
+                    session to its fixed site in the Fixed Site Report when the HFS name doesn't
+                    exactly match a catalogue entry.
                 </small>
                 @error('fix_site')
                     <span class="error-message">{{ $message }}</span>
@@ -224,4 +234,47 @@
     }
 }
 </style>
+
+<script>
+(function () {
+    var ucFixSites = @json($ucFixSites);
+    var ucSelect = document.getElementById('uc');
+    var fixSelect = document.getElementById('fix_site');
+    if (!ucSelect || !fixSelect) return;
+
+    var initialFixSite = fixSelect.getAttribute('data-current') || '';
+
+    function rebuildFixSiteOptions(preselect) {
+        var uc = ucSelect.value;
+        var options = (ucFixSites[uc] || []).slice();
+
+        // Preserve a pre-existing value that isn't in the catalogue, so admins
+        // never silently lose data when the dropdown can't match what's saved.
+        if (preselect && options.indexOf(preselect) === -1) {
+            options.unshift(preselect);
+        }
+
+        fixSelect.innerHTML = '';
+
+        var blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = uc ? '— Select Fixed Site —' : '— Select a UC first —';
+        fixSelect.appendChild(blank);
+
+        options.forEach(function (fs) {
+            var opt = document.createElement('option');
+            opt.value = fs;
+            opt.textContent = fs;
+            if (fs === preselect) opt.selected = true;
+            fixSelect.appendChild(opt);
+        });
+    }
+
+    rebuildFixSiteOptions(initialFixSite);
+
+    ucSelect.addEventListener('change', function () {
+        rebuildFixSiteOptions('');
+    });
+})();
+</script>
 @endsection

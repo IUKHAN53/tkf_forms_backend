@@ -25,6 +25,7 @@ class FgdsHealthWorkersController extends Controller
         $validated = $request->validate([
             'date' => 'required|string',
             'hfs' => 'required|string',
+            'fix_site' => 'nullable|string',
             'address' => 'required|string',
             'uc' => 'required|string',
             'participants_males' => 'required|integer',

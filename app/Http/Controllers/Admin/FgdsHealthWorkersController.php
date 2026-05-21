@@ -117,17 +117,28 @@ class FgdsHealthWorkersController extends Controller
     {
         $fgdsHealthWorker->load('participants');
 
-        $fixSites = OutreachSite::query()
-            ->whereNotNull('fix_site')
-            ->where('fix_site', '!=', '')
-            ->pluck('fix_site')
-            ->map(fn ($v) => trim((string) $v))
-            ->filter()
-            ->unique()
-            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
+        // Build the UC → fixed-sites map from the OutreachSite catalogue so the
+        // edit form can present cascading dropdowns.
+        $ucFixSites = OutreachSite::query()
+            ->whereNotNull('union_council')->where('union_council', '!=', '')
+            ->whereNotNull('fix_site')->where('fix_site', '!=', '')
+            ->get(['union_council', 'fix_site'])
+            ->groupBy(fn ($r) => trim((string) $r->union_council))
+            ->map(fn ($rows) => $rows
+                ->pluck('fix_site')
+                ->map(fn ($v) => trim((string) $v))
+                ->filter()
+                ->unique()
+                ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+                ->values()
+                ->all())
+            ->sortKeys(SORT_NATURAL | SORT_FLAG_CASE)
+            ->all();
 
-        return view('admin.core-forms.fgds-health-workers.edit', compact('fgdsHealthWorker', 'fixSites'));
+        $unionCouncils = array_keys($ucFixSites);
+
+        return view('admin.core-forms.fgds-health-workers.edit',
+            compact('fgdsHealthWorker', 'unionCouncils', 'ucFixSites'));
     }
 
     public function update(Request $request, FgdsHealthWorkers $fgdsHealthWorker)
