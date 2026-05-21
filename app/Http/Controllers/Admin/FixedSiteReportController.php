@@ -318,11 +318,18 @@ class FixedSiteReportController extends Controller
             ->orderByDesc('date')
             ->get();
 
-        // FGDs-Health Workers — site-specific: the `hfs` (Health Facility) value
-        // is the fixed site, so it is matched directly against the selection.
+        // FGDs-Health Workers — site-specific. Match by the explicit `fix_site`
+        // column when admin has set it (covers cases where the `hfs` text doesn't
+        // exactly match a catalogue entry); otherwise fall back to the legacy
+        // `hfs` = fixed-site match.
         $fgdsHealthWorkers = FgdsHealthWorkers::with(['barriers.category', 'participants', 'user'])
             ->whereIn('uc', $variants)
-            ->where('hfs', $fixSite)
+            ->where(function ($q) use ($fixSite) {
+                $q->where('fix_site', $fixSite)
+                  ->orWhere(function ($q2) use ($fixSite) {
+                      $q2->whereNull('fix_site')->where('hfs', $fixSite);
+                  });
+            })
             ->orderByDesc('date')
             ->get();
 

@@ -19,6 +19,7 @@ class FgdsHealthWorkers extends Model
         'user_id',
         'date',
         'hfs',
+        'fix_site',
         'address',
         'uc',
         'participants_males',

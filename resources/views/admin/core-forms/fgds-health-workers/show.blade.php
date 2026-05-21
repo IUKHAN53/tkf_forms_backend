@@ -39,6 +39,10 @@
             <span>{{ $fgdsHealthWorker->hfs }}</span>
         </div>
         <div class="detail-item">
+            <label>Fixed Site</label>
+            <span>{{ $fgdsHealthWorker->fix_site ?: '—' }}</span>
+        </div>
+        <div class="detail-item">
             <label>Address</label>
             <span>{{ $fgdsHealthWorker->address }}</span>
         </div>

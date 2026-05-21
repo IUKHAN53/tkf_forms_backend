@@ -63,6 +63,26 @@
             </div>
 
             <div class="form-group">
+                <label for="fix_site">Fixed Site</label>
+                <input type="text" id="fix_site" name="fix_site" list="fix-site-options"
+                       class="form-input @error('fix_site') is-invalid @enderror"
+                       value="{{ old('fix_site', $fgdsHealthWorker->fix_site) }}"
+                       placeholder="Pick the matching fixed site from the catalogue">
+                <datalist id="fix-site-options">
+                    @foreach ($fixSites ?? [] as $fs)
+                        <option value="{{ $fs }}"></option>
+                    @endforeach
+                </datalist>
+                <small style="font-size: 12px; color: var(--gray-500);">
+                    Used to link this session to its fixed site in the Fixed Site Report when the
+                    health facility name doesn't exactly match a catalogue entry.
+                </small>
+                @error('fix_site')
+                    <span class="error-message">{{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="form-group">
                 <label for="group_type">Group Type</label>
                 <input type="text" id="group_type" name="group_type" class="form-input @error('group_type') is-invalid @enderror"
                        value="{{ old('group_type', $fgdsHealthWorker->group_type) }}">
