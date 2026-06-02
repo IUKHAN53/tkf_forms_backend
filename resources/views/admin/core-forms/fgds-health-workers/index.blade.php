@@ -354,7 +354,9 @@ function openCategoryBarriers(categoryId, categoryName) {
     body.innerHTML = '<p class="text-muted" style="text-align:center;padding:24px;">Loading…</p>';
     modal.showModal();
 
-    fetch(base + '/' + categoryId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    // Carry the page's active filters (in the URL query string) into the modal
+    // so it lists only the FGDs in the current filtered view.
+    fetch(base + '/' + categoryId + window.location.search, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
         .then(r => r.json())
         .then(data => {
             if (!data.success || !data.records || !data.records.length) {

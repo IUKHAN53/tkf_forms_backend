@@ -19,61 +19,38 @@ class FgdsCommunityController extends Controller
 {
     public function index(Request $request)
     {
-        $query = FgdsCommunity::with('participants')->latest();
-
-        // Text search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('district', 'like', "%{$search}%")
-                    ->orWhere('uc', 'like', "%{$search}%")
-                    ->orWhere('facilitator_tkf', 'like', "%{$search}%")
-                    ->orWhere('venue', 'like', "%{$search}%");
-            });
-        }
-
-        // District filter
-        if ($request->filled('district')) {
-            $query->where('district', $request->district);
-        }
-
-        // UC filter
-        if ($request->filled('uc')) {
-            $query->where('uc', $request->uc);
-        }
-
-        // Date range filter
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
-        }
-
-        // Facilitator filter
-        if ($request->filled('facilitator')) {
-            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
-        }
-
+        // Page-wide filter: the same filters drive the table, the stat cards, the
+        // barriers-by-category cards/modal and the map, so applying a filter
+        // updates every count on the page — not just the table rows.
         $perPage = $request->input('per_page', 15);
-        $fgdsCommunity = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
+        $fgdsCommunity = $this->applyBarrierListFilters(FgdsCommunity::with('participants'), $request)
+            ->latest()
+            ->paginate($perPage == 'all' ? 999999 : (int) $perPage)
+            ->withQueryString();
 
-        // Get distinct values for filter dropdowns
+        // IDs of every record matching the current filters (drives all counts).
+        $filteredIds = $this->applyBarrierListFilters(FgdsCommunity::query(), $request)->pluck('id');
+
+        // Get distinct values for filter dropdowns (always the full catalogue).
         $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();
         $ucs = FgdsCommunity::distinct()->pluck('uc')->filter()->sort()->values();
 
-        // Calculate statistics from actual participant records
+        // Statistics over the filtered set, from actual participant records.
+        $participantsQuery = fn () => Participant::where('participantable_type', FgdsCommunity::class)
+            ->whereIn('participantable_id', $filteredIds);
         $stats = [
-            'total' => FgdsCommunity::count(),
-            'total_barriers' => FgdsCommunityBarrier::count(),
-            'total_participants' => Participant::where('participantable_type', FgdsCommunity::class)->count(),
-            'total_males' => Participant::where('participantable_type', FgdsCommunity::class)->where('gender', 'Male')->count(),
-            'total_females' => Participant::where('participantable_type', FgdsCommunity::class)->where('gender', 'Female')->count(),
-            'districts_covered' => FgdsCommunity::distinct('district')->count('district'),
+            'total' => $filteredIds->count(),
+            'total_barriers' => FgdsCommunityBarrier::whereIn('fgds_community_id', $filteredIds)->count(),
+            'total_participants' => $participantsQuery()->count(),
+            'total_males' => $participantsQuery()->where('gender', 'Male')->count(),
+            'total_females' => $participantsQuery()->where('gender', 'Female')->count(),
+            'districts_covered' => $this->applyBarrierListFilters(FgdsCommunity::query(), $request)
+                ->distinct('district')->count('district'),
         ];
 
-        // Get barriers count by category for statistics
-        $barriersByCategory = FgdsCommunityBarrier::select('barrier_category_id', DB::raw('count(*) as count'))
+        // Barriers by category, restricted to the filtered records.
+        $barriersByCategory = FgdsCommunityBarrier::whereIn('fgds_community_id', $filteredIds)
+            ->select('barrier_category_id', DB::raw('count(*) as count'))
             ->groupBy('barrier_category_id')
             ->pluck('count', 'barrier_category_id')
             ->toArray();
@@ -87,8 +64,9 @@ class FgdsCommunityController extends Controller
             ];
         });
 
-        // Prepare map data
-        $mapData = FgdsCommunity::whereNotNull('latitude')
+        // Prepare map data (also filtered, so the map matches the rest of the page)
+        $mapData = $this->applyBarrierListFilters(FgdsCommunity::query(), $request)
+            ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get()
             ->map(function ($record) {
@@ -112,6 +90,46 @@ class FgdsCommunityController extends Controller
         return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs', 'stats'));
     }
 
+    /**
+     * Apply the list-page filters (search, district, uc, date range, facilitator)
+     * to a query. Shared by the table, the stat counts, the barriers-by-category
+     * cards and the category modal so the whole page reflects the same filter.
+     */
+    private function applyBarrierListFilters($query, Request $request)
+    {
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('district', 'like', "%{$search}%")
+                    ->orWhere('uc', 'like', "%{$search}%")
+                    ->orWhere('facilitator_tkf', 'like', "%{$search}%")
+                    ->orWhere('venue', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('district')) {
+            $query->where('district', $request->district);
+        }
+
+        if ($request->filled('uc')) {
+            $query->where('uc', $request->uc);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('facilitator')) {
+            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
+        }
+
+        return $query;
+    }
+
     public function show(FgdsCommunity $fgdsCommunity)
     {
         $fgdsCommunity->load(['participants', 'barriers.category']);
@@ -123,9 +141,11 @@ class FgdsCommunityController extends Controller
      * FGDs-Community record carrying a barrier in the given category, with the
      * barrier texts, as JSON for the modal.
      */
-    public function barriersByCategory(BarrierCategory $category)
+    public function barriersByCategory(Request $request, BarrierCategory $category)
     {
-        $records = FgdsCommunity::query()
+        // Respect the list page's active filters (passed through as query string)
+        // so the modal lists only the FGDs in the current filtered view.
+        $records = $this->applyBarrierListFilters(FgdsCommunity::query(), $request)
             ->with(['barriers' => fn ($q) => $q->where('barrier_category_id', $category->id)->orderBy('serial_number')])
             ->whereHas('barriers', fn ($q) => $q->where('barrier_category_id', $category->id))
             ->latest()

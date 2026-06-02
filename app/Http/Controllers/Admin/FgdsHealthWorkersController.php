@@ -20,60 +20,38 @@ class FgdsHealthWorkersController extends Controller
 {
     public function index(Request $request)
     {
-        $query = FgdsHealthWorkers::with('participants')->latest();
-
-        // Text search filter
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('uc', 'like', "%{$search}%")
-                    ->orWhere('hfs', 'like', "%{$search}%")
-                    ->orWhere('facilitator_tkf', 'like', "%{$search}%");
-            });
-        }
-
-        // UC filter
-        if ($request->filled('uc')) {
-            $query->where('uc', $request->uc);
-        }
-
-        // Group type filter
-        if ($request->filled('group_type')) {
-            $query->where('group_type', $request->group_type);
-        }
-
-        // Date range filter
-        if ($request->filled('date_from')) {
-            $query->whereDate('date', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('date', '<=', $request->date_to);
-        }
-
-        // Facilitator filter
-        if ($request->filled('facilitator')) {
-            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
-        }
-
+        // Page-wide filter: the same filters drive the table, the stat cards, the
+        // barriers-by-category cards/modal and the map, so applying a filter
+        // updates every count on the page — not just the table rows.
         $perPage = $request->input('per_page', 15);
-        $fgdsHealthWorkers = $query->paginate($perPage == 'all' ? 999999 : (int) $perPage)->withQueryString();
+        $fgdsHealthWorkers = $this->applyBarrierListFilters(FgdsHealthWorkers::with('participants'), $request)
+            ->latest()
+            ->paginate($perPage == 'all' ? 999999 : (int) $perPage)
+            ->withQueryString();
 
-        // Get distinct values for filter dropdowns
+        // IDs of every record matching the current filters (drives all counts).
+        $filteredIds = $this->applyBarrierListFilters(FgdsHealthWorkers::query(), $request)->pluck('id');
+
+        // Get distinct values for filter dropdowns (always the full catalogue).
         $ucs = FgdsHealthWorkers::distinct()->pluck('uc')->filter()->sort()->values();
         $groupTypes = FgdsHealthWorkers::distinct()->pluck('group_type')->filter()->sort()->values();
 
-        // Calculate statistics from actual participant records
+        // Statistics over the filtered set, from actual participant records.
+        $participantsQuery = fn () => Participant::where('participantable_type', FgdsHealthWorkers::class)
+            ->whereIn('participantable_id', $filteredIds);
         $stats = [
-            'total' => FgdsHealthWorkers::count(),
-            'total_barriers' => FgdsHealthWorkersBarrier::count(),
-            'total_participants' => Participant::where('participantable_type', FgdsHealthWorkers::class)->count(),
-            'total_males' => Participant::where('participantable_type', FgdsHealthWorkers::class)->where('gender', 'Male')->count(),
-            'total_females' => Participant::where('participantable_type', FgdsHealthWorkers::class)->where('gender', 'Female')->count(),
-            'ucs_covered' => FgdsHealthWorkers::distinct('uc')->count('uc'),
+            'total' => $filteredIds->count(),
+            'total_barriers' => FgdsHealthWorkersBarrier::whereIn('fgds_health_workers_id', $filteredIds)->count(),
+            'total_participants' => $participantsQuery()->count(),
+            'total_males' => $participantsQuery()->where('gender', 'Male')->count(),
+            'total_females' => $participantsQuery()->where('gender', 'Female')->count(),
+            'ucs_covered' => $this->applyBarrierListFilters(FgdsHealthWorkers::query(), $request)
+                ->distinct('uc')->count('uc'),
         ];
 
-        // Get barriers count by category for statistics
-        $barriersByCategory = FgdsHealthWorkersBarrier::select('barrier_category_id', DB::raw('count(*) as count'))
+        // Barriers by category, restricted to the filtered records.
+        $barriersByCategory = FgdsHealthWorkersBarrier::whereIn('fgds_health_workers_id', $filteredIds)
+            ->select('barrier_category_id', DB::raw('count(*) as count'))
             ->groupBy('barrier_category_id')
             ->pluck('count', 'barrier_category_id')
             ->toArray();
@@ -87,8 +65,9 @@ class FgdsHealthWorkersController extends Controller
             ];
         });
 
-        // Prepare map data
-        $mapData = FgdsHealthWorkers::whereNotNull('latitude')
+        // Prepare map data (also filtered, so the map matches the rest of the page)
+        $mapData = $this->applyBarrierListFilters(FgdsHealthWorkers::query(), $request)
+            ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get()
             ->map(function ($record) {
@@ -107,6 +86,46 @@ class FgdsHealthWorkersController extends Controller
         return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes', 'stats'));
     }
 
+    /**
+     * Apply the list-page filters (search, uc, group type, date range,
+     * facilitator) to a query. Shared by the table, the stat counts, the
+     * barriers-by-category cards and the category modal so the whole page
+     * reflects the same filter.
+     */
+    private function applyBarrierListFilters($query, Request $request)
+    {
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('uc', 'like', "%{$search}%")
+                    ->orWhere('hfs', 'like', "%{$search}%")
+                    ->orWhere('facilitator_tkf', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('uc')) {
+            $query->where('uc', $request->uc);
+        }
+
+        if ($request->filled('group_type')) {
+            $query->where('group_type', $request->group_type);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('date', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('date', '<=', $request->date_to);
+        }
+
+        if ($request->filled('facilitator')) {
+            $query->where('facilitator_tkf', 'like', "%{$request->facilitator}%");
+        }
+
+        return $query;
+    }
+
     public function show(FgdsHealthWorkers $fgdsHealthWorker)
     {
         $fgdsHealthWorker->load(['participants', 'barriers.category']);
@@ -118,9 +137,11 @@ class FgdsHealthWorkersController extends Controller
      * FGDs-Health Workers record carrying a barrier in the given category, with
      * the barrier texts, as JSON for the modal.
      */
-    public function barriersByCategory(BarrierCategory $category)
+    public function barriersByCategory(Request $request, BarrierCategory $category)
     {
-        $records = FgdsHealthWorkers::query()
+        // Respect the list page's active filters (passed through as query string)
+        // so the modal lists only the FGDs in the current filtered view.
+        $records = $this->applyBarrierListFilters(FgdsHealthWorkers::query(), $request)
             ->with(['barriers' => fn ($q) => $q->where('barrier_category_id', $category->id)->orderBy('serial_number')])
             ->whereHas('barriers', fn ($q) => $q->where('barrier_category_id', $category->id))
             ->latest()
