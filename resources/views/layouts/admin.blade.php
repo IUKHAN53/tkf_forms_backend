@@ -940,7 +940,9 @@ body {
                     </ul>
                 </div>
 
-                <!-- Reports Section -->
+                {{-- Reports Section hidden per request (Fixed Site Report menu item).
+                     Route admin.reports.fixed-site still exists; only the sidebar
+                     entry is hidden. Restore this block to bring it back.
                 <div class="nav-section">
                     <div class="nav-section-title">Reports</div>
                     <ul class="nav-menu">
@@ -957,6 +959,7 @@ body {
                         </li>
                     </ul>
                 </div>
+                --}}
 
                 <!-- Administration Section -->
                 <div class="nav-section">
