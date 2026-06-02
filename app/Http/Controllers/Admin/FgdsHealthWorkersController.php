@@ -201,6 +201,15 @@ class FgdsHealthWorkersController extends Controller
             ->with('success', 'FGDs-Health Workers session deleted successfully.');
     }
 
+    public function destroyBarrier(FgdsHealthWorkersBarrier $barrier)
+    {
+        $recordId = $barrier->fgds_health_workers_id;
+        $barrier->delete();
+
+        return redirect()->route('admin.fgds-health-workers.show', $recordId)
+            ->with('success', 'Barrier deleted successfully.');
+    }
+
     public function export()
     {
         $records = FgdsHealthWorkers::with('participants')->get();

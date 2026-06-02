@@ -99,6 +99,7 @@
                         <th style="width: 60px;">Sr. No</th>
                         <th>Barrier</th>
                         <th style="width: 280px;">Category</th>
+                        <th style="width: 80px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -110,6 +111,12 @@
                                 <span class="badge badge-warning" style="font-size: 11px;">
                                     {{ $barrier->category->name ?? 'Uncategorized' }}
                                 </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger"
+                                    onclick="deleteBarrier('{{ route('admin.fgds-community.barriers.destroy', $barrier) }}')">
+                                    Delete
+                                </button>
                             </td>
                         </tr>
                     @endforeach
@@ -180,5 +187,20 @@
         @endif
     </div>
 </div>
+
+<form id="barrierDeleteForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+<script>
+function deleteBarrier(url) {
+    if (confirm('Are you sure you want to delete this barrier?')) {
+        const form = document.getElementById('barrierDeleteForm');
+        form.action = url;
+        form.submit();
+    }
+}
+</script>
 
 @endsection

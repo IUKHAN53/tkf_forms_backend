@@ -55,6 +55,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('fgds-community/bulk-delete', [FgdsCommunityController::class, 'bulkDestroy'])->name('fgds-community.bulk-destroy');
     Route::post('fgds-community/import', [FgdsCommunityController::class, 'import'])->name('fgds-community.import');
     Route::post('fgds-community/{id}/barriers', [FgdsCommunityController::class, 'uploadBarriers'])->name('fgds-community.upload-barriers');
+    Route::delete('fgds-community/barriers/{barrier}', [FgdsCommunityController::class, 'destroyBarrier'])->name('fgds-community.barriers.destroy');
     Route::resource('fgds-community', FgdsCommunityController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Core Forms - FGDs-Health Workers
@@ -64,6 +65,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('fgds-health-workers/bulk-delete', [FgdsHealthWorkersController::class, 'bulkDestroy'])->name('fgds-health-workers.bulk-destroy');
     Route::post('fgds-health-workers/import', [FgdsHealthWorkersController::class, 'import'])->name('fgds-health-workers.import');
     Route::post('fgds-health-workers/{id}/barriers', [FgdsHealthWorkersController::class, 'uploadBarriers'])->name('fgds-health-workers.upload-barriers');
+    Route::delete('fgds-health-workers/barriers/{barrier}', [FgdsHealthWorkersController::class, 'destroyBarrier'])->name('fgds-health-workers.barriers.destroy');
     Route::resource('fgds-health-workers', FgdsHealthWorkersController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
 
     // Core Forms - Bridging The Gap

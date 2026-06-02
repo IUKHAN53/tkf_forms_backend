@@ -183,6 +183,15 @@ class FgdsCommunityController extends Controller
             ->with('success', 'FGDs-Community session deleted successfully.');
     }
 
+    public function destroyBarrier(FgdsCommunityBarrier $barrier)
+    {
+        $recordId = $barrier->fgds_community_id;
+        $barrier->delete();
+
+        return redirect()->route('admin.fgds-community.show', $recordId)
+            ->with('success', 'Barrier deleted successfully.');
+    }
+
     public function export()
     {
         $records = FgdsCommunity::with('participants')->get();
