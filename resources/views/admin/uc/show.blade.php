@@ -1240,7 +1240,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }[s]));
     }
 
-    async function openBarrierCategoryModal(categoryId, categoryName) {
+    // Exposed on window because the category cards call it from an inline
+    // onclick, which runs in global scope (this script is inside DOMContentLoaded).
+    window.openBarrierCategoryModal = async function (categoryId, categoryName) {
         const overlay = document.getElementById('barrierModalOverlay');
         const body = document.getElementById('barrierModalBody');
         document.getElementById('barrierModalTitle').textContent = categoryName;
@@ -1302,11 +1304,11 @@ document.addEventListener('DOMContentLoaded', function() {
         body.innerHTML = html;
     }
 
-    function closeBarrierCategoryModal() {
+    window.closeBarrierCategoryModal = function () {
         // The overlay's stopPropagation on the inner modal means this only fires
         // for the overlay backdrop or the close button.
         document.getElementById('barrierModalOverlay').classList.remove('active');
-    }
+    };
 
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') closeBarrierCategoryModal();
