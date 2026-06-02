@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BarrierCategory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,23 +17,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Insert the 8 fixed categories
-        $categories = [
-            ['name' => 'Cultural Compatibility / Traditional Beliefs and Practices.', 'sort_order' => 1],
-            ['name' => 'Communication / Information.', 'sort_order' => 2],
-            ['name' => 'Service Availability.', 'sort_order' => 3],
-            ['name' => 'System and Procedures.', 'sort_order' => 4],
-            ['name' => 'Client / Provider Relations.', 'sort_order' => 5],
-            ['name' => 'Provider Technical Competence.', 'sort_order' => 6],
-            ['name' => 'Supplies and Equipment / Medicine.', 'sort_order' => 7],
-            ['name' => 'Place / Environment.', 'sort_order' => 8],
-        ];
-
+        // Seed the canonical 11 vaccine-specific categories (single source of
+        // truth: BarrierCategory::CANONICAL). Migration ..._000002 keeps an
+        // already-populated table in sync; this covers fresh installs so the old
+        // taxonomy is never created.
         $now = now();
-        foreach ($categories as $category) {
+        foreach (BarrierCategory::CANONICAL as $i => $name) {
             DB::table('barrier_categories')->insert([
-                'name' => $category['name'],
-                'sort_order' => $category['sort_order'],
+                'name' => $name,
+                'sort_order' => $i + 1,
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);

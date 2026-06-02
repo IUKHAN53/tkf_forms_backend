@@ -6,12 +6,15 @@ use Illuminate\Support\Facades\DB;
 /**
  * Replace the barrier-category taxonomy with the current 11 categories.
  *
- * Strategy (chosen to protect live data):
+ * Strategy:
  *  - Upsert the 11 canonical categories with sort_order 1..11.
- *  - Drop any pre-existing category that is NOT in the new list AND has zero
- *    barriers attached (cascade delete would otherwise destroy barrier records).
- *  - A leftover old category that still has barriers is kept but pushed below the
- *    canonical 11 so the list stays ordered.
+ *  - Delete every category that is NOT in the new list. Barriers are being wiped
+ *    and re-uploaded against the 11, so there is nothing to protect; this
+ *    guarantees no trace of the old taxonomy remains.
+ *
+ * NOTE: this migration already ran on live with the older "keep legacy if it
+ * still has barriers" behaviour; migration ..._000003 re-applies the now
+ * unconditional purge to environments that have already run this one.
  */
 return new class extends Migration
 {
@@ -63,21 +66,10 @@ return new class extends Migration
             }
         }
 
-        // 2. Remove categories outside the new list, but only when unused.
-        $stale = DB::table('barrier_categories')
+        // 2. Remove every category outside the new list, unconditionally.
+        DB::table('barrier_categories')
             ->whereNotIn('name', self::CATEGORIES)
-            ->get();
-
-        foreach ($stale as $cat) {
-            if ($this->hasBarriers($cat->id)) {
-                // Keep it (would cascade-delete real barriers) but order it last.
-                DB::table('barrier_categories')
-                    ->where('id', $cat->id)
-                    ->update(['sort_order' => 100 + (int) $cat->sort_order, 'updated_at' => $now]);
-            } else {
-                DB::table('barrier_categories')->where('id', $cat->id)->delete();
-            }
-        }
+            ->delete();
     }
 
     public function down(): void

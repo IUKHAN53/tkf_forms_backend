@@ -359,9 +359,6 @@ class FgdsCommunityController extends Controller
             if ($importResult['skipped'] > 0) {
                 $message .= " Skipped {$importResult['skipped']} empty rows.";
             }
-            if (isset($importResult['new_categories']) && $importResult['new_categories'] > 0) {
-                $message .= " Created {$importResult['new_categories']} new categories.";
-            }
         } catch (\Exception $e) {
             return redirect()->route('admin.fgds-community.index')
                 ->with('error', "File uploaded but failed to parse barriers: " . $e->getMessage());
@@ -380,17 +377,15 @@ class FgdsCommunityController extends Controller
         $worksheet = $spreadsheet->getActiveSheet();
         $rows = $worksheet->toArray();
 
-        // Get all barrier categories indexed by name (normalized for matching)
-        $categories = BarrierCategory::all()->keyBy(function ($cat) {
-            return $this->normalizeCategory($cat->name);
-        });
+        // Canonical 11 categories indexed by normalized name, reused for every row.
+        // Imports map into these and NEVER create a new category.
+        $categories = BarrierCategory::all()->keyBy(fn ($cat) => BarrierCategory::normalizeName($cat->name));
 
         // Delete existing barriers for this record before importing new ones
         FgdsCommunityBarrier::where('fgds_community_id', $record->id)->delete();
 
         $imported = 0;
         $skipped = 0;
-        $newCategories = 0;
 
         // Skip header row (index 0), process data rows
         foreach ($rows as $index => $row) {
@@ -407,29 +402,11 @@ class FgdsCommunityController extends Controller
                 continue;
             }
 
-            // Find matching category
-            $normalizedCategory = $this->normalizeCategory($categoryName);
-            $category = $categories->get($normalizedCategory);
+            // Always resolves to one of the canonical 11 (closest match / fallback).
+            $category = BarrierCategory::resolveForImport($categoryName, $categories);
 
             if (!$category) {
-                // Try partial match
-                $category = $this->findCategoryByPartialMatch($categoryName, $categories);
-            }
-
-            if (!$category && !empty($categoryName)) {
-                // Create new category if it doesn't exist
-                $maxSortOrder = BarrierCategory::max('sort_order') ?? 0;
-                $category = BarrierCategory::create([
-                    'name' => $categoryName,
-                    'sort_order' => $maxSortOrder + 1,
-                ]);
-                // Add to categories collection for subsequent rows
-                $categories[$normalizedCategory] = $category;
-                $newCategories++;
-            }
-
-            if (!$category) {
-                // If still no category (empty category name), skip this row
+                // Only possible if the categories table is empty — skip defensively.
                 $skipped++;
                 continue;
             }
@@ -448,55 +425,7 @@ class FgdsCommunityController extends Controller
         return [
             'imported' => $imported,
             'skipped' => $skipped,
-            'new_categories' => $newCategories,
         ];
-    }
-
-    /**
-     * Normalize category name for comparison
-     */
-    private function normalizeCategory(string $name): string
-    {
-        // Remove extra spaces, lowercase, remove trailing punctuation
-        $normalized = strtolower(trim(preg_replace('/\s+/', ' ', $name)));
-        // Remove trailing period or other punctuation
-        $normalized = rtrim($normalized, '.,;:');
-        return $normalized;
-    }
-
-    /**
-     * Find category by partial match
-     */
-    private function findCategoryByPartialMatch(string $categoryName, $categories)
-    {
-        $normalized = $this->normalizeCategory($categoryName);
-
-        foreach ($categories as $key => $category) {
-            // Check if one contains the other
-            if (str_contains($key, $normalized) || str_contains($normalized, $key)) {
-                return $category;
-            }
-
-            // Check first few words match (at least first 2 words)
-            $searchWords = explode(' ', $normalized);
-            $categoryWords = explode(' ', $key);
-
-            if (count($searchWords) >= 2 && count($categoryWords) >= 2) {
-                if ($searchWords[0] === $categoryWords[0] && $searchWords[1] === $categoryWords[1]) {
-                    return $category;
-                }
-            }
-
-            // Check for keyword matches (e.g., "communication", "cultural", "service")
-            $keywords = ['cultural', 'communication', 'service', 'system', 'client', 'provider', 'supplies', 'place', 'environment'];
-            foreach ($keywords as $keyword) {
-                if (str_contains($normalized, $keyword) && str_contains($key, $keyword)) {
-                    return $category;
-                }
-            }
-        }
-
-        return null;
     }
 
     /**
