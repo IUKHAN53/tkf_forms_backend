@@ -199,6 +199,20 @@
                 <div id="barriersCategoryGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;"></div>
             </div>
 
+            <!-- Barrier Category Drill-down Modal -->
+            <div id="barrierModalOverlay" class="barrier-modal-overlay" onclick="closeBarrierCategoryModal(event)">
+                <div class="barrier-modal" onclick="event.stopPropagation()">
+                    <div class="barrier-modal-header">
+                        <div>
+                            <h3 id="barrierModalTitle">Barriers</h3>
+                            <p id="barrierModalSubtitle" class="barrier-modal-subtitle"></p>
+                        </div>
+                        <button type="button" class="barrier-modal-close" onclick="closeBarrierCategoryModal()" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="barrier-modal-body" id="barrierModalBody"></div>
+                </div>
+            </div>
+
             <!-- Data Table -->
             <div class="tab-table-container">
                 <div class="table-header">
@@ -839,6 +853,120 @@
         display: none;
     }
 }
+
+/* ----- Barrier category drill-down ----- */
+.barrier-cat-card {
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.barrier-cat-card[onclick]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.barrier-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.barrier-modal-overlay.active {
+    display: flex;
+}
+.barrier-modal {
+    background: #fff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 720px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+.barrier-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--gray-100);
+}
+.barrier-modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--gray-900);
+}
+.barrier-modal-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--gray-500);
+}
+.barrier-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 0 4px;
+}
+.barrier-modal-close:hover {
+    color: var(--gray-700);
+}
+.barrier-modal-body {
+    padding: 16px 24px 24px;
+    overflow-y: auto;
+}
+.barrier-record-card {
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+.barrier-record-card:last-child {
+    margin-bottom: 0;
+}
+.barrier-record-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.barrier-record-head code {
+    background: var(--gray-100);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: var(--gray-800);
+}
+.barrier-record-date {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+.barrier-record-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 10px;
+}
+.barrier-record-list {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.barrier-record-list li {
+    font-size: 13px;
+    color: var(--gray-700);
+    line-height: 1.4;
+}
 </style>
 
 <script>
@@ -1086,14 +1214,103 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         categories.forEach((cat, i) => {
             const color = categoryColors[i % categoryColors.length];
-            html += `<div style="background: ${color.bg}; border: 1px solid ${color.border}; border-radius: 10px; padding: 14px 16px; text-align: center;">
+            // Only categories with barriers are clickable (there is something to show).
+            const clickable = cat.count > 0;
+            const cursor = clickable ? 'pointer' : 'default';
+            const onclick = clickable
+                ? ` onclick="openBarrierCategoryModal(${cat.id}, ${JSON.stringify(cat.name)})"`
+                : '';
+            const hint = clickable
+                ? `<div style="font-size: 10px; color: ${color.text}; margin-top: 6px; opacity: 0.7;">Click to view FGDs</div>`
+                : '';
+            html += `<div class="barrier-cat-card"${onclick} style="background: ${color.bg}; border: 1px solid ${color.border}; border-radius: 10px; padding: 14px 16px; text-align: center; cursor: ${cursor};">
                 <div style="font-size: 22px; font-weight: 700; color: ${color.text}; line-height: 1.2;">${cat.count}</div>
                 <div style="font-size: 12px; color: ${color.text}; margin-top: 4px; opacity: 0.85; line-height: 1.3;">${cat.name}</div>
+                ${hint}
             </div>`;
         });
         grid.innerHTML = html;
         section.style.display = 'block';
     }
+
+    // ----- Barrier category drill-down modal -----
+    function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, s => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[s]));
+    }
+
+    async function openBarrierCategoryModal(categoryId, categoryName) {
+        const overlay = document.getElementById('barrierModalOverlay');
+        const body = document.getElementById('barrierModalBody');
+        document.getElementById('barrierModalTitle').textContent = categoryName;
+        document.getElementById('barrierModalSubtitle').textContent = 'Loading FGDs with this barrier…';
+        body.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--gray-500);">Loading…</div>';
+        overlay.classList.add('active');
+
+        const params = new URLSearchParams({ tab: currentTab, category: categoryId });
+        if (startDate) params.append('start_date', startDate);
+        if (endDate) params.append('end_date', endDate);
+        if (subsetUc && subsetUc !== 'all') params.append('subset_uc', subsetUc);
+
+        try {
+            const response = await fetch(`{{ route('admin.uc.barrier-records', $ucSlug) }}?${params.toString()}`);
+            const result = await response.json();
+            if (!result.success) throw new Error('Request failed');
+            renderBarrierRecords(result);
+        } catch (error) {
+            console.error('Error loading barrier records:', error);
+            document.getElementById('barrierModalSubtitle').textContent = '';
+            body.innerHTML = '<div style="padding: 32px; text-align: center; color: #991b1b;">Error loading records.</div>';
+        }
+    }
+
+    function renderBarrierRecords(result) {
+        const body = document.getElementById('barrierModalBody');
+        const records = result.records || [];
+        const totalBarriers = records.reduce((sum, r) => sum + (r.barriers ? r.barriers.length : 0), 0);
+        document.getElementById('barrierModalSubtitle').textContent =
+            `${records.length} FGD session${records.length === 1 ? '' : 's'} · ${totalBarriers} barrier${totalBarriers === 1 ? '' : 's'} in this category`;
+
+        if (!records.length) {
+            body.innerHTML = '<div style="padding: 32px; text-align: center; color: var(--gray-500);">No FGDs raised a barrier in this category for the current filters.</div>';
+            return;
+        }
+
+        let html = '';
+        records.forEach(rec => {
+            let barriersHtml = '';
+            (rec.barriers || []).forEach(b => {
+                const sr = (b.serial_number !== null && b.serial_number !== undefined) ? `${b.serial_number}. ` : '';
+                barriersHtml += `<li>${sr}${escapeHtml(b.text)}</li>`;
+            });
+            html += `
+                <div class="barrier-record-card">
+                    <div class="barrier-record-head">
+                        <code>${escapeHtml(rec.unique_id)}</code>
+                        <span class="barrier-record-date">${escapeHtml(rec.date)}</span>
+                    </div>
+                    <div class="barrier-record-meta">
+                        <span><strong>${escapeHtml(result.venue_label)}:</strong> ${escapeHtml(rec.venue || 'N/A')}</span>
+                        <span><strong>UC:</strong> ${escapeHtml(rec.uc || 'N/A')}</span>
+                        ${rec.district ? `<span><strong>District:</strong> ${escapeHtml(rec.district)}</span>` : ''}
+                        ${rec.facilitator ? `<span><strong>Facilitator:</strong> ${escapeHtml(rec.facilitator)}</span>` : ''}
+                    </div>
+                    <ul class="barrier-record-list">${barriersHtml}</ul>
+                </div>`;
+        });
+        body.innerHTML = html;
+    }
+
+    function closeBarrierCategoryModal() {
+        // The overlay's stopPropagation on the inner modal means this only fires
+        // for the overlay backdrop or the close button.
+        document.getElementById('barrierModalOverlay').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeBarrierCategoryModal();
+    });
 
     // Render stats cards
     function renderStats(stats) {

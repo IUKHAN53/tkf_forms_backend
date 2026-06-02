@@ -180,6 +180,112 @@ class UcController extends Controller
     }
 
     /**
+     * Drill-down: list the FGD sessions that have at least one barrier in a
+     * given category, so clicking a category card on the UC page can show which
+     * FGDs raised those barriers (with venue/HFS, UC, date and the barrier text).
+     */
+    public function barrierRecords(Request $request, string $slug): JsonResponse
+    {
+        $ucName = $this->getUcNameFromSlug($slug);
+
+        if (!$ucName) {
+            return response()->json(['error' => 'UC not found'], 404);
+        }
+
+        $allVariants = DashboardController::getUcVariants($ucName);
+        $tab = $request->get('tab', 'fgds_community');
+        $categoryId = $request->get('category');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+        $subsetUc = $request->get('subset_uc');
+
+        $variants = $allVariants;
+        if ($subsetUc && $subsetUc !== 'all' && in_array($subsetUc, $allVariants)) {
+            $variants = [$subsetUc];
+        }
+
+        $startDate = $this->parseDateOrNull($startDate);
+        $endDate = $this->parseDateOrNull($endDate);
+
+        $category = BarrierCategory::find($categoryId);
+        $categoryName = $category->name ?? 'Uncategorized';
+
+        $isHealthWorkers = $tab === 'fgds_health_workers';
+        $records = $isHealthWorkers
+            ? $this->getFgdsBarrierRecords(FgdsHealthWorkers::class, $variants, $categoryId, $startDate, $endDate, 'hfs')
+            : $this->getFgdsBarrierRecords(FgdsCommunity::class, $variants, $categoryId, $startDate, $endDate, 'venue');
+
+        return response()->json([
+            'success' => true,
+            'tab' => $tab,
+            'category' => $categoryName,
+            'venue_label' => $isHealthWorkers ? 'Health Facility (HFS)' : 'Venue',
+            'records' => $records,
+        ]);
+    }
+
+    /**
+     * Fetch the FGD sessions (community or health workers) under the given UC
+     * variants that have at least one barrier in $categoryId, each with the
+     * matching barrier rows. $venueField is the model's venue column (venue/hfs).
+     */
+    private function getFgdsBarrierRecords(string $model, array $variants, $categoryId, ?string $startDate, ?string $endDate, string $venueField): array
+    {
+        $query = $model::query()
+            ->with(['barriers' => function ($q) use ($categoryId) {
+                $q->where('barrier_category_id', $categoryId)->orderBy('serial_number');
+            }])
+            ->where(function ($q) use ($variants) {
+                $q->whereIn('uc', $variants);
+                foreach ($variants as $variant) {
+                    $q->orWhere('uc', 'LIKE', $variant);
+                }
+            })
+            ->whereHas('barriers', function ($q) use ($categoryId) {
+                $q->where('barrier_category_id', $categoryId);
+            });
+
+        if ($startDate) {
+            $query->whereDate('date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+
+        return $query->latest()->get()->map(function ($item) use ($venueField) {
+            return [
+                'id' => $item->id,
+                'unique_id' => $item->unique_id,
+                'date' => $item->date ? $item->date->format('M d, Y') : 'N/A',
+                'venue' => $item->{$venueField},
+                'district' => $item->district ?? null,
+                'uc' => $item->uc,
+                'facilitator' => $item->facilitator_tkf ?? null,
+                'barriers' => $item->barriers->map(fn ($b) => [
+                    'serial_number' => $b->serial_number,
+                    'text' => $b->barrier_text,
+                ])->values(),
+            ];
+        })->values()->toArray();
+    }
+
+    /**
+     * Parse a request date string to Y-m-d, or null when missing/invalid.
+     */
+    private function parseDateOrNull($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
+    /**
      * Convert slug to UC name
      */
     private function getUcNameFromSlug(string $slug): ?string

@@ -33,6 +33,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     // UC Detail Pages
     Route::get('/uc/{slug}', [UcController::class, 'show'])->name('uc.show');
     Route::get('/uc/{slug}/data', [UcController::class, 'getData'])->name('uc.data');
+    Route::get('/uc/{slug}/barrier-records', [UcController::class, 'barrierRecords'])->name('uc.barrier-records');
 
     Route::resource('forms', AdminFormController::class);
     Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
