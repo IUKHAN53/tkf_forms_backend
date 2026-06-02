@@ -98,9 +98,14 @@
             <p class="text-muted">Distribution of identified barriers across categories</p>
         </div>
     </div>
-    <div class="barriers-category-grid">
+    <div class="barriers-category-grid" id="barriersCategoryGrid" data-barriers-url="{{ url('admin/fgds-health-workers/barriers-by-category') }}">
         @foreach($stats['barriers_by_category'] as $category)
-        <div class="barrier-category-card">
+        <div class="barrier-category-card{{ $category['count'] > 0 ? ' clickable' : '' }}"
+             @if($category['count'] > 0)
+                role="button" tabindex="0" title="Click to view barriers in this category"
+                onclick="openCategoryBarriers({{ $category['id'] }}, @js($category['name']))"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCategoryBarriers({{ $category['id'] }}, @js($category['name']))}"
+             @endif>
             <div class="barrier-category-count">{{ $category['count'] }}</div>
             <div class="barrier-category-name">{{ $category['name'] }}</div>
         </div>
@@ -314,7 +319,75 @@
     @method('DELETE')
 </form>
 
+<!-- Barriers by Category drill-down Modal -->
+<dialog id="categoryBarriersModal" class="modal">
+    <div class="modal-content" style="max-width: 820px;">
+        <div class="modal-header">
+            <h3>Barriers &mdash; <span id="catBarrierTitle"></span></h3>
+            <button type="button" class="modal-close" onclick="document.getElementById('categoryBarriersModal').close()">&times;</button>
+        </div>
+        <div class="modal-body" id="catBarrierBody" style="max-height: 65vh; overflow-y: auto;"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline" onclick="document.getElementById('categoryBarriersModal').close()">Close</button>
+        </div>
+    </div>
+</dialog>
+
+<style>
+.barrier-category-card.clickable { cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+.barrier-category-card.clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+</style>
+
 <script>
+function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function openCategoryBarriers(categoryId, categoryName) {
+    const modal = document.getElementById('categoryBarriersModal');
+    const title = document.getElementById('catBarrierTitle');
+    const body  = document.getElementById('catBarrierBody');
+    const base  = document.getElementById('barriersCategoryGrid').dataset.barriersUrl;
+    const showBase = base.replace('/barriers-by-category', '');
+
+    title.textContent = categoryName;
+    body.innerHTML = '<p class="text-muted" style="text-align:center;padding:24px;">Loading…</p>';
+    modal.showModal();
+
+    fetch(base + '/' + categoryId, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success || !data.records || !data.records.length) {
+                body.innerHTML = '<p class="text-muted" style="text-align:center;padding:24px;">No barrier records found for this category.</p>';
+                return;
+            }
+            let html = '<p class="text-muted" style="margin-bottom:14px;">' + data.count + ' barrier(s) across ' + data.records.length + ' FGD session(s).</p>';
+            data.records.forEach(rec => {
+                html += '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;">';
+                html += '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;">';
+                html += '<strong>' + escapeHtml(rec.venue || 'N/A') + '</strong>';
+                html += '<span class="text-muted" style="font-size:13px;">' + escapeHtml(rec.date) + '</span>';
+                html += '</div>';
+                let meta = 'UC: ' + escapeHtml(rec.uc || 'N/A');
+                if (rec.district) meta += ' · District: ' + escapeHtml(rec.district);
+                if (rec.facilitator) meta += ' · Facilitator: ' + escapeHtml(rec.facilitator);
+                html += '<div class="text-muted" style="font-size:13px;margin-bottom:8px;">' + meta + '</div>';
+                html += '<ul style="margin:0 0 8px 0;padding-left:18px;">';
+                rec.barriers.forEach(b => {
+                    html += '<li style="margin-bottom:4px;">' + escapeHtml(b.text) + '</li>';
+                });
+                html += '</ul>';
+                html += '<a href="' + showBase + '/' + rec.id + '" class="btn btn-sm btn-outline">View Session</a>';
+                html += '</div>';
+            });
+            body.innerHTML = html;
+        })
+        .catch(() => {
+            body.innerHTML = '<p style="color:#dc2626;text-align:center;padding:24px;">Failed to load barriers.</p>';
+        });
+}
+window.openCategoryBarriers = openCategoryBarriers;
+
 function toggleSelectAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     checkboxes.forEach(cb => cb.checked = source.checked);

@@ -118,6 +118,41 @@ class FgdsCommunityController extends Controller
         return view('admin.core-forms.fgds-community.show', compact('fgdsCommunity'));
     }
 
+    /**
+     * Drill-down for a barrier category card on the list page: returns every
+     * FGDs-Community record carrying a barrier in the given category, with the
+     * barrier texts, as JSON for the modal.
+     */
+    public function barriersByCategory(BarrierCategory $category)
+    {
+        $records = FgdsCommunity::query()
+            ->with(['barriers' => fn ($q) => $q->where('barrier_category_id', $category->id)->orderBy('serial_number')])
+            ->whereHas('barriers', fn ($q) => $q->where('barrier_category_id', $category->id))
+            ->latest()
+            ->get()
+            ->map(fn ($item) => [
+                'id'          => $item->id,
+                'unique_id'   => $item->unique_id,
+                'date'        => $item->date ? $item->date->format('M d, Y') : 'N/A',
+                'venue'       => $item->venue,
+                'district'    => $item->district,
+                'uc'          => DashboardController::getConsolidatedUcName($item->uc),
+                'facilitator' => $item->facilitator_tkf,
+                'barriers'    => $item->barriers->map(fn ($b) => [
+                    'serial_number' => $b->serial_number,
+                    'text'          => $b->barrier_text,
+                ])->values(),
+            ])
+            ->values();
+
+        return response()->json([
+            'success'  => true,
+            'category' => $category->name,
+            'count'    => $records->sum(fn ($r) => count($r['barriers'])),
+            'records'  => $records,
+        ]);
+    }
+
     public function edit(FgdsCommunity $fgdsCommunity)
     {
         $fgdsCommunity->load('participants');
@@ -489,14 +524,14 @@ class FgdsCommunityController extends Controller
 
         // Add sample data with different categories
         $sampleData = [
-            [1, 'Some community members believe vaccines cause harm', $categories[0] ?? 'Cultural Compatibility / Traditional Beliefs and Practices.'],
-            [2, 'Lack of awareness about vaccination schedule', $categories[1] ?? 'Communication / Information.'],
-            [3, 'Vaccination center is too far from the village', $categories[2] ?? 'Service Availability.'],
-            [4, 'Long waiting times at the health facility', $categories[3] ?? 'System and Procedures.'],
-            [5, 'Health workers are not friendly to mothers', $categories[4] ?? 'Client / Provider Relations.'],
-            [6, 'Vaccinators need more training on handling', $categories[5] ?? 'Provider Technical Competence.'],
-            [7, 'Frequent vaccine stock-outs', $categories[6] ?? 'Supplies and Equipment / Medicine.'],
-            [8, 'Vaccination room is not clean', $categories[7] ?? 'Place / Environment.'],
+            [1, 'Some community members believe vaccines cause harm', $categories[0] ?? 'Misconceptions and Misinformation about Vaccines'],
+            [2, 'Parents fear vaccines cause serious side effects', $categories[1] ?? 'Fear of Side Effects and Vaccine Safety Concerns'],
+            [3, 'Vaccination carried out without proper consent', $categories[2] ?? 'Forceful Vaccination and Consent Issues'],
+            [4, 'Health workers are not friendly to mothers', $categories[3] ?? 'Poor Behavior and Communication of Health Workers'],
+            [5, 'Lack of awareness about vaccination schedule', $categories[4] ?? 'Lack of Community Awareness and Health Education'],
+            [6, 'Community does not trust government vaccination drives', $categories[5] ?? 'Lack of Trust in Health System and Government'],
+            [7, 'Vaccination center is too far and poorly equipped', $categories[6] ?? 'Inadequate Services at Health Facility and Infrastructure'],
+            [8, 'No clean water or basic facilities in the community', $categories[7] ?? 'Lack of Essential Community Services'],
         ];
         $sheet->fromArray($sampleData, null, 'A2');
 

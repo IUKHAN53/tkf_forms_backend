@@ -113,6 +113,41 @@ class FgdsHealthWorkersController extends Controller
         return view('admin.core-forms.fgds-health-workers.show', compact('fgdsHealthWorker'));
     }
 
+    /**
+     * Drill-down for a barrier category card on the list page: returns every
+     * FGDs-Health Workers record carrying a barrier in the given category, with
+     * the barrier texts, as JSON for the modal.
+     */
+    public function barriersByCategory(BarrierCategory $category)
+    {
+        $records = FgdsHealthWorkers::query()
+            ->with(['barriers' => fn ($q) => $q->where('barrier_category_id', $category->id)->orderBy('serial_number')])
+            ->whereHas('barriers', fn ($q) => $q->where('barrier_category_id', $category->id))
+            ->latest()
+            ->get()
+            ->map(fn ($item) => [
+                'id'          => $item->id,
+                'unique_id'   => $item->unique_id,
+                'date'        => $item->date ? $item->date->format('M d, Y') : 'N/A',
+                'venue'       => $item->hfs,
+                'district'    => $item->district,
+                'uc'          => DashboardController::getConsolidatedUcName($item->uc),
+                'facilitator' => $item->facilitator_tkf,
+                'barriers'    => $item->barriers->map(fn ($b) => [
+                    'serial_number' => $b->serial_number,
+                    'text'          => $b->barrier_text,
+                ])->values(),
+            ])
+            ->values();
+
+        return response()->json([
+            'success'  => true,
+            'category' => $category->name,
+            'count'    => $records->sum(fn ($r) => count($r['barriers'])),
+            'records'  => $records,
+        ]);
+    }
+
     public function edit(FgdsHealthWorkers $fgdsHealthWorker)
     {
         $fgdsHealthWorker->load('participants');
@@ -544,14 +579,14 @@ class FgdsHealthWorkersController extends Controller
 
         // Add sample data with different categories
         $sampleData = [
-            [1, 'Health workers lack proper training on vaccination protocols', $categories[0] ?? 'Cultural Compatibility / Traditional Beliefs and Practices.'],
-            [2, 'No proper communication channels with community', $categories[1] ?? 'Communication / Information.'],
-            [3, 'Insufficient vaccination supplies at health facility', $categories[2] ?? 'Service Availability.'],
-            [4, 'Complex reporting procedures for vaccination data', $categories[3] ?? 'System and Procedures.'],
-            [5, 'Limited interaction time with caregivers', $categories[4] ?? 'Client / Provider Relations.'],
-            [6, 'Need for refresher training on cold chain management', $categories[5] ?? 'Provider Technical Competence.'],
-            [7, 'Frequent stock-outs of vaccines', $categories[6] ?? 'Supplies and Equipment / Medicine.'],
-            [8, 'Poor storage facilities for vaccines', $categories[7] ?? 'Place / Environment.'],
+            [1, 'Community holds misconceptions about vaccine ingredients', $categories[0] ?? 'Misconceptions and Misinformation about Vaccines'],
+            [2, 'Caregivers fear adverse reactions after vaccination', $categories[1] ?? 'Fear of Side Effects and Vaccine Safety Concerns'],
+            [3, 'Families refuse and report forced vaccination attempts', $categories[2] ?? 'Forceful Vaccination and Consent Issues'],
+            [4, 'Limited and unfriendly interaction with caregivers', $categories[3] ?? 'Poor Behavior and Communication of Health Workers'],
+            [5, 'Low community awareness about vaccination schedule', $categories[4] ?? 'Lack of Community Awareness and Health Education'],
+            [6, 'Community distrusts government vaccination campaigns', $categories[5] ?? 'Lack of Trust in Health System and Government'],
+            [7, 'Insufficient supplies and weak facility infrastructure', $categories[6] ?? 'Inadequate Services at Health Facility and Infrastructure'],
+            [8, 'Lack of basic services like water and sanitation', $categories[7] ?? 'Lack of Essential Community Services'],
         ];
         $sheet->fromArray($sampleData, null, 'A2');
 

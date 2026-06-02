@@ -53,6 +53,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('fgds-community/export', [FgdsCommunityController::class, 'export'])->name('fgds-community.export');
     Route::get('fgds-community/template', [FgdsCommunityController::class, 'template'])->name('fgds-community.template');
     Route::get('fgds-community/barriers-sample', [FgdsCommunityController::class, 'barriersSample'])->name('fgds-community.barriers-sample');
+    Route::get('fgds-community/barriers-by-category/{category}', [FgdsCommunityController::class, 'barriersByCategory'])->name('fgds-community.barriers-by-category');
     Route::post('fgds-community/bulk-delete', [FgdsCommunityController::class, 'bulkDestroy'])->name('fgds-community.bulk-destroy');
     Route::post('fgds-community/import', [FgdsCommunityController::class, 'import'])->name('fgds-community.import');
     Route::post('fgds-community/{id}/barriers', [FgdsCommunityController::class, 'uploadBarriers'])->name('fgds-community.upload-barriers');
@@ -63,6 +64,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('fgds-health-workers/export', [FgdsHealthWorkersController::class, 'export'])->name('fgds-health-workers.export');
     Route::get('fgds-health-workers/template', [FgdsHealthWorkersController::class, 'template'])->name('fgds-health-workers.template');
     Route::get('fgds-health-workers/barriers-sample', [FgdsHealthWorkersController::class, 'barriersSample'])->name('fgds-health-workers.barriers-sample');
+    Route::get('fgds-health-workers/barriers-by-category/{category}', [FgdsHealthWorkersController::class, 'barriersByCategory'])->name('fgds-health-workers.barriers-by-category');
     Route::post('fgds-health-workers/bulk-delete', [FgdsHealthWorkersController::class, 'bulkDestroy'])->name('fgds-health-workers.bulk-destroy');
     Route::post('fgds-health-workers/import', [FgdsHealthWorkersController::class, 'import'])->name('fgds-health-workers.import');
     Route::post('fgds-health-workers/{id}/barriers', [FgdsHealthWorkersController::class, 'uploadBarriers'])->name('fgds-health-workers.upload-barriers');
