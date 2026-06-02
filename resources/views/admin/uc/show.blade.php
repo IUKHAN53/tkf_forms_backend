@@ -1219,7 +1219,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const cursor = 'pointer';
             // Encode the quotes JSON.stringify adds so they don't terminate the
             // onclick="" attribute early — that bug stopped the UC modal from ever
-            // opening (the FGDs list avoids it via Blade @js()).
+            // opening (the FGDs list avoids it via Blade's js directive).
             const nameArg = JSON.stringify(cat.name).replace(/"/g, '&quot;');
             const onclick = ` onclick="openBarrierCategoryModal(${cat.id}, ${nameArg})"`;
             const hint = `<div style="font-size: 10px; color: ${color.text}; margin-top: 6px; opacity: 0.7;">Click to view FGDs</div>`;
