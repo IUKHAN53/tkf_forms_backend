@@ -203,7 +203,7 @@
                             <td>{{ $item->uc }}</td>
                             <td>{{ $item->venue }}</td>
                             <td>
-                                <span class="badge badge-info">{{ $item->participants->count() }}</span>
+                                <span class="badge badge-info">{{ $item->participants_males + $item->participants_females }}</span>
                                 <small class="text-muted">(M:{{ $item->participants_males }}/F:{{ $item->participants_females }})</small>
                             </td>
                             <td>
