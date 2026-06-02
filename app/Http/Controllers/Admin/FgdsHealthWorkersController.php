@@ -137,8 +137,45 @@ class FgdsHealthWorkersController extends Controller
 
         $unionCouncils = array_keys($ucFixSites);
 
+        // The record's stored UC can be any of the many spelling variants the
+        // form data uses (e.g. "Islamia Colony 9" / "9" for "Islamia colony-09").
+        // Resolve it to the matching catalogue UC so the dropdown pre-selects the
+        // real entry and its fixed sites cascade — instead of showing a duplicate
+        // "(current — not in catalogue)" option with no fixed sites.
+        $currentUc = $this->resolveCatalogueUc(trim((string) $fgdsHealthWorker->uc), $unionCouncils);
+
         return view('admin.core-forms.fgds-health-workers.edit',
-            compact('fgdsHealthWorker', 'unionCouncils', 'ucFixSites'));
+            compact('fgdsHealthWorker', 'unionCouncils', 'ucFixSites', 'currentUc'));
+    }
+
+    /**
+     * Map a record's stored UC to the catalogue UC it really refers to.
+     *
+     * Tries an exact (case-insensitive) catalogue match first, then falls back to
+     * the canonical UC-consolidation map (shared with the dashboard and Fixed Site
+     * report) so spelling variants line up with their catalogue entry. Returns the
+     * raw value unchanged when the match is missing or ambiguous (more than one
+     * catalogue UC shares the canonical name), so no data is silently lost.
+     */
+    private function resolveCatalogueUc(string $rawUc, array $catalogueUcs): string
+    {
+        if ($rawUc === '') {
+            return '';
+        }
+
+        foreach ($catalogueUcs as $uc) {
+            if (strcasecmp($uc, $rawUc) === 0) {
+                return $uc;
+            }
+        }
+
+        $canonical = DashboardController::getConsolidatedUcName($rawUc);
+        $matches = array_values(array_filter(
+            $catalogueUcs,
+            fn ($uc) => strcasecmp((string) DashboardController::getConsolidatedUcName($uc), (string) $canonical) === 0
+        ));
+
+        return count($matches) === 1 ? $matches[0] : $rawUc;
     }
 
     public function update(Request $request, FgdsHealthWorkers $fgdsHealthWorker)

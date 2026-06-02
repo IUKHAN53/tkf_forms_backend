@@ -45,7 +45,10 @@
             </div>
 
             @php
-                $currentUc = old('uc', $fgdsHealthWorker->uc);
+                // $currentUc comes from the controller already resolved to the
+                // matching catalogue UC (handles spelling variants like
+                // "Islamia Colony 9" / "9" → "Islamia colony-09").
+                $currentUc = old('uc', $currentUc);
                 $currentFixSite = old('fix_site', $fgdsHealthWorker->fix_site);
                 $ucInCatalogue = in_array($currentUc, $unionCouncils, true);
             @endphp
