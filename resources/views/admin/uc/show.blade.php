@@ -1214,15 +1214,15 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = '';
         categories.forEach((cat, i) => {
             const color = categoryColors[i % categoryColors.length];
-            // Only categories with barriers are clickable (there is something to show).
-            const clickable = cat.count > 0;
-            const cursor = clickable ? 'pointer' : 'default';
-            const onclick = clickable
-                ? ` onclick="openBarrierCategoryModal(${cat.id}, ${JSON.stringify(cat.name)})"`
-                : '';
-            const hint = clickable
-                ? `<div style="font-size: 10px; color: ${color.text}; margin-top: 6px; opacity: 0.7;">Click to view FGDs</div>`
-                : '';
+            // Always clickable, like the FGDs list cards: clicking opens the modal,
+            // which shows a "no FGDs" message when the category has zero barriers.
+            const cursor = 'pointer';
+            // Encode the quotes JSON.stringify adds so they don't terminate the
+            // onclick="" attribute early — that bug stopped the UC modal from ever
+            // opening (the FGDs list avoids it via Blade @js()).
+            const nameArg = JSON.stringify(cat.name).replace(/"/g, '&quot;');
+            const onclick = ` onclick="openBarrierCategoryModal(${cat.id}, ${nameArg})"`;
+            const hint = `<div style="font-size: 10px; color: ${color.text}; margin-top: 6px; opacity: 0.7;">Click to view FGDs</div>`;
             html += `<div class="barrier-cat-card"${onclick} style="background: ${color.bg}; border: 1px solid ${color.border}; border-radius: 10px; padding: 14px 16px; text-align: center; cursor: ${cursor};">
                 <div style="font-size: 22px; font-weight: 700; color: ${color.text}; line-height: 1.2;">${cat.count}</div>
                 <div style="font-size: 12px; color: ${color.text}; margin-top: 4px; opacity: 0.85; line-height: 1.3;">${cat.name}</div>
