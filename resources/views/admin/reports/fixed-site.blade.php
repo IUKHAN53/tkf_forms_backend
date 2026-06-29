@@ -354,12 +354,13 @@
                             <div class="fsr-subhead">Action Plan — {{ $r->actionPlans->count() }} {{ \Illuminate\Support\Str::plural('point', $r->actionPlans->count()) }}</div>
                             <div class="fsr-subtable-wrap">
                                 <table class="fsr-subtable">
-                                    <thead><tr><th>#</th><th>Problem</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th></tr></thead>
+                                    <thead><tr><th>#</th><th>Problem</th><th>Root Cause</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th></tr></thead>
                                     <tbody>
                                         @foreach ($r->actionPlans as $p)
                                             <tr>
                                                 <td>{{ $p->serial_number ?: $loop->iteration }}</td>
                                                 <td>{{ $p->problem ?: '—' }}</td>
+                                                <td>{{ $p->root_cause ?: '—' }}</td>
                                                 <td>{{ $p->solution ?: '—' }}</td>
                                                 <td>{{ $p->action_needed ?: '—' }}</td>
                                                 <td>{{ $p->who_is_responsible ?: '—' }}</td>

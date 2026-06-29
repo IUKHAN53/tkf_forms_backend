@@ -12,6 +12,7 @@ class BridgingTheGapActionPlan extends Model
     protected $fillable = [
         'bridging_the_gap_id',
         'problem',
+        'root_cause',
         'solution',
         'action_needed',
         'who_is_responsible',

@@ -353,12 +353,13 @@ class BridgingTheGapController extends Controller
         foreach ($rows as $index => $row) {
             if ($index === 0) continue; // Skip header
 
-            // Expected format: Problem | Solution | Action Needed | Who is Responsible | Timeline
+            // Expected format: Problem | Root Cause | Solution | Action Needed | Responsible | Timeline
             $problem = trim($row[0] ?? '');
-            $solution = trim($row[1] ?? '');
-            $actionNeeded = trim($row[2] ?? '');
-            $whoIsResponsible = trim($row[3] ?? '');
-            $timeline = trim($row[4] ?? '');
+            $rootCause = trim($row[1] ?? '');
+            $solution = trim($row[2] ?? '');
+            $actionNeeded = trim($row[3] ?? '');
+            $whoIsResponsible = trim($row[4] ?? '');
+            $timeline = trim($row[5] ?? '');
 
             // Skip empty problem rows (problem is required)
             if (empty($problem)) {
@@ -370,6 +371,7 @@ class BridgingTheGapController extends Controller
             BridgingTheGapActionPlan::create([
                 'bridging_the_gap_id' => $record->id,
                 'problem' => $problem,
+                'root_cause' => $rootCause ?: null,
                 'solution' => $solution ?: null,
                 'action_needed' => $actionNeeded ?: null,
                 'who_is_responsible' => $whoIsResponsible ?: null,
@@ -412,6 +414,7 @@ class BridgingTheGapController extends Controller
 
         $validated = $request->validate([
             'problem' => 'required|string',
+            'root_cause' => 'nullable|string',
             'solution' => 'nullable|string',
             'action_needed' => 'nullable|string',
             'who_is_responsible' => 'nullable|string|max:255',
@@ -423,6 +426,7 @@ class BridgingTheGapController extends Controller
         $actionPlan = BridgingTheGapActionPlan::create([
             'bridging_the_gap_id' => $record->id,
             'problem' => $validated['problem'],
+            'root_cause' => $validated['root_cause'] ?? null,
             'solution' => $validated['solution'] ?? null,
             'action_needed' => $validated['action_needed'] ?? null,
             'who_is_responsible' => $validated['who_is_responsible'] ?? null,
@@ -446,6 +450,7 @@ class BridgingTheGapController extends Controller
 
         $validated = $request->validate([
             'problem' => 'required|string',
+            'root_cause' => 'nullable|string',
             'solution' => 'nullable|string',
             'action_needed' => 'nullable|string',
             'who_is_responsible' => 'nullable|string|max:255',
@@ -499,7 +504,7 @@ class BridgingTheGapController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
 
         // Set headers
-        $headers = ['Problem', 'Solution', 'Action Needed', 'Who is Responsible', 'Timeline'];
+        $headers = ['Problem', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline'];
         $sheet->fromArray($headers, null, 'A1');
 
         // Style headers
@@ -508,18 +513,18 @@ class BridgingTheGapController extends Controller
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
         ];
-        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
 
         // Add sample data
         $sampleData = [
-            ['Low vaccination coverage in remote areas', 'Deploy mobile vaccination teams', 'Schedule weekly visits to remote villages', 'District Health Officer', '2 weeks'],
-            ['Vaccine hesitancy among parents', 'Community awareness sessions', 'Conduct awareness campaigns with religious leaders', 'Community Health Workers', '1 month'],
-            ['Cold chain maintenance issues', 'Upgrade refrigeration equipment', 'Procure new vaccine refrigerators', 'Logistics Manager', '3 weeks'],
+            ['Low vaccination coverage in remote areas', 'Difficult terrain and few outreach visits', 'Deploy mobile vaccination teams', 'Schedule weekly visits to remote villages', 'District Health Officer', '2 weeks'],
+            ['Vaccine hesitancy among parents', 'Misinformation and lack of awareness', 'Community awareness sessions', 'Conduct awareness campaigns with religious leaders', 'Community Health Workers', '1 month'],
+            ['Cold chain maintenance issues', 'Ageing refrigeration equipment', 'Upgrade refrigeration equipment', 'Procure new vaccine refrigerators', 'Logistics Manager', '3 weeks'],
         ];
         $sheet->fromArray($sampleData, null, 'A2');
 
         // Auto-size columns
-        foreach (range('A', 'E') as $col) {
+        foreach (range('A', 'F') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

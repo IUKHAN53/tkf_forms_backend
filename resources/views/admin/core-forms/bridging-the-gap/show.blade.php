@@ -174,6 +174,7 @@
                     <tr>
                         <th style="width: 50px;">#</th>
                         <th>Problem</th>
+                        <th>Root Cause</th>
                         <th>Solution</th>
                         <th>Action Needed</th>
                         <th>Responsible</th>
@@ -185,6 +186,7 @@
                         <tr>
                             <td>{{ $plan->serial_number }}</td>
                             <td>{{ $plan->problem }}</td>
+                            <td>{{ $plan->root_cause ?? '-' }}</td>
                             <td>{{ $plan->solution ?? '-' }}</td>
                             <td>{{ $plan->action_needed ?? '-' }}</td>
                             <td>{{ $plan->who_is_responsible ?? '-' }}</td>
@@ -220,6 +222,12 @@
                                 <label class="form-label">Problem *</label>
                                 <textarea id="newApProblem" class="form-input" style="width:100%; min-height:60px;" placeholder="Describe the problem..."></textarea>
                             </div>
+                            <div class="form-group" style="margin-bottom: 8px;">
+                                <label class="form-label">Root Cause</label>
+                                <textarea id="newApRootCause" class="form-input" style="width:100%; min-height:60px;" placeholder="Underlying root cause..."></textarea>
+                            </div>
+                        </div>
+                        <div class="form-grid-2" style="margin-bottom: 10px;">
                             <div class="form-group" style="margin-bottom: 8px;">
                                 <label class="form-label">Solution</label>
                                 <textarea id="newApSolution" class="form-input" style="width:100%; min-height:60px;" placeholder="Proposed solution..."></textarea>
@@ -297,11 +305,12 @@
                 listEl.innerHTML = '<div style="text-align: center; padding: 16px; color: #9ca3af; font-style: italic;">No action plans yet.</div>';
                 return;
             }
-            let html = '<table class="data-table"><thead><tr><th style="width:40px">#</th><th>Problem</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th><th style="width:100px">Actions</th></tr></thead><tbody>';
+            let html = '<table class="data-table"><thead><tr><th style="width:40px">#</th><th>Problem</th><th>Root Cause</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th><th style="width:100px">Actions</th></tr></thead><tbody>';
             data.action_plans.forEach(plan => {
                 html += '<tr id="ap-row-' + plan.id + '">';
                 html += '<td>' + (plan.serial_number || '-') + '</td>';
                 html += '<td>' + escHtml(plan.problem) + '</td>';
+                html += '<td>' + escHtml(plan.root_cause || '-') + '</td>';
                 html += '<td>' + escHtml(plan.solution || '-') + '</td>';
                 html += '<td>' + escHtml(plan.action_needed || '-') + '</td>';
                 html += '<td>' + escHtml(plan.who_is_responsible || '-') + '</td>';
@@ -331,6 +340,7 @@
 
         const body = {
             problem: problem,
+            root_cause: document.getElementById('newApRootCause').value.trim() || null,
             solution: document.getElementById('newApSolution').value.trim() || null,
             action_needed: document.getElementById('newApAction').value.trim() || null,
             who_is_responsible: document.getElementById('newApResponsible').value.trim() || null,
@@ -351,6 +361,7 @@
         .then(data => {
             if (data.success) {
                 document.getElementById('newApProblem').value = '';
+                document.getElementById('newApRootCause').value = '';
                 document.getElementById('newApSolution').value = '';
                 document.getElementById('newApAction').value = '';
                 document.getElementById('newApResponsible').value = '';
@@ -368,17 +379,19 @@
         const cells = row.querySelectorAll('td');
 
         const problem = cells[1].textContent === '-' ? '' : cells[1].textContent;
-        const solution = cells[2].textContent === '-' ? '' : cells[2].textContent;
-        const actionNeeded = cells[3].textContent === '-' ? '' : cells[3].textContent;
-        const responsible = cells[4].textContent === '-' ? '' : cells[4].textContent;
-        const timeline = cells[5].textContent === '-' ? '' : cells[5].textContent;
+        const rootCause = cells[2].textContent === '-' ? '' : cells[2].textContent;
+        const solution = cells[3].textContent === '-' ? '' : cells[3].textContent;
+        const actionNeeded = cells[4].textContent === '-' ? '' : cells[4].textContent;
+        const responsible = cells[5].textContent === '-' ? '' : cells[5].textContent;
+        const timeline = cells[6].textContent === '-' ? '' : cells[6].textContent;
 
         cells[1].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(problem) + '</textarea>';
-        cells[2].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(solution) + '</textarea>';
-        cells[3].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(actionNeeded) + '">';
-        cells[4].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(responsible) + '">';
-        cells[5].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(timeline) + '">';
-        cells[6].innerHTML = '<button class="btn btn-sm btn-success" onclick="saveActionPlan(' + id + ')">Save</button> <button class="btn btn-sm btn-outline" onclick="loadActionPlans()">Cancel</button>';
+        cells[2].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(rootCause) + '</textarea>';
+        cells[3].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(solution) + '</textarea>';
+        cells[4].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(actionNeeded) + '">';
+        cells[5].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(responsible) + '">';
+        cells[6].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(timeline) + '">';
+        cells[7].innerHTML = '<button class="btn btn-sm btn-success" onclick="saveActionPlan(' + id + ')">Save</button> <button class="btn btn-sm btn-outline" onclick="loadActionPlans()">Cancel</button>';
     }
 
     function escAttr(str) {
@@ -392,7 +405,8 @@
 
         const body = {
             problem: textareas[0].value.trim(),
-            solution: textareas[1].value.trim() || null,
+            root_cause: textareas[1].value.trim() || null,
+            solution: textareas[2].value.trim() || null,
             action_needed: inputs[0].value.trim() || null,
             who_is_responsible: inputs[1].value.trim() || null,
             timeline: inputs[2].value.trim() || null,

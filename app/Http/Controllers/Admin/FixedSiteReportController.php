@@ -206,11 +206,12 @@ class FixedSiteReportController extends Controller
             ])->all());
 
         $this->writeSheet($spreadsheet, $index++, 'BTG Action Plans',
-            ['Form ID', 'Sr. No', 'Problem', 'Solution', 'Action Needed', 'Responsible', 'Timeline'],
+            ['Form ID', 'Sr. No', 'Problem', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline'],
             $report['bridging']->flatMap(fn ($r) => $r->actionPlans->map(fn ($p) => [
                 $r->unique_id,
                 $p->serial_number,
                 $p->problem,
+                $p->root_cause,
                 $p->solution,
                 $p->action_needed,
                 $p->who_is_responsible,
