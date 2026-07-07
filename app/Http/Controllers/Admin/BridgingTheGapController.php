@@ -342,6 +342,15 @@ class BridgingTheGapController extends Controller
         $worksheet = $spreadsheet->getActiveSheet();
         $rows = $worksheet->toArray();
 
+        if (empty($rows)) {
+            return ['imported' => 0, 'skipped' => 0];
+        }
+
+        // Resolve column positions from the header row so files with a leading
+        // serial-number column, an extra "Root Cause" column, a legacy 5-column
+        // layout, or reordered columns all import into the correct fields.
+        $map = $this->resolveActionPlanColumns($rows[0]);
+
         // Delete existing action plans for this record before importing new ones
         BridgingTheGapActionPlan::where('bridging_the_gap_id', $record->id)->delete();
 
@@ -353,16 +362,19 @@ class BridgingTheGapController extends Controller
         foreach ($rows as $index => $row) {
             if ($index === 0) continue; // Skip header
 
-            // Expected format: Problem | Root Cause | Solution | Action Needed | Responsible | Timeline
-            $problem = trim($row[0] ?? '');
-            $rootCause = trim($row[1] ?? '');
-            $solution = trim($row[2] ?? '');
-            $actionNeeded = trim($row[3] ?? '');
-            $whoIsResponsible = trim($row[4] ?? '');
-            $timeline = trim($row[5] ?? '');
+            $get = fn ($key) => ($map[$key] !== null && isset($row[$map[$key]]))
+                ? trim((string) $row[$map[$key]])
+                : '';
+
+            $problem = $get('problem');
+            $rootCause = $get('root_cause');
+            $solution = $get('solution');
+            $actionNeeded = $get('action_needed');
+            $whoIsResponsible = $get('who_is_responsible');
+            $timeline = $get('timeline');
 
             // Skip empty problem rows (problem is required)
-            if (empty($problem)) {
+            if ($problem === '') {
                 $skipped++;
                 continue;
             }
@@ -386,6 +398,61 @@ class BridgingTheGapController extends Controller
             'imported' => $imported,
             'skipped' => $skipped,
         ];
+    }
+
+    /**
+     * Map action-plan fields to column indexes using the header row.
+     *
+     * Matching is by header name (case/spacing/punctuation insensitive), so a
+     * leading "Sr. No" column is ignored, an absent "Root Cause" column stays
+     * null, and columns may appear in any order. Falls back to the canonical
+     * positional layout (Problem | Root Cause | Solution | Action Needed |
+     * Responsible | Timeline) only when no headers are recognized.
+     */
+    private function resolveActionPlanColumns(array $header): array
+    {
+        $map = [
+            'problem' => null,
+            'root_cause' => null,
+            'solution' => null,
+            'action_needed' => null,
+            'who_is_responsible' => null,
+            'timeline' => null,
+        ];
+
+        $recognized = false;
+        foreach ($header as $i => $cell) {
+            $h = preg_replace('/[^a-z0-9]/', '', strtolower((string) $cell));
+            if ($h === '') continue;
+
+            if ($map['problem'] === null && str_contains($h, 'problem')) {
+                $map['problem'] = $i; $recognized = true;
+            } elseif ($map['root_cause'] === null && (str_contains($h, 'rootcause') || $h === 'cause')) {
+                $map['root_cause'] = $i; $recognized = true;
+            } elseif ($map['solution'] === null && str_contains($h, 'solution')) {
+                $map['solution'] = $i; $recognized = true;
+            } elseif ($map['action_needed'] === null && str_contains($h, 'action')) {
+                $map['action_needed'] = $i; $recognized = true;
+            } elseif ($map['who_is_responsible'] === null && str_contains($h, 'responsible')) {
+                $map['who_is_responsible'] = $i; $recognized = true;
+            } elseif ($map['timeline'] === null && (str_contains($h, 'timeline') || str_contains($h, 'deadline') || str_contains($h, 'duration'))) {
+                $map['timeline'] = $i; $recognized = true;
+            }
+        }
+
+        // Fallback to the canonical positional layout if the header wasn't recognized.
+        if (!$recognized || $map['problem'] === null) {
+            $map = [
+                'problem' => 0,
+                'root_cause' => 1,
+                'solution' => 2,
+                'action_needed' => 3,
+                'who_is_responsible' => 4,
+                'timeline' => 5,
+            ];
+        }
+
+        return $map;
     }
 
     /**
