@@ -1379,6 +1379,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (col.key === 'gender') {
                     const badgeClass = value === 'Male' ? 'badge-info' : 'badge-success';
                     value = `<span class="badge ${badgeClass}">${value}</span>`;
+                } else if (col.breakdown) {
+                    const males = record.participants_males ?? 0;
+                    const females = record.participants_females ?? 0;
+                    value = `<span class="badge badge-primary">${record.total_participants ?? 0}</span> <span class="text-muted">(M: ${males}, F: ${females})</span>`;
                 } else if (col.key === 'total_participants' || col.key === 'barriers_count' || col.key === 'action_plans_count' || col.key === 'iit_members_count') {
                     value = `<span class="badge badge-primary">${value}</span>`;
                 }
@@ -1403,7 +1407,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'date', label: 'Date' },
                     { key: 'venue', label: 'Venue' },
                     { key: 'uc', label: 'UC' },
-                    { key: 'total_participants', label: 'Participants' },
+                    { key: 'total_participants', label: 'Participants', breakdown: true },
                     { key: 'barriers_count', label: 'Barriers' },
                     { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }
@@ -1414,7 +1418,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'date', label: 'Date' },
                     { key: 'hfs', label: 'Health Facility' },
                     { key: 'uc', label: 'UC' },
-                    { key: 'total_participants', label: 'Participants' },
+                    { key: 'total_participants', label: 'Participants', breakdown: true },
                     { key: 'barriers_count', label: 'Barriers' },
                     { key: 'submitted_by', label: 'Submitted By' },
                     { key: 'created_at', label: 'Created' }

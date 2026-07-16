@@ -359,10 +359,10 @@ class UcController extends Controller
 
         $records = $query->latest()->get();
 
-        // Calculate stats
-        $totalMales = $records->sum('participants_males');
-        $totalFemales = $records->sum('participants_females');
-        $totalParticipants = $totalMales + $totalFemales;
+        // Calculate stats from actual participant records
+        $totalMales = $records->sum(fn ($r) => $r->participants->where('gender', 'Male')->count());
+        $totalFemales = $records->sum(fn ($r) => $r->participants->where('gender', 'Female')->count());
+        $totalParticipants = $records->sum(fn ($r) => $r->participants->count());
 
         // Get barriers count
         $recordIds = $records->pluck('id');
@@ -412,9 +412,9 @@ class UcController extends Controller
                     'venue' => $item->venue,
                     'district' => $item->district,
                     'uc' => $item->uc,
-                    'participants_males' => $item->participants_males,
-                    'participants_females' => $item->participants_females,
-                    'total_participants' => $item->participants_males + $item->participants_females,
+                    'participants_males' => $item->participants->where('gender', 'Male')->count(),
+                    'participants_females' => $item->participants->where('gender', 'Female')->count(),
+                    'total_participants' => $item->participants->count(),
                     'barriers_count' => $item->barriers->count(),
                     'facilitator' => $item->facilitator_tkf,
                     'submitted_by' => $item->user->name ?? 'N/A',
@@ -446,10 +446,10 @@ class UcController extends Controller
 
         $records = $query->latest()->get();
 
-        // Calculate stats
-        $totalMales = $records->sum('participants_males');
-        $totalFemales = $records->sum('participants_females');
-        $totalParticipants = $totalMales + $totalFemales;
+        // Calculate stats from actual participant records
+        $totalMales = $records->sum(fn ($r) => $r->participants->where('gender', 'Male')->count());
+        $totalFemales = $records->sum(fn ($r) => $r->participants->where('gender', 'Female')->count());
+        $totalParticipants = $records->sum(fn ($r) => $r->participants->count());
 
         // Get barriers count
         $recordIds = $records->pluck('id');
@@ -498,9 +498,9 @@ class UcController extends Controller
                     'date' => $item->date ? $item->date->format('M d, Y') : 'N/A',
                     'hfs' => $item->hfs,
                     'uc' => $item->uc,
-                    'participants_males' => $item->participants_males,
-                    'participants_females' => $item->participants_females,
-                    'total_participants' => $item->participants_males + $item->participants_females,
+                    'participants_males' => $item->participants->where('gender', 'Male')->count(),
+                    'participants_females' => $item->participants->where('gender', 'Female')->count(),
+                    'total_participants' => $item->participants->count(),
                     'barriers_count' => $item->barriers->count(),
                     'facilitator' => $item->facilitator_tkf,
                     'submitted_by' => $item->user->name ?? 'N/A',
