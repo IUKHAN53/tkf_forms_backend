@@ -3,17 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Form;
-use App\Models\FormSubmission;
+use App\Models\BridgingTheGap;
 use App\Models\ChildLineList;
 use App\Models\FgdsCommunity;
 use App\Models\FgdsHealthWorkers;
-use App\Models\BridgingTheGap;
 use App\Models\OutreachSite;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -36,7 +34,9 @@ class DashboardController extends Controller
      */
     public static function getConsolidatedUcName(?string $rawUc): ?string
     {
-        if (!$rawUc) return null;
+        if (! $rawUc) {
+            return null;
+        }
 
         foreach (self::UC_CONSOLIDATION as $consolidated => $variants) {
             foreach ($variants as $variant) {
@@ -78,10 +78,6 @@ class DashboardController extends Controller
         $recentActivity = $this->getRecentActivity();
 
         $stats = [
-            'total_forms' => Form::count(),
-            'active_forms' => Form::where('is_active', true)->count(),
-            'total_submissions' => FormSubmission::count(),
-            'recent_submissions' => FormSubmission::with('form', 'user')->latest()->take(10)->get(),
             'core_forms' => $coreFormsStats,
             'uc_stats' => $ucStats,
             'district_distribution' => $districtDistribution,
@@ -259,6 +255,7 @@ class DashboardController extends Controller
         uasort($data, function ($a, $b) {
             $totalA = array_sum($a);
             $totalB = array_sum($b);
+
             return $totalB <=> $totalA;
         });
 
@@ -348,6 +345,7 @@ class DashboardController extends Controller
         uasort($districts, function ($a, $b) {
             $totalA = array_sum($a);
             $totalB = array_sum($b);
+
             return $totalB <=> $totalA;
         });
 
@@ -365,7 +363,7 @@ class DashboardController extends Controller
         ChildLineList::latest()->take(5)->get()->each(function ($item) use ($activity) {
             $activity->push([
                 'type' => 'Child Line List',
-                'description' => $item->child_name . ' - ' . $item->type,
+                'description' => $item->child_name.' - '.$item->type,
                 'district' => $item->district,
                 'uc' => $item->uc,
                 'created_at' => $item->created_at,

@@ -10,8 +10,7 @@
         "laravel/framework": "^11.0",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
-        "phpoffice/phpspreadsheet": "*",
-        "spatie/laravel-medialibrary": "dev-main"
+        "phpoffice/phpspreadsheet": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
@@ -84,6 +83,6 @@
             "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "prefer-stable": true
 }

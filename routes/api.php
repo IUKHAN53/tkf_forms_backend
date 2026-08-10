@@ -1,17 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CommunityAuthController;
 use App\Http\Controllers\Api\BridgingTheGapController;
 use App\Http\Controllers\Api\ChildLineListController;
+use App\Http\Controllers\Api\CommunityAuthController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FgdsCommunityController;
 use App\Http\Controllers\Api\FgdsHealthWorkersController;
-use App\Http\Controllers\Api\FormController;
 use App\Http\Controllers\Api\FormIdController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\OutreachSiteController;
-use App\Http\Controllers\Api\SubmissionController;
 use App\Http\Controllers\Api\VaccinationRecordController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,10 +18,6 @@ Route::prefix('v1')->group(function (): void {
 
     // CLM Tracker - Community Member Auth
     Route::post('/clm/login', [CommunityAuthController::class, 'login']);
-
-    // Form Builder Forms (public listing)
-    Route::get('/forms', [FormController::class, 'index']);
-    Route::get('/forms/{form}', [FormController::class, 'show']);
 
     // Outreach Sites (public for dropdowns)
     Route::get('/outreach-sites', [OutreachSiteController::class, 'index']);
@@ -45,9 +39,6 @@ Route::prefix('v1')->group(function (): void {
 
         // App logs
         Route::post('/logs', [LogController::class, 'store']);
-
-        // Form Builder submissions
-        Route::post('/forms/{form}/submit', [SubmissionController::class, 'store']);
 
         // Outreach Sites - create new
         Route::post('/outreach-sites', [OutreachSiteController::class, 'store']);

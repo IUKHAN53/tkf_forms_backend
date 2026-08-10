@@ -1,21 +1,18 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\FormController as AdminFormController;
-use App\Http\Controllers\Admin\SubmissionController as AdminSubmissionController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\BridgingTheGapController;
+use App\Http\Controllers\Admin\ChildLineListController;
+use App\Http\Controllers\Admin\CommunityMemberController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DebugController;
 use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
-use App\Http\Controllers\Admin\ChildLineListController;
-use App\Http\Controllers\Admin\VaccinationRecordController;
-use App\Http\Controllers\Admin\UcController;
-use App\Http\Controllers\Admin\CommunityMemberController;
 use App\Http\Controllers\Admin\FixedSiteReportController;
-use App\Http\Controllers\Admin\DebugController;
+use App\Http\Controllers\Admin\UcController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Admin\VaccinationRecordController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect('/login');
@@ -35,8 +32,6 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::get('/uc/{slug}/data', [UcController::class, 'getData'])->name('uc.data');
     Route::get('/uc/{slug}/barrier-records', [UcController::class, 'barrierRecords'])->name('uc.barrier-records');
 
-    Route::resource('forms', AdminFormController::class);
-    Route::resource('submissions', AdminSubmissionController::class)->only(['index', 'show', 'destroy']);
     Route::resource('users', AdminUserController::class)->except(['show']);
     Route::get('community-members/search-participants', [CommunityMemberController::class, 'searchParticipants'])->name('community-members.search-participants');
     Route::resource('community-members', CommunityMemberController::class)->except(['show']);
