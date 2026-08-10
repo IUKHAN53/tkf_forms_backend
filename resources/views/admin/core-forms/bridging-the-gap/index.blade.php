@@ -281,11 +281,15 @@
                         <textarea id="newApProblem" class="form-input" style="width:100%; min-height:60px;" placeholder="Describe the problem..."></textarea>
                     </div>
                     <div class="form-group" style="margin-bottom: 8px;">
-                        <label class="form-label">Root Cause</label>
-                        <textarea id="newApRootCause" class="form-input" style="width:100%; min-height:60px;" placeholder="Underlying root cause..."></textarea>
+                        <label class="form-label">Sub Cause</label>
+                        <textarea id="newApSubCause" class="form-input" style="width:100%; min-height:60px;" placeholder="Contributing sub cause..."></textarea>
                     </div>
                 </div>
                 <div class="form-grid-2" style="margin-bottom: 10px;">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label class="form-label">Root Cause</label>
+                        <textarea id="newApRootCause" class="form-input" style="width:100%; min-height:60px;" placeholder="Underlying root cause..."></textarea>
+                    </div>
                     <div class="form-group" style="margin-bottom: 8px;">
                         <label class="form-label">Solution</label>
                         <textarea id="newApSolution" class="form-input" style="width:100%; min-height:60px;" placeholder="Proposed solution..."></textarea>
@@ -347,6 +351,21 @@ let currentApRecordId = null;
 const apBaseUrl = '{{ url("admin/bridging-the-gap") }}';
 const apCsrfToken = '{{ csrf_token() }}';
 
+// Canonical action-plan columns, in display order. The action-plan table, its
+// inline editor and the save payload are all driven off this list, so adding a
+// column here is the only change needed. Keep in sync with
+// BridgingTheGapController::resolveActionPlanColumns() and the sample template
+// it generates.
+const AP_FIELDS = [
+    { key: 'problem',            label: 'Problem',        type: 'textarea' },
+    { key: 'sub_cause',          label: 'Sub Cause',      type: 'textarea' },
+    { key: 'root_cause',         label: 'Root Cause',     type: 'textarea' },
+    { key: 'solution',           label: 'Solution',       type: 'textarea' },
+    { key: 'action_needed',      label: 'Action Needed',  type: 'input' },
+    { key: 'who_is_responsible', label: 'Responsible',    type: 'input' },
+    { key: 'timeline',           label: 'Timeline',       type: 'input' },
+];
+
 function toggleSelectAll(source) {
     const checkboxes = document.querySelectorAll('.row-checkbox');
     checkboxes.forEach(cb => cb.checked = source.checked);
@@ -392,16 +411,15 @@ function loadActionPlans() {
         }
         let html = '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><span style="font-size:13px; font-weight:600; color:#374151;">' + data.action_plans.length + ' Action Plan(s)</span>';
         html += '<button class="btn btn-sm btn-danger" onclick="deleteAllActionPlans()">Delete All</button></div>';
-        html += '<table class="data-table"><thead><tr><th style="width:40px">#</th><th>Problem</th><th>Root Cause</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th><th style="width:110px">Actions</th></tr></thead><tbody>';
+        html += '<table class="data-table"><thead><tr><th style="width:40px">#</th>';
+        AP_FIELDS.forEach(f => { html += '<th>' + f.label + '</th>'; });
+        html += '<th style="width:110px">Actions</th></tr></thead><tbody>';
         data.action_plans.forEach(plan => {
             html += '<tr id="ap-row-' + plan.id + '">';
             html += '<td>' + (plan.serial_number || '-') + '</td>';
-            html += '<td>' + escHtml(plan.problem) + '</td>';
-            html += '<td>' + escHtml(plan.root_cause || '-') + '</td>';
-            html += '<td>' + escHtml(plan.solution || '-') + '</td>';
-            html += '<td>' + escHtml(plan.action_needed || '-') + '</td>';
-            html += '<td>' + escHtml(plan.who_is_responsible || '-') + '</td>';
-            html += '<td>' + escHtml(plan.timeline || '-') + '</td>';
+            AP_FIELDS.forEach(f => {
+                html += '<td data-ap-field="' + f.key + '">' + escHtml(plan[f.key] || '-') + '</td>';
+            });
             html += '<td class="action-buttons">';
             html += '<button class="btn btn-sm btn-outline" onclick="editActionPlan(' + plan.id + ')">Edit</button> ';
             html += '<button class="btn btn-sm btn-danger" onclick="deleteActionPlan(' + plan.id + ')">Delete</button>';
@@ -431,6 +449,7 @@ function addActionPlan() {
 
     const body = {
         problem: problem,
+        sub_cause: document.getElementById('newApSubCause').value.trim() || null,
         root_cause: document.getElementById('newApRootCause').value.trim() || null,
         solution: document.getElementById('newApSolution').value.trim() || null,
         action_needed: document.getElementById('newApAction').value.trim() || null,
@@ -452,6 +471,7 @@ function addActionPlan() {
     .then(data => {
         if (data.success) {
             document.getElementById('newApProblem').value = '';
+            document.getElementById('newApSubCause').value = '';
             document.getElementById('newApRootCause').value = '';
             document.getElementById('newApSolution').value = '';
             document.getElementById('newApAction').value = '';
@@ -467,37 +487,27 @@ function addActionPlan() {
 
 function editActionPlan(id) {
     const row = document.getElementById('ap-row-' + id);
-    const cells = row.querySelectorAll('td');
 
-    const problem = cells[1].textContent === '-' ? '' : cells[1].textContent;
-    const rootCause = cells[2].textContent === '-' ? '' : cells[2].textContent;
-    const solution = cells[3].textContent === '-' ? '' : cells[3].textContent;
-    const actionNeeded = cells[4].textContent === '-' ? '' : cells[4].textContent;
-    const responsible = cells[5].textContent === '-' ? '' : cells[5].textContent;
-    const timeline = cells[6].textContent === '-' ? '' : cells[6].textContent;
+    AP_FIELDS.forEach(f => {
+        const cell = row.querySelector('[data-ap-field="' + f.key + '"]');
+        const value = cell.textContent === '-' ? '' : cell.textContent;
+        cell.innerHTML = f.type === 'textarea'
+            ? '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(value) + '</textarea>'
+            : '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(value) + '">';
+    });
 
-    cells[1].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(problem) + '</textarea>';
-    cells[2].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(rootCause) + '</textarea>';
-    cells[3].innerHTML = '<textarea class="form-input" style="width:100%;min-height:50px;font-size:12px;">' + escHtml(solution) + '</textarea>';
-    cells[4].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(actionNeeded) + '">';
-    cells[5].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(responsible) + '">';
-    cells[6].innerHTML = '<input type="text" class="form-input" style="width:100%;font-size:12px;" value="' + escAttr(timeline) + '">';
-    cells[7].innerHTML = '<button class="btn btn-sm btn-success" onclick="saveActionPlan(' + id + ')">Save</button> <button class="btn btn-sm btn-outline" onclick="loadActionPlans()">Cancel</button>';
+    row.querySelector('.action-buttons').innerHTML =
+        '<button class="btn btn-sm btn-success" onclick="saveActionPlan(' + id + ')">Save</button> <button class="btn btn-sm btn-outline" onclick="loadActionPlans()">Cancel</button>';
 }
 
 function saveActionPlan(id) {
     const row = document.getElementById('ap-row-' + id);
-    const textareas = row.querySelectorAll('textarea');
-    const inputs = row.querySelectorAll('input[type="text"]');
 
-    const body = {
-        problem: textareas[0].value.trim(),
-        root_cause: textareas[1].value.trim() || null,
-        solution: textareas[2].value.trim() || null,
-        action_needed: inputs[0].value.trim() || null,
-        who_is_responsible: inputs[1].value.trim() || null,
-        timeline: inputs[2].value.trim() || null,
-    };
+    const body = {};
+    AP_FIELDS.forEach(f => {
+        const field = row.querySelector('[data-ap-field="' + f.key + '"]').querySelector('textarea, input');
+        body[f.key] = field.value.trim() || null;
+    });
 
     if (!body.problem) { alert('Problem field is required.'); return; }
 

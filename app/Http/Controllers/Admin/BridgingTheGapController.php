@@ -347,8 +347,9 @@ class BridgingTheGapController extends Controller
         }
 
         // Resolve column positions from the header row so files with a leading
-        // serial-number column, an extra "Root Cause" column, a legacy 5-column
-        // layout, or reordered columns all import into the correct fields.
+        // serial-number column, a missing "Sub Cause"/"Root Cause" column, an
+        // older narrower layout, or reordered columns all import into the
+        // correct fields.
         $map = $this->resolveActionPlanColumns($rows[0]);
 
         // Delete existing action plans for this record before importing new ones
@@ -367,6 +368,7 @@ class BridgingTheGapController extends Controller
                 : '';
 
             $problem = $get('problem');
+            $subCause = $get('sub_cause');
             $rootCause = $get('root_cause');
             $solution = $get('solution');
             $actionNeeded = $get('action_needed');
@@ -383,6 +385,7 @@ class BridgingTheGapController extends Controller
             BridgingTheGapActionPlan::create([
                 'bridging_the_gap_id' => $record->id,
                 'problem' => $problem,
+                'sub_cause' => $subCause ?: null,
                 'root_cause' => $rootCause ?: null,
                 'solution' => $solution ?: null,
                 'action_needed' => $actionNeeded ?: null,
@@ -404,15 +407,20 @@ class BridgingTheGapController extends Controller
      * Map action-plan fields to column indexes using the header row.
      *
      * Matching is by header name (case/spacing/punctuation insensitive), so a
-     * leading "Sr. No" column is ignored, an absent "Root Cause" column stays
-     * null, and columns may appear in any order. Falls back to the canonical
-     * positional layout (Problem | Root Cause | Solution | Action Needed |
-     * Responsible | Timeline) only when no headers are recognized.
+     * leading "Sr. No" column is ignored, an absent "Sub Cause" or "Root Cause"
+     * column stays null, and columns may appear in any order. Falls back to the
+     * canonical positional layout (Problem | Sub Cause | Root Cause | Solution |
+     * Action Needed | Responsible | Timeline) only when no headers are recognized.
+     *
+     * "Sub Cause" and "Root Cause" both normalize to a string containing
+     * "cause", so they are matched on their full prefixed forms and the bare
+     * "cause" fallback is reserved for root cause.
      */
     private function resolveActionPlanColumns(array $header): array
     {
         $map = [
             'problem' => null,
+            'sub_cause' => null,
             'root_cause' => null,
             'solution' => null,
             'action_needed' => null,
@@ -427,6 +435,8 @@ class BridgingTheGapController extends Controller
 
             if ($map['problem'] === null && str_contains($h, 'problem')) {
                 $map['problem'] = $i; $recognized = true;
+            } elseif ($map['sub_cause'] === null && (str_contains($h, 'subcause') || str_contains($h, 'subsidiarycause') || str_contains($h, 'secondarycause'))) {
+                $map['sub_cause'] = $i; $recognized = true;
             } elseif ($map['root_cause'] === null && (str_contains($h, 'rootcause') || $h === 'cause')) {
                 $map['root_cause'] = $i; $recognized = true;
             } elseif ($map['solution'] === null && str_contains($h, 'solution')) {
@@ -444,11 +454,12 @@ class BridgingTheGapController extends Controller
         if (!$recognized || $map['problem'] === null) {
             $map = [
                 'problem' => 0,
-                'root_cause' => 1,
-                'solution' => 2,
-                'action_needed' => 3,
-                'who_is_responsible' => 4,
-                'timeline' => 5,
+                'sub_cause' => 1,
+                'root_cause' => 2,
+                'solution' => 3,
+                'action_needed' => 4,
+                'who_is_responsible' => 5,
+                'timeline' => 6,
             ];
         }
 
@@ -481,6 +492,7 @@ class BridgingTheGapController extends Controller
 
         $validated = $request->validate([
             'problem' => 'required|string',
+            'sub_cause' => 'nullable|string',
             'root_cause' => 'nullable|string',
             'solution' => 'nullable|string',
             'action_needed' => 'nullable|string',
@@ -493,6 +505,7 @@ class BridgingTheGapController extends Controller
         $actionPlan = BridgingTheGapActionPlan::create([
             'bridging_the_gap_id' => $record->id,
             'problem' => $validated['problem'],
+            'sub_cause' => $validated['sub_cause'] ?? null,
             'root_cause' => $validated['root_cause'] ?? null,
             'solution' => $validated['solution'] ?? null,
             'action_needed' => $validated['action_needed'] ?? null,
@@ -517,6 +530,7 @@ class BridgingTheGapController extends Controller
 
         $validated = $request->validate([
             'problem' => 'required|string',
+            'sub_cause' => 'nullable|string',
             'root_cause' => 'nullable|string',
             'solution' => 'nullable|string',
             'action_needed' => 'nullable|string',
@@ -570,8 +584,10 @@ class BridgingTheGapController extends Controller
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Set headers
-        $headers = ['Problem', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline'];
+        // Canonical action-plan layout. Keep in sync with
+        // resolveActionPlanColumns() and the action-plan tables in the
+        // Bridging The Gap views.
+        $headers = ['Problem', 'Sub Cause', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline'];
         $sheet->fromArray($headers, null, 'A1');
 
         // Style headers
@@ -580,18 +596,18 @@ class BridgingTheGapController extends Controller
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]],
         ];
-        $sheet->getStyle('A1:F1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:G1')->applyFromArray($headerStyle);
 
         // Add sample data
         $sampleData = [
-            ['Low vaccination coverage in remote areas', 'Difficult terrain and few outreach visits', 'Deploy mobile vaccination teams', 'Schedule weekly visits to remote villages', 'District Health Officer', '2 weeks'],
-            ['Vaccine hesitancy among parents', 'Misinformation and lack of awareness', 'Community awareness sessions', 'Conduct awareness campaigns with religious leaders', 'Community Health Workers', '1 month'],
-            ['Cold chain maintenance issues', 'Ageing refrigeration equipment', 'Upgrade refrigeration equipment', 'Procure new vaccine refrigerators', 'Logistics Manager', '3 weeks'],
+            ['Low vaccination coverage in remote areas', 'Outreach teams cannot reach scattered settlements', 'Difficult terrain and few outreach visits', 'Deploy mobile vaccination teams', 'Schedule weekly visits to remote villages', 'District Health Officer', '2 weeks'],
+            ['Vaccine hesitancy among parents', 'Rumours circulating within the community', 'Misinformation and lack of awareness', 'Community awareness sessions', 'Conduct awareness campaigns with religious leaders', 'Community Health Workers', '1 month'],
+            ['Cold chain maintenance issues', 'Frequent power outages at the facility', 'Ageing refrigeration equipment', 'Upgrade refrigeration equipment', 'Procure new vaccine refrigerators', 'Logistics Manager', '3 weeks'],
         ];
         $sheet->fromArray($sampleData, null, 'A2');
 
         // Auto-size columns
-        foreach (range('A', 'F') as $col) {
+        foreach (range('A', 'G') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
