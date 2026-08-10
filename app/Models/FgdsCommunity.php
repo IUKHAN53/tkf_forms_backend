@@ -3,13 +3,17 @@
 namespace App\Models;
 
 use App\Traits\HasUniqueFormId;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class FgdsCommunity extends Model
 {
+    /** @use HasFactory<\Database\Factories\FgdsCommunityFactory> */
+    use HasFactory;
+
     use HasUniqueFormId;
 
     protected $table = 'fgds_community';
