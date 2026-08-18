@@ -210,7 +210,7 @@ class OutreachSiteController extends Controller
                     $site->outreach_site,
                     $site->coordinates,
                     $site->comments,
-                    $site->created_at->format('Y-m-d H:i:s'),
+                    $site->created_at?->format('Y-m-d H:i:s'),
                 ]);
             }
 
