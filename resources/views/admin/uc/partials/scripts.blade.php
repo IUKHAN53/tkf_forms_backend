@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const mapData = @json($mapData);
     const map = L.map('ucMap').setView([24.8607, 67.0011], 11);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('{{ config('services.carto.basemap_url') }}', {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
         subdomains: 'abcd',
         maxZoom: 19

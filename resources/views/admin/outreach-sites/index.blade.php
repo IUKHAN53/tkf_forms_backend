@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }).setView([24.8607, 67.0011], 11);
 
     // CartoDB Positron - Modern Light Theme
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('{{ config('services.carto.basemap_url') }}', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19
