@@ -134,6 +134,32 @@ Excel imports **replace** existing child rows for that record (delete-then-inser
 they don't merge. Map columns **by header name, not by position** — positional
 mapping was a real bug fixed in `3b0a55c`.
 
+#### The FGDs CSV layout
+
+Both FGDs controllers declare `IMPORT_FIELDS` — an ordered
+`header label => [attribute, required]` map that drives `template()` and
+`import()` together, so the file the app hands out is a file it can read back.
+`export()` prints those columns plus read-only ones (`ID`, `Barriers
+Identified`, `Participants Count`, `Created At`) which `import()` ignores:
+barriers and the participant attendance rows are child records and never come
+from this CSV.
+
+Add a column by adding one entry to `IMPORT_FIELDS` and one cell to `export()`.
+
+Things the import relies on, all covered by `FgdsImportTest`:
+
+- **Header-name matching**, via the same normalize-and-alias approach as the
+  action-plan importer. `IMPORT_HEADER_ALIASES` keeps files saved from the old
+  template working (`uc_name` → UC, `facility_name` → HFS).
+- **Form ID de-duplicates.** A row whose `unique_id` already exists is skipped,
+  so re-importing an export cannot double every record.
+- **Required columns follow the schema.** `fix_site` is NOT NULL on
+  `fgds_community` but nullable on `fgds_health_workers`, and the two
+  `IMPORT_FIELDS` lists differ accordingly. `fgds_health_workers` has no
+  `district` at all.
+- Rows are reported individually by line number; the old import counted failures
+  and discarded the reasons.
+
 #### The action-plan layout
 
 Bridging The Gap action plans have one canonical column set, and it is declared
@@ -216,13 +242,6 @@ in Blade, keep Blade directives out of comments.
 
 ## Known rough edges
 
-- The CSV `template()` / `import()` methods on `FgdsCommunityController` and
-  `FgdsHealthWorkersController` still reference columns that no longer exist
-  (`uc_name`, `session_date`, `epi_focal_person`, `barriers_identified`,
-  `solutions_proposed`, `follow_up_actions`), so an import silently drops those
-  values via mass-assignment. `export()` was repaired in Sep 2026 — it now maps
-  to real fields and is covered by `FgdsExportTest`; the import side was left
-  alone and still needs the same treatment. Don't copy the import as a pattern.
 - Both FGDs `export()` methods dump **every** record and ignore the page filters
   (the export button links to the bare route). If that should follow the active
   filter, `export()` needs a `Request` and a call to `applyBarrierListFilters()`.

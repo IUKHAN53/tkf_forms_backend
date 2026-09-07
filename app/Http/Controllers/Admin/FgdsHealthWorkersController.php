@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapTeamMember;
@@ -134,6 +135,7 @@ class FgdsHealthWorkersController extends Controller
     public function show(FgdsHealthWorkers $fgdsHealthWorker)
     {
         $fgdsHealthWorker->load(['participants', 'barriers.category']);
+
         return view('admin.core-forms.fgds-health-workers.show', compact('fgdsHealthWorker'));
     }
 
@@ -295,6 +297,7 @@ class FgdsHealthWorkersController extends Controller
 
         $fgdsHealthWorker->participants()->delete();
         $fgdsHealthWorker->delete();
+
         return redirect()->route('admin.fgds-health-workers.index')
             ->with('success', 'FGDs-Health Workers session deleted successfully.');
     }
@@ -314,7 +317,7 @@ class FgdsHealthWorkersController extends Controller
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="fgds_health_workers_' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="fgds_health_workers_'.date('Y-m-d').'.csv"',
         ];
 
         $columns = ['ID', 'Form ID', 'UC', 'Fix Site', 'Session Date', 'Facilitator TKF', 'HFS', 'Address', 'Group Type', 'Barriers Identified', 'Participants Count', 'Males', 'Females', 'Latitude', 'Longitude', 'Created At'];
@@ -350,6 +353,44 @@ class FgdsHealthWorkersController extends Controller
         return Response::stream($callback, 200, $headers);
     }
 
+    /**
+     * The writable CSV columns, in order: header label => [attribute, required].
+     *
+     * Drives template() and import() together so the file we hand out is the
+     * file we can read back. export() adds read-only columns on top (ID,
+     * Barriers Identified, Participants Count, Created At) which import ignores
+     * — barriers and the participant attendance rows are child records and do
+     * not come from this CSV.
+     *
+     * Note this table has no `district`: geography is UC plus the fix site.
+     */
+    private const IMPORT_FIELDS = [
+        'Form ID' => ['unique_id', false],
+        'UC' => ['uc', true],
+        'Fix Site' => ['fix_site', false],
+        'Session Date' => ['date', true],
+        'Facilitator TKF' => ['facilitator_tkf', true],
+        'HFS' => ['hfs', true],
+        'Address' => ['address', true],
+        'Group Type' => ['group_type', true],
+        'Males' => ['participants_males', false],
+        'Females' => ['participants_females', false],
+        'Latitude' => ['latitude', false],
+        'Longitude' => ['longitude', false],
+    ];
+
+    /**
+     * Legacy header spellings mapped onto their canonical normalized form, so
+     * files saved from the previous template still import.
+     */
+    private const IMPORT_HEADER_ALIASES = [
+        'ucname' => 'uc',
+        'unioncouncil' => 'uc',
+        'date' => 'sessiondate',
+        'facilityname' => 'hfs',
+        'facilitytype' => 'grouptype',
+    ];
+
     public function template()
     {
         $headers = [
@@ -357,12 +398,17 @@ class FgdsHealthWorkersController extends Controller
             'Content-Disposition' => 'attachment; filename="fgds_health_workers_template.csv"',
         ];
 
-        $columns = ['district', 'uc_name', 'session_date', 'facilitator_tkf', 'facility_name', 'facility_type', 'barriers_identified', 'solutions_proposed', 'follow_up_actions', 'latitude', 'longitude'];
+        // Form ID is left blank: the model stamps one on create.
+        $sample = [
+            '', 'Gujro Zone C', 'Govt Dispensary Bilal Colony', '2026-01-15',
+            'Facilitator Name', 'ED Islamia', 'Islamia Colony 1', 'LHW',
+            '6', '4', '24.9056', '67.0822',
+        ];
 
-        $callback = function () use ($columns) {
+        $callback = function () use ($sample) {
             $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            fputcsv($file, ['District Name', 'UC Name', '2025-01-15', 'Facilitator Name', 'Facility Name', 'Hospital', 'Barrier 1, Barrier 2', 'Solution 1, Solution 2', 'Follow up 1', '31.5204', '74.3587']);
+            fputcsv($file, array_keys(self::IMPORT_FIELDS));
+            fputcsv($file, $sample);
             fclose($file);
         };
 
@@ -375,45 +421,161 @@ class FgdsHealthWorkersController extends Controller
             'file' => 'required|file|mimes:csv,txt|max:2048',
         ]);
 
-        $file = $request->file('file');
-        $handle = fopen($file->getRealPath(), 'r');
-
+        $handle = fopen($request->file('file')->getRealPath(), 'r');
         $header = fgetcsv($handle);
+
+        if ($header === false) {
+            fclose($handle);
+
+            return redirect()->route('admin.fgds-health-workers.index')
+                ->with('error', 'That file is empty.');
+        }
+
+        $map = $this->resolveImportColumns($header);
+
+        // Nothing recognisable in the header row means positional guessing,
+        // which is how every value used to end up in the wrong field.
+        if ($map['uc'] === null && $map['hfs'] === null) {
+            fclose($handle);
+
+            return redirect()->route('admin.fgds-health-workers.index')
+                ->with('error', 'Could not recognise the column headers. Download the template and keep its header row.');
+        }
+
         $imported = 0;
+        $skipped = 0;
         $errors = [];
+        $line = 1;
 
         while (($row = fgetcsv($handle)) !== false) {
-            if (count($row) < 11) continue;
+            $line++;
+
+            // Trailing blank lines are not worth reporting.
+            if (count(array_filter($row, fn ($c) => trim((string) $c) !== '')) === 0) {
+                continue;
+            }
+
+            $get = fn (string $attr) => ($map[$attr] !== null && isset($row[$map[$attr]]))
+                ? trim((string) $row[$map[$attr]])
+                : '';
+
+            $missing = [];
+            foreach (self::IMPORT_FIELDS as $label => [$attr, $required]) {
+                if ($required && $get($attr) === '') {
+                    $missing[] = $label;
+                }
+            }
+
+            if ($missing) {
+                $errors[] = "Row {$line}: missing ".implode(', ', $missing).'.';
+                $skipped++;
+
+                continue;
+            }
 
             try {
-                FgdsHealthWorkers::create([
-                    'district' => $row[0],
-                    'uc_name' => $row[1],
-                    'session_date' => $row[2],
-                    'facilitator_tkf' => $row[3],
-                    'facility_name' => $row[4],
-                    'facility_type' => $row[5],
-                    'barriers_identified' => $row[6],
-                    'solutions_proposed' => $row[7],
-                    'follow_up_actions' => $row[8],
-                    'latitude' => $row[9] ?: null,
-                    'longitude' => $row[10] ?: null,
-                ]);
+                $date = Carbon::parse($get('date'));
+            } catch (\Exception $e) {
+                $errors[] = "Row {$line}: could not read the session date.";
+                $skipped++;
+
+                continue;
+            }
+
+            // A Form ID that already exists means the row is already in the
+            // system — re-importing an export must not duplicate every record.
+            $uniqueId = $get('unique_id');
+
+            if ($uniqueId !== '' && FgdsHealthWorkers::where('unique_id', $uniqueId)->exists()) {
+                $errors[] = "Row {$line}: {$uniqueId} already exists.";
+                $skipped++;
+
+                continue;
+            }
+
+            $attributes = [
+                'uc' => $get('uc'),
+                'fix_site' => $get('fix_site') ?: null,
+                'date' => $date,
+                'facilitator_tkf' => $get('facilitator_tkf'),
+                'hfs' => $get('hfs'),
+                'address' => $get('address'),
+                'group_type' => $get('group_type'),
+                'participants_males' => (int) $get('participants_males'),
+                'participants_females' => (int) $get('participants_females'),
+                'latitude' => $get('latitude') !== '' ? (float) $get('latitude') : null,
+                'longitude' => $get('longitude') !== '' ? (float) $get('longitude') : null,
+            ];
+
+            if ($uniqueId !== '') {
+                $attributes['unique_id'] = $uniqueId;
+            }
+
+            try {
+                FgdsHealthWorkers::create($attributes);
                 $imported++;
             } catch (\Exception $e) {
-                $errors[] = "Row " . ($imported + 2) . ": " . $e->getMessage();
+                $errors[] = "Row {$line}: ".$e->getMessage();
+                $skipped++;
             }
         }
 
         fclose($handle);
 
-        $message = "Successfully imported {$imported} records.";
-        if (count($errors) > 0) {
-            $message .= " " . count($errors) . " errors occurred.";
+        return redirect()->route('admin.fgds-health-workers.index')
+            ->with('success', "Imported {$imported} record(s).".($skipped ? " Skipped {$skipped}." : ''))
+            ->with('error', $this->importErrorSummary($errors));
         }
 
-        return redirect()->route('admin.fgds-health-workers.index')
-            ->with('success', $message);
+    /**
+     * Match the header row to model attributes by name rather than position, so
+     * a reordered or extra column cannot shift every value into the wrong field.
+     */
+    private function resolveImportColumns(array $header): array
+    {
+        $normalize = fn ($value) => preg_replace('/[^a-z0-9]/', '', strtolower((string) $value));
+
+        $wanted = [];
+        foreach (self::IMPORT_FIELDS as $label => [$attr, $required]) {
+            $wanted[$normalize($label)] = $attr;
+        }
+
+        $map = [];
+        foreach (self::IMPORT_FIELDS as [$attr, $required]) {
+            $map[$attr] = null;
+        }
+
+        foreach ($header as $index => $cell) {
+            $key = $normalize($cell);
+            $key = self::IMPORT_HEADER_ALIASES[$key] ?? $key;
+
+            if (isset($wanted[$key]) && $map[$wanted[$key]] === null) {
+                $map[$wanted[$key]] = $index;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Row-level problems are worth showing — the old import counted them and
+     * threw the reasons away. A malformed file can produce hundreds, so cap the
+     * list to keep the flash message readable.
+     */
+    private function importErrorSummary(array $errors): ?string
+    {
+        if (! $errors) {
+            return null;
+        }
+
+        $shown = array_slice($errors, 0, 8);
+        $summary = implode(' ', $shown);
+
+        if (count($errors) > count($shown)) {
+            $summary .= ' (+'.(count($errors) - count($shown)).' more)';
+        }
+
+        return $summary;
     }
 
     public function uploadBarriers(Request $request, $id)
