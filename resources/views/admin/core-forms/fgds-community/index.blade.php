@@ -169,6 +169,12 @@
                         <option value="{{ $uc }}" {{ request('uc') == $uc ? 'selected' : '' }}>{{ $uc }}</option>
                     @endforeach
                 </select>
+                <select name="fix_site" class="form-input filter-select">
+                    <option value="">All Fix Sites</option>
+                    @foreach($fixSites as $fixSite)
+                        <option value="{{ $fixSite }}" {{ request('fix_site') == $fixSite ? 'selected' : '' }}>{{ $fixSite }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="filter-row">
                 <div class="date-filter">
@@ -181,7 +187,7 @@
                 </div>
                 <input type="text" name="facilitator" class="form-input" placeholder="Facilitator name..." value="{{ request('facilitator') }}">
                 <button type="submit" class="btn btn-primary">Apply Filters</button>
-                @if(request()->hasAny(['search', 'district', 'uc', 'date_from', 'date_to', 'facilitator']))
+                @if(request()->hasAny(['search', 'district', 'uc', 'fix_site', 'date_from', 'date_to', 'facilitator']))
                     <a href="{{ route('admin.fgds-community.index') }}" class="btn btn-outline">Clear All</a>
                 @endif
             </div>

@@ -35,6 +35,7 @@ class FgdsHealthWorkersController extends Controller
         // Get distinct values for filter dropdowns (always the full catalogue).
         $ucs = FgdsHealthWorkers::distinct()->pluck('uc')->filter()->sort()->values();
         $groupTypes = FgdsHealthWorkers::distinct()->pluck('group_type')->filter()->sort()->values();
+        $fixSites = FgdsHealthWorkers::distinct()->pluck('fix_site')->filter()->sort()->values();
 
         // Statistics over the filtered set, from actual participant records.
         $participantsQuery = fn () => Participant::where('participantable_type', FgdsHealthWorkers::class)
@@ -83,11 +84,11 @@ class FgdsHealthWorkersController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes', 'stats'));
+        return view('admin.core-forms.fgds-health-workers.index', compact('fgdsHealthWorkers', 'mapData', 'ucs', 'groupTypes', 'fixSites', 'stats'));
     }
 
     /**
-     * Apply the list-page filters (search, uc, group type, date range,
+     * Apply the list-page filters (search, uc, group type, fix site, date range,
      * facilitator) to a query. Shared by the table, the stat counts, the
      * barriers-by-category cards and the category modal so the whole page
      * reflects the same filter.
@@ -109,6 +110,10 @@ class FgdsHealthWorkersController extends Controller
 
         if ($request->filled('group_type')) {
             $query->where('group_type', $request->group_type);
+        }
+
+        if ($request->filled('fix_site')) {
+            $query->where('fix_site', $request->fix_site);
         }
 
         if ($request->filled('date_from')) {
@@ -305,14 +310,14 @@ class FgdsHealthWorkersController extends Controller
 
     public function export()
     {
-        $records = FgdsHealthWorkers::with('participants')->get();
+        $records = FgdsHealthWorkers::with('participants')->withCount('barriers')->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="fgds_health_workers_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['ID', 'District', 'UC Name', 'Session Date', 'Facilitator TKF', 'Facility Name', 'Facility Type', 'Barriers Identified', 'Solutions Proposed', 'Follow Up Actions', 'Participants Count', 'Latitude', 'Longitude', 'Created At'];
+        $columns = ['ID', 'Form ID', 'UC', 'Fix Site', 'Session Date', 'Facilitator TKF', 'HFS', 'Address', 'Group Type', 'Barriers Identified', 'Participants Count', 'Males', 'Females', 'Latitude', 'Longitude', 'Created At'];
 
         $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
@@ -321,19 +326,21 @@ class FgdsHealthWorkersController extends Controller
             foreach ($records as $item) {
                 fputcsv($file, [
                     $item->id,
-                    $item->district,
-                    $item->uc_name,
-                    $item->session_date,
+                    $item->unique_id,
+                    $item->uc,
+                    $item->fix_site,
+                    optional($item->date)->format('Y-m-d'),
                     $item->facilitator_tkf,
-                    $item->facility_name,
-                    $item->facility_type,
-                    $item->barriers_identified,
-                    $item->solutions_proposed,
-                    $item->follow_up_actions,
+                    $item->hfs,
+                    $item->address,
+                    $item->group_type,
+                    $item->barriers_count,
                     $item->participants->count(),
+                    $item->participants->where('gender', 'Male')->count(),
+                    $item->participants->where('gender', 'Female')->count(),
                     $item->latitude,
                     $item->longitude,
-                    $item->created_at,
+                    optional($item->created_at)->format('Y-m-d H:i:s'),
                 ]);
             }
 

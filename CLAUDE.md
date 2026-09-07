@@ -114,7 +114,9 @@ When querying by UC, filter on `whereIn('uc', $variants)`, never on a single str
 ### Page-wide filters
 
 On the FGDs index screens, one set of filters drives the table, the stat cards, the
-barrier-category cards, the drill-down modal *and* the map. The pattern is a private
+barrier-category cards, the drill-down modal *and* the map. Both screens filter on
+search, UC, fix site, date range and facilitator; Community adds district and
+Health Workers adds group type. The pattern is a private
 `applyBarrierListFilters($query, $request)` applied to a fresh query for each
 consumer, plus a `$filteredIds` collection for the count queries. If you add a
 filter, add it there once — don't special-case the table.
@@ -214,10 +216,15 @@ in Blade, keep Blade directives out of comments.
 
 ## Known rough edges
 
-- The CSV `export()` / `template()` / `import()` methods on `FgdsCommunityController`
-  and `FgdsHealthWorkersController` reference columns that no longer exist
+- The CSV `template()` / `import()` methods on `FgdsCommunityController` and
+  `FgdsHealthWorkersController` still reference columns that no longer exist
   (`uc_name`, `session_date`, `epi_focal_person`, `barriers_identified`,
-  `solutions_proposed`, `follow_up_actions`). Exports emit blanks for them and
-  imports silently drop them via mass-assignment. Don't copy these as a pattern.
+  `solutions_proposed`, `follow_up_actions`), so an import silently drops those
+  values via mass-assignment. `export()` was repaired in Sep 2026 — it now maps
+  to real fields and is covered by `FgdsExportTest`; the import side was left
+  alone and still needs the same treatment. Don't copy the import as a pattern.
+- Both FGDs `export()` methods dump **every** record and ignore the page filters
+  (the export button links to the bare route). If that should follow the active
+  filter, `export()` needs a `Request` and a call to `applyBarrierListFilters()`.
 - `/debug` (`DebugController`) is reachable by any authenticated user, not just admins.
 - There are no cascade deletes anywhere; deletion order is manual (see above).

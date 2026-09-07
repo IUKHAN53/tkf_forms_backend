@@ -34,6 +34,7 @@ class FgdsCommunityController extends Controller
         // Get distinct values for filter dropdowns (always the full catalogue).
         $districts = FgdsCommunity::distinct()->pluck('district')->filter()->sort()->values();
         $ucs = FgdsCommunity::distinct()->pluck('uc')->filter()->sort()->values();
+        $fixSites = FgdsCommunity::distinct()->pluck('fix_site')->filter()->sort()->values();
 
         // Statistics over the filtered set, from actual participant records.
         $participantsQuery = fn () => Participant::where('participantable_type', FgdsCommunity::class)
@@ -87,11 +88,12 @@ class FgdsCommunityController extends Controller
             ->values()
             ->toArray();
 
-        return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs', 'stats'));
+        return view('admin.core-forms.fgds-community.index', compact('fgdsCommunity', 'mapData', 'districts', 'ucs', 'fixSites', 'stats'));
     }
 
     /**
-     * Apply the list-page filters (search, district, uc, date range, facilitator)
+     * Apply the list-page filters (search, district, uc, fix site, date range,
+     * facilitator)
      * to a query. Shared by the table, the stat counts, the barriers-by-category
      * cards and the category modal so the whole page reflects the same filter.
      */
@@ -113,6 +115,10 @@ class FgdsCommunityController extends Controller
 
         if ($request->filled('uc')) {
             $query->where('uc', $request->uc);
+        }
+
+        if ($request->filled('fix_site')) {
+            $query->where('fix_site', $request->fix_site);
         }
 
         if ($request->filled('date_from')) {
@@ -249,14 +255,14 @@ class FgdsCommunityController extends Controller
 
     public function export()
     {
-        $records = FgdsCommunity::with('participants')->get();
+        $records = FgdsCommunity::with('participants')->withCount('barriers')->get();
 
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="fgds_community_' . date('Y-m-d') . '.csv"',
         ];
 
-        $columns = ['ID', 'District', 'UC Name', 'Session Date', 'Facilitator TKF', 'Venue', 'EPI Focal Person', 'Barriers Identified', 'Solutions Proposed', 'Follow Up Actions', 'Participants Count', 'Latitude', 'Longitude', 'Created At'];
+        $columns = ['ID', 'Form ID', 'District', 'UC', 'Fix Site', 'Outreach', 'Session Date', 'Facilitator TKF', 'Venue', 'Community', 'Barriers Identified', 'Participants Count', 'Males', 'Females', 'Latitude', 'Longitude', 'Created At'];
 
         $callback = function () use ($records, $columns) {
             $file = fopen('php://output', 'w');
@@ -265,19 +271,22 @@ class FgdsCommunityController extends Controller
             foreach ($records as $item) {
                 fputcsv($file, [
                     $item->id,
+                    $item->unique_id,
                     $item->district,
-                    $item->uc_name,
-                    $item->session_date,
+                    $item->uc,
+                    $item->fix_site,
+                    $item->outreach,
+                    optional($item->date)->format('Y-m-d'),
                     $item->facilitator_tkf,
                     $item->venue,
-                    $item->epi_focal_person,
-                    $item->barriers_identified,
-                    $item->solutions_proposed,
-                    $item->follow_up_actions,
+                    is_array($item->community) ? implode(', ', $item->community) : $item->community,
+                    $item->barriers_count,
                     $item->participants->count(),
+                    $item->participants->where('gender', 'Male')->count(),
+                    $item->participants->where('gender', 'Female')->count(),
                     $item->latitude,
                     $item->longitude,
-                    $item->created_at,
+                    optional($item->created_at)->format('Y-m-d H:i:s'),
                 ]);
             }
 
