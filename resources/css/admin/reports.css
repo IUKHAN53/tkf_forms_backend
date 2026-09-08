@@ -1,0 +1,94 @@
+/*
+ * Reports hub + shared report-page extras.
+ * Complements fixed-site-report.css (the fsr-* vocabulary), which every report
+ * page also loads. Anything here is prefixed rpt-* to avoid collisions.
+ */
+
+/* ----- Filter bar: allow text/date/select inputs to match fsr-field ----- */
+.fsr-field input[type="text"],
+.fsr-field input[type="date"] {
+    padding: 10px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius);
+    font-size: 14px;
+    min-width: 200px;
+    background: #fff;
+    color: var(--gray-800);
+    font-family: inherit;
+}
+.fsr-field.rpt-field-sm select,
+.fsr-field.rpt-field-sm input { min-width: 150px; }
+
+/* ----- Hub landing grid ----- */
+.rpt-hub { display: flex; flex-direction: column; gap: 20px; }
+
+.rpt-hub-intro h1 { font-size: 22px; color: var(--gray-800); margin-bottom: 4px; }
+.rpt-hub-intro p { font-size: 14px; color: var(--gray-500); }
+
+.rpt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+}
+
+.rpt-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 22px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.rpt-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-300);
+}
+.rpt-card-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+}
+.rpt-card-icon svg { width: 24px; height: 24px; color: #fff; }
+.rpt-card-icon.rpt-icon-amber { background: linear-gradient(135deg, #f59e0b, #b45309); }
+.rpt-card-icon.rpt-icon-blue  { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.rpt-card-icon.rpt-icon-pink  { background: linear-gradient(135deg, #ec4899, #be185d); }
+.rpt-card h3 { font-size: 16px; color: var(--gray-800); margin: 0; }
+.rpt-card p { font-size: 13px; color: var(--gray-500); line-height: 1.5; margin: 0; flex: 1; }
+.rpt-card-cta {
+    font-size: 13px; font-weight: 600; color: var(--primary-600);
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.rpt-card-cta svg { width: 15px; height: 15px; }
+
+/* ----- Hub quick totals ----- */
+.rpt-hub-totals {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+}
+
+/* ----- Horizontal count bars (barriers / categories) ----- */
+.rpt-bars { display: flex; flex-direction: column; gap: 10px; }
+.rpt-bar-row { display: grid; grid-template-columns: 260px 1fr 56px; align-items: center; gap: 12px; }
+.rpt-bar-label { font-size: 13px; color: var(--gray-700); }
+.rpt-bar-track { background: var(--gray-100); border-radius: 999px; height: 12px; overflow: hidden; }
+.rpt-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--primary-400), var(--primary-600)); }
+.rpt-bar-value { font-size: 13px; font-weight: 600; color: var(--gray-700); text-align: right; }
+
+@media (max-width: 640px) {
+    .rpt-bar-row { grid-template-columns: 1fr 52px; }
+    .rpt-bar-track { grid-column: 1 / -1; order: 3; }
+}
+
+/* ----- Coverage meter ----- */
+.rpt-coverage { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.rpt-coverage-num { font-size: 40px; font-weight: 700; color: var(--primary-600); line-height: 1; }
+.rpt-coverage-track { flex: 1; min-width: 200px; background: var(--gray-100); border-radius: 999px; height: 16px; overflow: hidden; }
+.rpt-coverage-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #15803d); border-radius: 999px; }

@@ -16,6 +16,7 @@ export default defineConfig({
                 'resources/css/admin/core-forms.css',
                 'resources/css/admin/uc-detail.css',
                 'resources/css/admin/fixed-site-report.css',
+                'resources/css/admin/reports.css',
                 'resources/js/app.js'
             ],
             refresh: true,

@@ -228,6 +228,32 @@ that `@js()`, `@json()` and other directives are parsed by Blade **even inside J
 comments and string literals** — that caused a 500 in `bcdcae8`. When writing JS
 in Blade, keep Blade directives out of comments.
 
+## Reports
+
+`/admin/reports` is the hub — one landing page (`ReportsController@index`) that
+links to every report. Each report has a filtered on-page view and an Excel
+export:
+
+| Report | Controller | Notes |
+|---|---|---|
+| Program Summary | `ReportsController` | totals across all five forms + a by-UC breakdown + barrier categories |
+| Barriers | `ReportsController` | FGD barriers grouped by the 11 canonical categories, community/HW scope |
+| Vaccination Coverage | `ReportsController` | vaccination records by category / vaccinated status, coverage % |
+| Fixed Site | `FixedSiteReportController` | the original consolidated per-fixed-site dossier |
+
+Shared plumbing lives in the `ReportsSupport` trait
+(`Admin\Concerns\ReportsSupport`): the geography lookups (`unionCouncils`,
+`districts`, `fixSitesForUc`), `ucVariants` (delegates to
+`DashboardController`), and the Excel helpers (`newReportSpreadsheet`,
+`writeSheet`, `streamWorkbook`). Both report controllers use it — put anything
+common to reports there rather than duplicating it. The report pages reuse the
+`fsr-*` styles from `admin/fixed-site-report.css` plus `admin/reports.css`; both
+are pushed via `@push('styles')`.
+
+The shared filters are date range (on `created_at`), district and UC, applied by
+`ReportsController::applyFilters()`; FGDs-Health-Workers has no `district`, so it
+is passed `hasDistrict: false`. UC matching always goes through `ucVariants`.
+
 ## History
 
 - **The generic form builder was removed** (Aug 2026). `Form`, `FormField`,

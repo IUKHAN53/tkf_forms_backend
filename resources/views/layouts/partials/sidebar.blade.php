@@ -85,26 +85,22 @@
                 </li>
             </ul>
         </div>
-        {{-- Reports Section hidden per request (Fixed Site Report menu item).
-             Route admin.reports.fixed-site still exists; only the sidebar
-             entry is hidden. Restore this block to bring it back.
         <div class="nav-section">
             <div class="nav-section-title">Reports</div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="{{ route('admin.reports.fixed-site') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.reports.index') }}" class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M3 3v18h18"/>
                             <path d="M18 17V9"/>
                             <path d="M13 17V5"/>
                             <path d="M8 17v-3"/>
                         </svg>
-                        <span>Fixed Site Report</span>
+                        <span>Reports</span>
                     </a>
                 </li>
             </ul>
         </div>
-        --}}
         <!-- Administration Section -->
         <div class="nav-section">
             <div class="nav-section-title">Administration</div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\ReportsSupport;
 use App\Http\Controllers\Controller;
 use App\Models\BridgingTheGap;
 use App\Models\ChildLineList;
@@ -11,11 +12,6 @@ use App\Models\OutreachSite;
 use App\Models\VaccinationRecord;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /**
  * Fixed Site Report
@@ -38,6 +34,8 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  */
 class FixedSiteReportController extends Controller
 {
+    use ReportsSupport;
+
     /**
      * Render the report page. Without `uc`/`fix_site` it only shows the pickers.
      */
@@ -89,11 +87,7 @@ class FixedSiteReportController extends Controller
 
         $report = $this->buildReport($uc, $fixSite);
 
-        $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()
-            ->setTitle('Fixed Site Report')
-            ->setSubject($uc . ' / ' . $fixSite)
-            ->setCreator(auth()->user()->name ?? 'Admin');
+        $spreadsheet = $this->newReportSpreadsheet('Fixed Site Report', $uc . ' / ' . $fixSite);
 
         $index = 0;
 
@@ -289,16 +283,9 @@ class FixedSiteReportController extends Controller
                 optional($r->created_at)->format('Y-m-d'),
             ])->all());
 
-        $spreadsheet->setActiveSheetIndex(0);
-
         $filename = 'fixed-site-report_' . Str::slug($uc . ' ' . $fixSite) . '_' . date('Y-m-d') . '.xlsx';
-        $writer = new Xlsx($spreadsheet);
 
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+        return $this->streamWorkbook($spreadsheet, $filename);
     }
 
     /* ===================================================================== *
@@ -394,35 +381,6 @@ class FixedSiteReportController extends Controller
      *  Lookups
      * ===================================================================== */
 
-    /** Distinct Union Councils from the outreach-site catalogue. */
-    private function unionCouncils()
-    {
-        return OutreachSite::query()
-            ->whereNotNull('union_council')
-            ->where('union_council', '!=', '')
-            ->pluck('union_council')
-            ->map(fn ($v) => trim((string) $v))
-            ->filter()
-            ->unique()
-            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
-    }
-
-    /** Distinct fixed sites belonging to a Union Council. */
-    private function fixSitesForUc(string $uc)
-    {
-        return OutreachSite::query()
-            ->where('union_council', $uc)
-            ->whereNotNull('fix_site')
-            ->where('fix_site', '!=', '')
-            ->pluck('fix_site')
-            ->map(fn ($v) => trim((string) $v))
-            ->filter()
-            ->unique()
-            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-            ->values();
-    }
-
     /** Outreach-site names that sit under a given fixed site. */
     private function outreachSitesFor(string $uc, string $fixSite): array
     {
@@ -439,75 +397,4 @@ class FixedSiteReportController extends Controller
             ->all();
     }
 
-    /**
-     * Resolve the spelling variants a UC may appear under in the form tables.
-     * Form data uses many inconsistent spellings; DashboardController keeps the
-     * canonical consolidation map, so we reuse it here.
-     */
-    private function ucVariants(string $uc): array
-    {
-        $consolidated = DashboardController::getConsolidatedUcName($uc);
-        $variants = DashboardController::getUcVariants($consolidated);
-
-        return array_values(array_unique(array_filter(
-            array_merge([$uc, $consolidated], $variants)
-        )));
-    }
-
-    /* ===================================================================== *
-     *  Excel helpers
-     * ===================================================================== */
-
-    /**
-     * Write a single worksheet from a header row and an array of data rows.
-     * All cells are written as strings so codes (CNIC, phone) keep their format.
-     */
-    private function writeSheet(Spreadsheet $spreadsheet, int $index, string $title, array $headers, array $rows): void
-    {
-        $sheet = $index === 0 ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
-        $sheet->setTitle(Str::limit($title, 31, ''));
-
-        $colCount = count($headers);
-
-        foreach ($headers as $i => $header) {
-            $sheet->setCellValueExplicit(
-                Coordinate::stringFromColumnIndex($i + 1) . '1',
-                $header,
-                DataType::TYPE_STRING
-            );
-        }
-
-        $rowNum = 2;
-        foreach ($rows as $row) {
-            $col = 1;
-            foreach ($row as $value) {
-                $sheet->setCellValueExplicit(
-                    Coordinate::stringFromColumnIndex($col) . $rowNum,
-                    $value === null ? '' : (string) $value,
-                    DataType::TYPE_STRING
-                );
-                $col++;
-            }
-            $rowNum++;
-        }
-
-        if ($colCount > 0) {
-            $lastCol = Coordinate::stringFromColumnIndex($colCount);
-            $headerStyle = $sheet->getStyle('A1:' . $lastCol . '1');
-            $headerStyle->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
-            $headerStyle->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('047857');
-            $sheet->freezePane('A2');
-            $sheet->setAutoFilter('A1:' . $lastCol . '1');
-
-            for ($c = 1; $c <= $colCount; $c++) {
-                $sheet->getColumnDimensionByColumn($c)->setAutoSize(true);
-            }
-        }
-
-        if (empty($rows)) {
-            $sheet->setCellValue('A2', 'No records for this fixed site.');
-        }
-
-        $sheet->setSelectedCell('A1');
-    }
 }

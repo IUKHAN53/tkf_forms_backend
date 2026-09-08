@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DebugController;
 use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\FixedSiteReportController;
+use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\UcController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VaccinationRecordController;
@@ -93,6 +94,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::post('outreach-sites/import', [\App\Http\Controllers\Admin\OutreachSiteController::class, 'import'])->name('outreach-sites.import');
     Route::resource('outreach-sites', \App\Http\Controllers\Admin\OutreachSiteController::class);
 
+    // Reports hub — one place for all program reports
+    Route::get('reports', [ReportsController::class, 'index'])->name('reports.index');
+    Route::get('reports/summary', [ReportsController::class, 'summary'])->name('reports.summary');
+    Route::get('reports/summary/export', [ReportsController::class, 'summaryExport'])->name('reports.summary.export');
+    Route::get('reports/barriers', [ReportsController::class, 'barriers'])->name('reports.barriers');
+    Route::get('reports/barriers/export', [ReportsController::class, 'barriersExport'])->name('reports.barriers.export');
+    Route::get('reports/vaccination', [ReportsController::class, 'vaccination'])->name('reports.vaccination');
+    Route::get('reports/vaccination/export', [ReportsController::class, 'vaccinationExport'])->name('reports.vaccination.export');
     // Reports - Fixed Site Report
     Route::get('reports/fixed-site', [FixedSiteReportController::class, 'index'])->name('reports.fixed-site');
     Route::get('reports/fixed-site/export', [FixedSiteReportController::class, 'export'])->name('reports.fixed-site.export');
