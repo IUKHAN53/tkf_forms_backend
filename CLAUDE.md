@@ -222,6 +222,30 @@ to `vite.config.js` inputs and push it from the view — don't reintroduce inlin
 `<style>` blocks, and don't merge page sheets into `admin.css` (the class names
 are not namespaced and will collide).
 
+### Maps
+
+Every admin map is Leaflet, and they all draw their basemap through
+`clmAddBasemap(map)` — defined once in `layouts/partials/basemap.blade.php`,
+which the layout includes in `<head>` after Leaflet so it exists before any
+page script can call it. Don't build a `L.tileLayer` by hand in a view.
+
+The provider comes from `config('services.maps')`:
+
+- **`basemap`** — CARTO Positron when `CARTO_BASEMAP_KEY` is set, otherwise
+  OpenStreetMap. CARTO's raster tiles are a paid product; with no key, or a
+  key that has lapsed, every tile 403s and the map renders as an empty box.
+  That is how the maps broke in Oct 2026, so the keyless provider is the
+  default and CARTO is opt-in.
+- **`fallback`** — always OpenStreetMap. If the primary layer throws repeated
+  `tileerror`s, `clmAddBasemap` swaps to it, so a dead key costs styling
+  rather than the whole map.
+
+`subdomains` travels with the URL in config, never hardcoded in a view: CARTO
+serves `a-d`, OpenStreetMap only `a-c`, and `d.tile.openstreetmap.org` does not
+resolve — one shared `'abcd'` silently fails a quarter of the tiles.
+
+Covered by `BasemapConfigTest`.
+
 Page JavaScript that needs Blade interpolation (`route()`, `@json`) stays in a
 Blade partial (`admin/uc/partials/scripts.blade.php`), not a `.js` asset. Note
 that `@js()`, `@json()` and other directives are parsed by Blade **even inside JS
@@ -271,5 +295,8 @@ is passed `hasDistrict: false`. UC matching always goes through `ucVariants`.
 - Both FGDs `export()` methods dump **every** record and ignore the page filters
   (the export button links to the bare route). If that should follow the active
   filter, `export()` needs a `Request` and a call to `applyBarrierListFilters()`.
+- The Vaccination Records detail map still builds its own `L.tileLayer` on
+  OpenStreetMap instead of going through `clmAddBasemap()`, so it has no
+  fallback. It needs no key, so it did not break, but it is the odd one out.
 - `/debug` (`DebugController`) is reachable by any authenticated user, not just admins.
 - There are no cascade deletes anywhere; deletion order is manual (see above).

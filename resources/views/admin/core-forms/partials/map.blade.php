@@ -383,12 +383,7 @@ document.addEventListener('DOMContentLoaded', function() {
         attributionControl: true
     }).setView([24.8607, 67.0011], 11);
 
-    // CartoDB Positron - Modern Light Theme
-    L.tileLayer('{{ config('services.carto.basemap_url') }}', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(map);
+    clmAddBasemap(map);
 
     // Get location data
     const locations = @json($mapData);

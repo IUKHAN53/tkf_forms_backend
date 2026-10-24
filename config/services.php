@@ -1,5 +1,15 @@
 <?php
 
+// Resolved once so the basemap and its keyless fallback cannot drift apart.
+$cartoBasemapKey = env('CARTO_BASEMAP_KEY');
+
+$openStreetMapBasemap = [
+    'url' => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    'subdomains' => 'abc',
+    'attribution' => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    'max_zoom' => 19,
+];
+
 return [
 
     /*
@@ -14,24 +24,39 @@ return [
     |
     */
 
-    'carto' => [
+    'maps' => [
         /*
-         * CARTO basemaps now require an API key on their raster (PNG) tiles;
-         * without one the tiles render with an "API key required" watermark.
-         * The key travels in the tile URL and is therefore visible to anyone
-         * loading a map — it is a public, per-domain key, not a secret. It
-         * lives here so it can differ per environment and be rotated in one
-         * place rather than in each view that builds a map.
+         * The basemap every Leaflet map in the admin panel draws.
+         *
+         * CARTO Positron looks better, but its raster tiles need a paid API
+         * key. Without a valid one every tile comes back 403 and the map
+         * renders empty — which is exactly how the maps broke in Oct 2026,
+         * when the key we had stopped being accepted. (The unkeyed CARTO URL
+         * is no help either: it now serves a blank "API KEY REQUIRED"
+         * placeholder with no map on it.)
+         *
+         * So CARTO is opt-in: set CARTO_BASEMAP_KEY to a valid key and it is
+         * used, otherwise the maps draw on OpenStreetMap, which needs no key
+         * and is already what the Vaccination Records map uses.
+         *
+         * `subdomains` has to travel with the URL rather than being hardcoded
+         * in the views: CARTO serves a-d, OpenStreetMap only a-c, and
+         * d.tile.openstreetmap.org does not resolve at all — so sharing one
+         * 'abcd' across both providers silently fails a quarter of the tiles.
          */
-        'basemap_key' => env('CARTO_BASEMAP_KEY'),
+        'basemap' => $cartoBasemapKey ? [
+            'url' => 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png?key='.$cartoBasemapKey,
+            'subdomains' => 'abcd',
+            'attribution' => '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            'max_zoom' => 20,
+        ] : $openStreetMapBasemap,
 
         /*
-         * Single source of truth for the tile URL. Every Leaflet map reads
-         * this, so the style and the key are set once. Falls back to the
-         * unkeyed URL (watermarked, but still functional) when no key is set.
+         * Keyless provider the page switches to if the primary stops serving
+         * tiles. A lapsed key then degrades the map's styling instead of
+         * blanking it — see clmAddBasemap() in layouts/partials/scripts.
          */
-        'basemap_url' => 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
-            .(env('CARTO_BASEMAP_KEY') ? '?key='.env('CARTO_BASEMAP_KEY') : ''),
+        'fallback' => $openStreetMapBasemap,
     ],
 
     'postmark' => [
