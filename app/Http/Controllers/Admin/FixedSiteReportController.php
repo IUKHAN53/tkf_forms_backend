@@ -200,7 +200,8 @@ class FixedSiteReportController extends Controller
             ])->all());
 
         $this->writeSheet($spreadsheet, $index++, 'BTG Action Plans',
-            ['Form ID', 'Sr. No', 'Problem', 'Sub Cause', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline'],
+            ['Form ID', 'Sr. No', 'Problem', 'Sub Cause', 'Root Cause', 'Solution', 'Action Needed', 'Responsible', 'Timeline',
+                'Implementation Status', 'Status Updated', 'Follow-up Remarks', 'Activity Pictures'],
             $report['bridging']->flatMap(fn ($r) => $r->actionPlans->map(fn ($p) => [
                 $r->unique_id,
                 $p->serial_number,
@@ -211,6 +212,10 @@ class FixedSiteReportController extends Controller
                 $p->action_needed,
                 $p->who_is_responsible,
                 $p->timeline,
+                $p->implementation_status_label,
+                optional($p->status_updated_at)->format('Y-m-d'),
+                $p->implementation_remarks,
+                $p->photos_count,
             ]))->all());
 
         $this->writeSheet($spreadsheet, $index++, 'BTG IIT Members',
@@ -323,7 +328,12 @@ class FixedSiteReportController extends Controller
             ->get();
 
         // Bridging the Gap — site-specific (has a fix_site column).
-        $bridging = BridgingTheGap::with(['participants', 'teamMembers.participant', 'actionPlans', 'user'])
+        $bridging = BridgingTheGap::with([
+                'participants',
+                'teamMembers.participant',
+                'actionPlans' => fn ($q) => $q->withCount('photos')->orderBy('serial_number'),
+                'user',
+            ])
             ->whereIn('uc', $variants)
             ->where('fix_site', $fixSite)
             ->orderByDesc('date')

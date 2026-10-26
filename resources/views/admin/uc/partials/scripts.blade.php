@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let value = record[col.key] ?? 'N/A';
                 if (col.key === 'unique_id') {
                     value = `<code>${value}</code>`;
-                } else if (col.key === 'gender') {
+                } else if (col.key === 'gender' && value !== 'N/A') {
                     const badgeClass = value === 'Male' ? 'badge-info' : 'badge-success';
                     value = `<span class="badge ${badgeClass}">${value}</span>`;
                 } else if (col.breakdown) {
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             bodyHtml += `<td class="action-links">
                 <a href="${getViewUrl(record.id)}" class="action-link">View</a>
-                <a href="${getEditUrl(record.id)}" class="action-link edit-link">Edit</a>
+                <a href="${getEditUrl(record.id)}" class="action-link edit-link">${getEditLabel()}</a>
             </td>`;
             bodyHtml += '</tr>';
         });
@@ -457,7 +457,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     { key: 'total_participants', label: 'Attendance' },
                     { key: 'iit_members_count', label: 'IIT Members' },
                     { key: 'action_plans_count', label: 'Action Plans' },
+                    { key: 'action_plan_progress', label: 'Plan Progress' },
                     { key: 'created_at', label: 'Created' }
+                ];
+            case 'iit_members':
+                return [
+                    { key: 'name', label: 'Name' },
+                    { key: 'role', label: 'Role / Designation' },
+                    { key: 'contact_no', label: 'Contact' },
+                    { key: 'gender', label: 'Gender' },
+                    { key: 'unique_id', label: 'BTG Session' },
+                    { key: 'session_date', label: 'Session Date' },
+                    { key: 'fix_site', label: 'Fix Site' },
+                    { key: 'source', label: 'Source' }
                 ];
             case 'child_line_list':
                 return [
@@ -484,6 +496,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return { title: 'FGDs Health Workers Sessions' };
             case 'bridging_the_gap':
                 return { title: 'Bridging The Gap Sessions' };
+            case 'iit_members':
+                return { title: 'IIT Team Members' };
             case 'child_line_list':
                 return { title: 'Child Line List Records' };
             default:
@@ -500,6 +514,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return `{{ url('admin/fgds-health-workers') }}/${id}`;
             case 'bridging_the_gap':
                 return `{{ url('admin/bridging-the-gap') }}/${id}`;
+            case 'iit_members':
+                return `{{ url('admin/bridging-the-gap') }}/${id}#iit-team`;
             case 'child_line_list':
                 return `{{ url('admin/child-line-list') }}/${id}`;
             default:
@@ -516,11 +532,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 return `{{ url('admin/fgds-health-workers') }}/${id}/edit`;
             case 'bridging_the_gap':
                 return `{{ url('admin/bridging-the-gap') }}/${id}/edit`;
+            case 'iit_members':
+                return `{{ route('admin.iit-members.index') }}?bridging_the_gap_id=${id}`;
             case 'child_line_list':
                 return `{{ url('admin/child-line-list') }}/${id}/edit`;
             default:
                 return '#';
         }
+    }
+
+    // Label for the second action link
+    function getEditLabel() {
+        return currentTab === 'iit_members' ? 'Manage' : 'Edit';
     }
 
     // Format label (convert snake_case to Title Case)

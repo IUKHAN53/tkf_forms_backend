@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BridgingTheGap;
 use App\Models\BridgingTheGapActionPlan;
+use App\Models\BridgingTheGapActionPlanPhoto;
 use App\Models\BridgingTheGapTeamMember;
 use App\Models\Participant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -19,7 +22,10 @@ class BridgingTheGapController extends Controller
     {
         // Use withCount instead of eager loading participant relationship to avoid issues with deleted participants
         $query = BridgingTheGap::with(['participants', 'teamMembers', 'user'])
-            ->withCount('actionPlans')
+            ->withCount([
+                'actionPlans',
+                'actionPlans as completed_action_plans_count' => fn ($q) => $q->where('implementation_status', 'completed'),
+            ])
             ->latest();
 
         // Text search filter
@@ -95,7 +101,12 @@ class BridgingTheGapController extends Controller
 
     public function show(BridgingTheGap $bridgingTheGap)
     {
-        $bridgingTheGap->load(['participants', 'teamMembers.participant', 'user', 'actionPlans']);
+        $bridgingTheGap->load([
+            'participants' => fn ($q) => $q->orderBy('sr_no')->orderBy('id'),
+            'teamMembers.participant',
+            'user',
+            'actionPlans.photos',
+        ]);
         return view('admin.core-forms.bridging-the-gap.show', compact('bridgingTheGap'));
     }
 
@@ -138,7 +149,7 @@ class BridgingTheGapController extends Controller
         foreach ($records as $record) {
             $record->teamMembers()->delete();
             $record->participants()->delete();
-            $record->actionPlans()->delete();
+            BridgingTheGapActionPlan::purge($record->actionPlans());
             $record->delete();
             $deleted++;
         }
@@ -149,10 +160,7 @@ class BridgingTheGapController extends Controller
 
     public function toggleIitMember(BridgingTheGap $bridgingTheGap, Participant $participant)
     {
-        if (
-            $participant->participantable_type !== BridgingTheGap::class ||
-            (int) $participant->participantable_id !== (int) $bridgingTheGap->id
-        ) {
+        if (! $bridgingTheGap->ownsParticipant($participant)) {
             return back()->with('error', 'Participant does not belong to this session.');
         }
 
@@ -183,8 +191,8 @@ class BridgingTheGapController extends Controller
         // Delete attendance participants (morphMany relationship)
         $bridgingTheGap->participants()->delete();
 
-        // Delete action plans
-        $bridgingTheGap->actionPlans()->delete();
+        // Delete action plans (and their activity-picture files)
+        BridgingTheGapActionPlan::purge($bridgingTheGap->actionPlans());
 
         // Delete the main record
         $bridgingTheGap->delete();
@@ -325,8 +333,15 @@ class BridgingTheGapController extends Controller
                 $message .= " Skipped {$importResult['skipped']} empty rows.";
             }
         } catch (\Exception $e) {
-            return redirect()->route('admin.bridging-the-gap.index')
-                ->with('error', "File uploaded but failed to parse action plans: " . $e->getMessage());
+            $error = "File uploaded but failed to parse action plans: " . $e->getMessage();
+            if ($request->ajax() || $request->expectsJson()) {
+                return response()->json(['success' => false, 'message' => $error], 422);
+            }
+            return redirect()->route('admin.bridging-the-gap.index')->with('error', $error);
+        }
+
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => $message]);
         }
 
         return redirect()->route('admin.bridging-the-gap.index')
@@ -352,8 +367,9 @@ class BridgingTheGapController extends Controller
         // correct fields.
         $map = $this->resolveActionPlanColumns($rows[0]);
 
-        // Delete existing action plans for this record before importing new ones
-        BridgingTheGapActionPlan::where('bridging_the_gap_id', $record->id)->delete();
+        // Delete existing action plans (with their activity pictures) for this
+        // record before importing new ones — an import replaces, it doesn't merge.
+        BridgingTheGapActionPlan::purge(BridgingTheGapActionPlan::where('bridging_the_gap_id', $record->id));
 
         $imported = 0;
         $skipped = 0;
@@ -472,15 +488,37 @@ class BridgingTheGapController extends Controller
     public function getActionPlans($id)
     {
         $record = BridgingTheGap::findOrFail($id);
-        $actionPlans = $record->actionPlans()->orderBy('serial_number')->get();
+        $actionPlans = $record->actionPlans()->with('photos')->orderBy('serial_number')->get();
 
         return response()->json([
             'action_plans' => $actionPlans,
+            'statuses' => BridgingTheGapActionPlan::STATUSES,
             'record' => [
                 'id' => $record->id,
                 'unique_id' => $record->unique_id,
             ],
         ]);
+    }
+
+    /**
+     * Validation rules shared by store and update. On update every field is
+     * optional (`sometimes`) so a status change can be saved on its own.
+     */
+    private function actionPlanRules(bool $partial = false): array
+    {
+        $required = $partial ? 'sometimes|required|string' : 'required|string';
+
+        return [
+            'problem' => $required,
+            'sub_cause' => 'nullable|string',
+            'root_cause' => 'nullable|string',
+            'solution' => 'nullable|string',
+            'action_needed' => 'nullable|string',
+            'who_is_responsible' => 'nullable|string|max:255',
+            'timeline' => 'nullable|string|max:255',
+            'implementation_status' => ['sometimes', 'required', Rule::in(array_keys(BridgingTheGapActionPlan::STATUSES))],
+            'implementation_remarks' => 'nullable|string|max:5000',
+        ];
     }
 
     /**
@@ -490,17 +528,10 @@ class BridgingTheGapController extends Controller
     {
         $record = BridgingTheGap::findOrFail($id);
 
-        $validated = $request->validate([
-            'problem' => 'required|string',
-            'sub_cause' => 'nullable|string',
-            'root_cause' => 'nullable|string',
-            'solution' => 'nullable|string',
-            'action_needed' => 'nullable|string',
-            'who_is_responsible' => 'nullable|string|max:255',
-            'timeline' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validate($this->actionPlanRules());
 
         $maxSerial = $record->actionPlans()->max('serial_number') ?? 0;
+        $status = $validated['implementation_status'] ?? BridgingTheGapActionPlan::DEFAULT_STATUS;
 
         $actionPlan = BridgingTheGapActionPlan::create([
             'bridging_the_gap_id' => $record->id,
@@ -511,39 +542,39 @@ class BridgingTheGapController extends Controller
             'action_needed' => $validated['action_needed'] ?? null,
             'who_is_responsible' => $validated['who_is_responsible'] ?? null,
             'timeline' => $validated['timeline'] ?? null,
+            'implementation_status' => $status,
+            'implementation_remarks' => $validated['implementation_remarks'] ?? null,
+            'status_updated_at' => $status !== BridgingTheGapActionPlan::DEFAULT_STATUS ? now() : null,
             'serial_number' => $maxSerial + 1,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Action plan added successfully.',
-            'action_plan' => $actionPlan,
+            'action_plan' => $actionPlan->load('photos'),
         ]);
     }
 
     /**
-     * Update an individual action plan
+     * Update an individual action plan (full edit, or just its status/remarks)
      */
     public function updateActionPlan(Request $request, $actionPlanId)
     {
         $actionPlan = BridgingTheGapActionPlan::findOrFail($actionPlanId);
 
-        $validated = $request->validate([
-            'problem' => 'required|string',
-            'sub_cause' => 'nullable|string',
-            'root_cause' => 'nullable|string',
-            'solution' => 'nullable|string',
-            'action_needed' => 'nullable|string',
-            'who_is_responsible' => 'nullable|string|max:255',
-            'timeline' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validate($this->actionPlanRules(partial: true));
+
+        if (isset($validated['implementation_status'])
+            && $validated['implementation_status'] !== $actionPlan->implementation_status) {
+            $validated['status_updated_at'] = now();
+        }
 
         $actionPlan->update($validated);
 
         return response()->json([
             'success' => true,
             'message' => 'Action plan updated successfully.',
-            'action_plan' => $actionPlan->fresh(),
+            'action_plan' => $actionPlan->fresh('photos'),
         ]);
     }
 
@@ -553,7 +584,7 @@ class BridgingTheGapController extends Controller
     public function deleteActionPlan($actionPlanId)
     {
         $actionPlan = BridgingTheGapActionPlan::findOrFail($actionPlanId);
-        $actionPlan->delete();
+        BridgingTheGapActionPlan::purge(BridgingTheGapActionPlan::whereKey($actionPlan->id));
 
         return response()->json([
             'success' => true,
@@ -567,13 +598,125 @@ class BridgingTheGapController extends Controller
     public function deleteAllActionPlans($id)
     {
         $record = BridgingTheGap::findOrFail($id);
-        $count = $record->actionPlans()->count();
-        $record->actionPlans()->delete();
+        $count = BridgingTheGapActionPlan::purge($record->actionPlans());
 
         return response()->json([
             'success' => true,
             'message' => "{$count} action plan(s) deleted successfully.",
         ]);
+    }
+
+    /* ===================================================================== *
+     *  Action-plan activity pictures
+     * ===================================================================== */
+
+    /**
+     * Upload a supporting activity picture for an action-plan item. The admin
+     * page downscales images in the browser first, so this normally receives a
+     * few hundred KB; the 2 MB cap matches the server's upload_max_filesize.
+     */
+    public function uploadActionPlanPhoto(Request $request, $actionPlanId)
+    {
+        $actionPlan = BridgingTheGapActionPlan::findOrFail($actionPlanId);
+
+        $request->validate([
+            'photo' => 'required|file|image|mimes:jpg,jpeg,png,webp|max:2048',
+        ], [
+            'photo.max' => 'The picture must be smaller than 2 MB.',
+            'photo.uploaded' => 'The picture could not be uploaded — it may be larger than the server allows (2 MB).',
+        ]);
+
+        $file = $request->file('photo');
+        $path = $file->store('action_plan_photos/' . $actionPlan->bridging_the_gap_id, BridgingTheGapActionPlanPhoto::DISK);
+
+        $photo = $actionPlan->photos()->create([
+            'path' => $path,
+            'original_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'uploaded_by' => $request->user()?->id,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Picture uploaded.',
+            'photo' => $photo,
+        ]);
+    }
+
+    /** Stream an activity picture (auth-protected; files are not public). */
+    public function showActionPlanPhoto(BridgingTheGapActionPlanPhoto $photo)
+    {
+        $disk = Storage::disk(BridgingTheGapActionPlanPhoto::DISK);
+        abort_unless($disk->exists($photo->path), 404);
+
+        return $disk->response($photo->path, $photo->original_name, [
+            'Cache-Control' => 'private, max-age=86400',
+        ]);
+    }
+
+    public function deleteActionPlanPhoto(BridgingTheGapActionPlanPhoto $photo)
+    {
+        Storage::disk(BridgingTheGapActionPlanPhoto::DISK)->delete($photo->path);
+        $photo->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Picture deleted.',
+        ]);
+    }
+
+    /* ===================================================================== *
+     *  Attendance sheet (participants) — add / edit / delete after submission
+     * ===================================================================== */
+
+    public function storeParticipant(Request $request, BridgingTheGap $bridgingTheGap)
+    {
+        $validated = $request->validate(Participant::adminRules());
+
+        $participant = $bridgingTheGap->addAttendee($validated);
+
+        if ($request->boolean('mark_iit')) {
+            BridgingTheGapTeamMember::firstOrCreate(
+                ['bridging_the_gap_id' => $bridgingTheGap->id, 'participant_id' => $participant->id],
+                ['source_type' => 'bridging_the_gap', 'source_id' => $bridgingTheGap->id]
+            );
+        }
+
+        return back()->with('success', "{$participant->name} added to the attendance sheet.");
+    }
+
+    public function updateParticipant(Request $request, BridgingTheGap $bridgingTheGap, Participant $participant)
+    {
+        if (! $this->editableParticipant($bridgingTheGap, $participant)) {
+            return back()->with('error', 'That person is not part of this session.');
+        }
+
+        $participant->update($request->validate(Participant::adminRules()));
+
+        return back()->with('success', "{$participant->name}'s details were updated.");
+    }
+
+    public function destroyParticipant(BridgingTheGap $bridgingTheGap, Participant $participant)
+    {
+        if (! $bridgingTheGap->ownsParticipant($participant)) {
+            return back()->with('error', 'Participant does not belong to this session.');
+        }
+
+        $name = $participant->name;
+        $participant->deleteWithReferences();
+
+        return back()->with('success', "{$name} removed from the attendance sheet.");
+    }
+
+    /**
+     * A person can be edited from this session if they are on its attendance
+     * sheet, or are one of its IIT members (a few were picked from FGDs).
+     */
+    private function editableParticipant(BridgingTheGap $bridgingTheGap, Participant $participant): bool
+    {
+        return $bridgingTheGap->ownsParticipant($participant)
+            || $bridgingTheGap->teamMembers()->where('participant_id', $participant->id)->exists();
     }
 
     /**

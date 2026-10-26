@@ -330,6 +330,9 @@
     border-bottom: 1px solid var(--gray-200);
     background: var(--gray-50);
     overflow-x: auto;
+    /* overflow-x:auto forces overflow-y:auto; the active tab's underline then
+       overflows by a pixel and shows a stray vertical scrollbar. */
+    overflow-y: hidden;
 }
 
 .tab-btn {

@@ -354,7 +354,7 @@
                             <div class="fsr-subhead">Action Plan — {{ $r->actionPlans->count() }} {{ \Illuminate\Support\Str::plural('point', $r->actionPlans->count()) }}</div>
                             <div class="fsr-subtable-wrap">
                                 <table class="fsr-subtable">
-                                    <thead><tr><th>#</th><th>Problem</th><th>Sub Cause</th><th>Root Cause</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th></tr></thead>
+                                    <thead><tr><th>#</th><th>Problem</th><th>Sub Cause</th><th>Root Cause</th><th>Solution</th><th>Action Needed</th><th>Responsible</th><th>Timeline</th><th>Status</th><th>Follow-up Remarks</th><th>Pictures</th></tr></thead>
                                     <tbody>
                                         @foreach ($r->actionPlans as $p)
                                             <tr>
@@ -366,6 +366,12 @@
                                                 <td>{{ $p->action_needed ?: '—' }}</td>
                                                 <td>{{ $p->who_is_responsible ?: '—' }}</td>
                                                 <td>{{ $p->timeline ?: '—' }}</td>
+                                                <td>
+                                                    @php $statusBadge = ['completed' => 'fsr-badge-success', 'in_progress' => 'fsr-badge-warning'][$p->implementation_status] ?? 'fsr-badge-info'; @endphp
+                                                    <span class="fsr-badge {{ $statusBadge }}">{{ $p->implementation_status_label }}</span>
+                                                </td>
+                                                <td>{{ $p->implementation_remarks ?: '—' }}</td>
+                                                <td>{{ $p->photos_count ?: '—' }}</td>
                                             </tr>
                                         @endforeach
                                     </tbody>

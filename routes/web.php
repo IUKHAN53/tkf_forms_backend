@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\DebugController;
 use App\Http\Controllers\Admin\FgdsCommunityController;
 use App\Http\Controllers\Admin\FgdsHealthWorkersController;
 use App\Http\Controllers\Admin\FixedSiteReportController;
+use App\Http\Controllers\Admin\IitMemberController;
 use App\Http\Controllers\Admin\ReportsController;
 use App\Http\Controllers\Admin\UcController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
@@ -80,7 +81,23 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'activity.log'])->gr
     Route::delete('bridging-the-gap/action-plans/{actionPlan}', [BridgingTheGapController::class, 'deleteActionPlan'])->name('bridging-the-gap.delete-action-plan');
     Route::delete('bridging-the-gap/{id}/action-plans', [BridgingTheGapController::class, 'deleteAllActionPlans'])->name('bridging-the-gap.delete-all-action-plans');
     Route::post('bridging-the-gap/{bridgingTheGap}/participants/{participant}/toggle-iit', [BridgingTheGapController::class, 'toggleIitMember'])->name('bridging-the-gap.toggle-iit');
+    // Attendance sheet: add / edit / delete people after submission
+    Route::post('bridging-the-gap/{bridgingTheGap}/participants', [BridgingTheGapController::class, 'storeParticipant'])->name('bridging-the-gap.participants.store');
+    Route::put('bridging-the-gap/{bridgingTheGap}/participants/{participant}', [BridgingTheGapController::class, 'updateParticipant'])->name('bridging-the-gap.participants.update');
+    Route::delete('bridging-the-gap/{bridgingTheGap}/participants/{participant}', [BridgingTheGapController::class, 'destroyParticipant'])->name('bridging-the-gap.participants.destroy');
+    // Action-plan supporting activity pictures (private files, served behind auth)
+    Route::post('bridging-the-gap/action-plans/{actionPlan}/photos', [BridgingTheGapController::class, 'uploadActionPlanPhoto'])->name('bridging-the-gap.action-plan-photos.store');
+    Route::get('bridging-the-gap/action-plan-photos/{photo}', [BridgingTheGapController::class, 'showActionPlanPhoto'])->name('bridging-the-gap.action-plan-photos.show');
+    Route::delete('bridging-the-gap/action-plan-photos/{photo}', [BridgingTheGapController::class, 'deleteActionPlanPhoto'])->name('bridging-the-gap.action-plan-photos.destroy');
     Route::resource('bridging-the-gap', BridgingTheGapController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+
+    // IIT (Immunization Improvement Team) members
+    Route::get('iit-members', [IitMemberController::class, 'index'])->name('iit-members.index');
+    Route::get('iit-members/export', [IitMemberController::class, 'export'])->name('iit-members.export');
+    Route::get('iit-members/candidates', [IitMemberController::class, 'candidates'])->name('iit-members.candidates');
+    Route::post('iit-members', [IitMemberController::class, 'store'])->name('iit-members.store');
+    Route::put('iit-members/{member}', [IitMemberController::class, 'update'])->name('iit-members.update');
+    Route::delete('iit-members/{member}', [IitMemberController::class, 'destroy'])->name('iit-members.destroy');
 
     // Core Forms - Vaccination Records (CLM Tracker)
     Route::get('vaccination-records/export', [VaccinationRecordController::class, 'export'])->name('vaccination-records.export');

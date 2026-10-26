@@ -11,6 +11,7 @@ use App\Models\FgdsCommunityBarrier;
 use App\Models\FgdsHealthWorkersBarrier;
 use App\Models\BarrierCategory;
 use App\Models\BridgingTheGapActionPlan;
+use App\Models\BridgingTheGapTeamMember;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -164,6 +165,9 @@ class UcController extends Controller
                 break;
             case 'child_line_list':
                 $data = $this->getChildLineListData($variants, $startDate, $endDate);
+                break;
+            case 'iit_members':
+                $data = $this->getIitMembersData($variants, $startDate, $endDate);
                 break;
         }
 
@@ -334,6 +338,13 @@ class UcController extends Controller
                     $q->orWhere('uc', 'LIKE', $variant);
                 }
             })->count(),
+            'iit_members' => BridgingTheGapTeamMember::whereHas('participant')
+                ->whereHas('bridgingTheGap', function ($q) use ($variants) {
+                    $q->whereIn('uc', $variants);
+                    foreach ($variants as $variant) {
+                        $q->orWhere('uc', 'LIKE', $variant);
+                    }
+                })->count(),
         ];
     }
 
@@ -537,9 +548,10 @@ class UcController extends Controller
         $totalFemales = $records->sum('participants_females');
         $totalParticipants = $totalMales + $totalFemales;
 
-        // Get action plans count
+        // Get action plans count, and how far along their implementation is
         $recordIds = $records->pluck('id');
         $totalActionPlans = BridgingTheGapActionPlan::whereIn('bridging_the_gap_id', $recordIds)->count();
+        $plans = $records->flatMap->actionPlans;
 
         // Recent submissions (last 7 days)
         $recentCount = BridgingTheGap::where(function ($q) use ($variants) {
@@ -558,10 +570,16 @@ class UcController extends Controller
                 'total_females' => $totalFemales,
                 'total_participants' => $totalParticipants,
                 'total_action_plans' => $totalActionPlans,
+                'action_plans_completed' => $plans->where('implementation_status', 'completed')->count(),
+                'action_plans_in_progress' => $plans->where('implementation_status', 'in_progress')->count(),
+                'action_plans_not_started' => $plans->where('implementation_status', 'not_started')->count(),
                 'total_iit_members' => $records->sum(fn($r) => $r->teamMembers->count()),
                 'recent' => $recentCount,
             ],
             'records' => $records->map(function ($item) {
+                $planCount = $item->actionPlans->count();
+                $planDone = $item->actionPlans->where('implementation_status', 'completed')->count();
+
                 return [
                     'id' => $item->id,
                     'unique_id' => $item->unique_id,
@@ -574,11 +592,71 @@ class UcController extends Controller
                     'total_participants' => $item->participants_males + $item->participants_females,
                     'attendance_count' => $item->participants->count(),
                     'iit_members_count' => $item->teamMembers->count(),
-                    'action_plans_count' => $item->actionPlans->count(),
+                    'action_plans_count' => $planCount,
+                    'action_plan_progress' => $planCount > 0 ? "{$planDone}/{$planCount} completed" : '—',
                     'submitted_by' => $item->user->name ?? 'N/A',
                     'created_at' => $item->created_at->format('M d, Y'),
                 ];
             }),
+        ];
+    }
+
+    /**
+     * Get IIT team members for UC — every member of every Bridging The Gap
+     * session in the UC. The date range applies to the session date, like the
+     * Bridging The Gap tab. `id` is the session id so View opens the session.
+     */
+    private function getIitMembersData(array $variants, ?string $startDate, ?string $endDate): array
+    {
+        $query = BridgingTheGap::with(['teamMembers.participant'])
+            ->where(function ($q) use ($variants) {
+                $q->whereIn('uc', $variants);
+                foreach ($variants as $variant) {
+                    $q->orWhere('uc', 'LIKE', $variant);
+                }
+            });
+
+        if ($startDate) {
+            $query->whereDate('date', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('date', '<=', $endDate);
+        }
+
+        $sessions = $query->orderByDesc('date')->get();
+
+        $rows = $sessions->flatMap(fn ($session) => $session->teamMembers
+            ->filter(fn ($member) => $member->participant)
+            ->map(fn ($member) => ['session' => $session, 'member' => $member]));
+
+        $people = $rows->map(fn ($r) => $r['member']->participant);
+
+        return [
+            'stats' => [
+                'total_members' => $rows->count(),
+                'sessions_with_iit_team' => $sessions->filter(fn ($s) => $s->teamMembers->isNotEmpty())->count(),
+                'total_sessions' => $sessions->count(),
+                'male_members' => $people->where('gender', 'Male')->count(),
+                'female_members' => $people->where('gender', 'Female')->count(),
+                'fix_sites_covered' => $rows->map(fn ($r) => $r['session']->fix_site)->filter()->unique()->count(),
+            ],
+            'records' => $rows->map(function ($r) {
+                $session = $r['session'];
+                $person = $r['member']->participant;
+
+                return [
+                    'id' => $session->id,
+                    'member_id' => $r['member']->id,
+                    'name' => $person->name,
+                    'role' => $person->role ?: '—',
+                    'contact_no' => $person->contact_no ?: '—',
+                    'gender' => $person->gender,
+                    'unique_id' => $session->unique_id,
+                    'session_date' => $session->date ? $session->date->format('M d, Y') : 'N/A',
+                    'fix_site' => $session->fix_site ?: '—',
+                    'source' => IitMemberController::sourceLabel($r['member']->source_type),
+                ];
+            })->values(),
         ];
     }
 

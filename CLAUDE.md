@@ -169,7 +169,7 @@ in three places that must stay in sync:
 |---|---|
 | `BridgingTheGapController::resolveActionPlanColumns()` | header→field matching + positional fallback |
 | `BridgingTheGapController::actionPlanSample()` | the downloadable template |
-| `AP_FIELDS` in `bridging-the-gap/{index,show}.blade.php` | the manage-modal table, inline editor and save payload |
+| `AP_FIELDS` in `bridging-the-gap/partials/action-plans-modal.blade.php` | the shared manage dialog (used by both index and show): cards, inline editor, add form and save payload |
 
 ```
 Problem | Sub Cause | Root Cause | Solution | Action Needed | Responsible | Timeline
@@ -185,10 +185,57 @@ bare `Cause` header is reserved for root cause. Keep that in mind before adding
 another "…Cause" column.
 
 To add a column: migration → `BridgingTheGapActionPlan::$fillable` → the three
-places above → `storeActionPlan`/`updateActionPlan` validation → the Fixed Site
-report (`FixedSiteReportController` export + `reports/fixed-site.blade.php`).
-The views are driven off `AP_FIELDS`, so they need one entry each, not a set of
-shifted array indexes.
+places above → `actionPlanRules()` in the controller → the server-rendered
+action-plan table on `bridging-the-gap/show.blade.php` → the Fixed Site report
+(`FixedSiteReportController` export + `reports/fixed-site.blade.php`). The
+dialog is driven off `AP_FIELDS`, so it needs one entry, not a set of shifted
+array indexes.
+
+#### Action-plan implementation tracking
+
+Each plan item also carries `implementation_status` (`not_started` /
+`in_progress` / `completed`, keys of `BridgingTheGapActionPlan::STATUSES`),
+`implementation_remarks` (follow-up meeting notes) and `status_updated_at`
+(stamped whenever the status changes). These are **not** Excel columns — they
+are set in the admin panel. `updateActionPlan` accepts partial payloads, so the
+dialog's status dropdown saves the status on its own.
+
+Supporting activity pictures are `BridgingTheGapActionPlanPhoto` rows. Files sit
+on the **private** `local` disk (`storage/app/private/action_plan_photos/{btg_id}/`)
+and are served by `admin.bridging-the-gap.action-plan-photos.show` behind auth —
+the server has no `public/storage` link and evidence photos should not be public
+anyway. Production PHP caps uploads at 2 MB per file, so the dialog downscales
+images in the browser (longest side 1600 px, JPEG) and uploads one per request;
+the endpoint validates `image|max:2048`.
+
+**Never delete action plans with a bare query** — use
+`BridgingTheGapActionPlan::purge($query)`. Query-builder deletes skip model
+events and the FK cascade removes only the photo *rows*, so anything else
+orphans the picture files. Every existing delete path (single, delete-all,
+Excel re-import, BTG destroy / bulk destroy) goes through `purge`. Note that an
+Excel re-import therefore wipes statuses, remarks and pictures for that record;
+the dialog warns about this.
+
+### Bridging The Gap attendance and IIT members
+
+The attendance sheet is the BTG record's `participants` (morph). Admins can add,
+edit and delete rows after submission (`storeParticipant` / `updateParticipant`
+/ `destroyParticipant`); new rows get the next `sr_no` via
+`BridgingTheGap::addAttendee()`. Delete with `Participant::deleteWithReferences()`,
+which drops IIT memberships and nulls `community_members.participant_id` (that
+column has no FK). The `participants_males` / `participants_females` headcount
+columns are what the field worker typed and are **not** synced to attendance edits.
+
+An IIT member is a `BridgingTheGapTeamMember` row linking one BTG record to one
+participant. Rule: a session's members are chosen **only from that session's own
+attendance sheet** (`BridgingTheGap::ownsParticipant()`); "registering" a new
+member adds them to the attendance sheet first. A handful of legacy members were
+picked from FGD participants by the mobile app — they still list, edit and
+remove normally. `IitMemberController` (`/admin/iit-members`) serves the list
+page, CSV export, a `candidates` JSON endpoint for the picker, and add / edit /
+remove; every write redirects back, so the BTG detail page uses the same
+endpoints. Removing a member never deletes the person from attendance. The UC
+page has an `iit_members` tab (`UcController::getIitMembersData`).
 
 ### Activity logging
 

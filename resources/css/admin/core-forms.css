@@ -720,10 +720,14 @@ textarea.form-input {
     border: none;
     border-radius: 12px;
     padding: 0;
+    /* The global margin reset removes the UA's margin:auto that centres a
+       <dialog> opened with showModal(); restore it. */
+    margin: auto;
     max-width: 480px;
     width: 90%;
+    max-height: calc(100vh - 32px);
     box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.25);
-    overflow: hidden;
+    overflow: auto;
 }
 
 .modal::backdrop {
@@ -1180,3 +1184,103 @@ input[type="file"].form-input::file-selector-button:hover {
         padding: 10px 12px;
     }
 }
+
+/* =====================================================================
+ * Bridging The Gap — action-plan tracking, attendance & IIT members
+ * ===================================================================== */
+
+/* Wider dialogs for the action-plan manager and person forms */
+.modal.modal-wide { max-width: min(1100px, 96vw); width: 96%; }
+.modal.modal-md { max-width: min(640px, 96vw); }
+.modal .modal-body { padding: 18px 20px; }
+.modal .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--gray-100, #f3f4f6); }
+
+/* Implementation status badges */
+.ap-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.ap-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.ap-status-not_started { background: #f3f4f6; color: #4b5563; }
+.ap-status-in_progress { background: #fef3c7; color: #92400e; }
+.ap-status-completed   { background: #d1fae5; color: #065f46; }
+.ap-status-meta { display: block; font-size: 11px; color: var(--gray-500, #6b7280); margin-top: 3px; }
+
+.ap-status-select {
+    padding: 5px 8px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--gray-300, #d1d5db); background: #fff; cursor: pointer;
+}
+.ap-status-select.ap-status-not_started { border-color: #d1d5db; }
+.ap-status-select.ap-status-in_progress { border-color: #f59e0b; }
+.ap-status-select.ap-status-completed   { border-color: #10b981; }
+
+/* Status summary chips above the action-plan table */
+.ap-summary { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.ap-summary .ap-status { font-size: 12px; }
+
+/* Activity pictures */
+.ap-photos { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ap-thumb {
+    position: relative; width: 64px; height: 64px; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--gray-200, #e5e7eb); background: var(--gray-100, #f3f4f6); flex-shrink: 0;
+}
+.ap-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ap-thumb-sm { width: 44px; height: 44px; }
+.ap-thumb-remove {
+    position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; border-radius: 50%;
+    border: none; background: rgba(17, 24, 39, 0.75); color: #fff; font-size: 13px; line-height: 20px;
+    cursor: pointer; padding: 0;
+}
+.ap-thumb-remove:hover { background: #dc2626; }
+.ap-photo-add {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    height: 64px; padding: 0 14px; border-radius: 8px; cursor: pointer;
+    border: 1px dashed var(--gray-300, #d1d5db); color: var(--gray-600, #4b5563); font-size: 12px; font-weight: 600;
+    background: #fff;
+}
+.ap-photo-add:hover { border-color: var(--primary-500, #10b981); color: var(--primary-700, #047857); }
+.ap-photo-add input { display: none; }
+.ap-photo-add.is-busy { opacity: .6; pointer-events: none; }
+
+/* Action-plan cards inside the manager dialog */
+.ap-list { display: flex; flex-direction: column; gap: 12px; }
+.ap-item { border: 1px solid var(--gray-200, #e5e7eb); border-radius: 10px; padding: 14px; background: #fff; }
+.ap-item-head { display: flex; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.ap-item-sn {
+    flex-shrink: 0; min-width: 28px; height: 28px; border-radius: 8px; padding: 0 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--gray-100, #f3f4f6); font-size: 12px; font-weight: 700; color: var(--gray-700, #374151);
+}
+.ap-item-title { flex: 1; min-width: 200px; font-weight: 600; color: var(--gray-900, #111827); font-size: 14px; }
+.ap-item-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ap-item-fields {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px 16px; margin: 12px 0;
+}
+.ap-field label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--gray-500, #6b7280); margin-bottom: 2px; }
+.ap-field div { font-size: 13px; color: var(--gray-800, #1f2937); white-space: pre-line; }
+.ap-field textarea, .ap-field input, .ap-field select { width: 100%; font-size: 13px; }
+.ap-field-wide { grid-column: 1 / -1; }
+.ap-photos-row { border-top: 1px dashed var(--gray-200, #e5e7eb); padding-top: 10px; }
+.ap-photos-row > label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; color: var(--gray-500, #6b7280); margin-bottom: 6px; }
+.ap-section-title { font-size: 14px; font-weight: 600; color: #374151; margin-bottom: 12px; }
+.ap-divider { border-top: 2px solid #e5e7eb; padding-top: 16px; margin-top: 16px; }
+.ap-hint { font-size: 11px; color: #9ca3af; margin-top: 6px; }
+
+/* Wide tables scroll inside their own box */
+.table-scroll { overflow-x: auto; }
+.table-scroll .data-table td { vertical-align: top; }
+.cell-clamp { max-width: 260px; white-space: pre-line; }
+.table-scroll code { white-space: nowrap; }
+
+/* Section headers with a trailing action button */
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.section-head h3 { margin: 0; }
+
+/* Person (attendance / IIT member) form */
+.person-mode { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; font-size: 13px; }
+.person-mode label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+/* Class display rules would otherwise beat the hidden attribute. */
+.person-block[hidden], .person-mode[hidden] { display: none !important; }
+.form-hint { font-size: 12px; color: var(--gray-500, #6b7280); margin-top: 4px; }

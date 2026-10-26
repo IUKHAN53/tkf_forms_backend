@@ -76,4 +76,19 @@ class BridgingTheGap extends Model
     {
         return $this->hasMany(BridgingTheGapActionPlan::class);
     }
+
+    /** Whether the participant is on this session's attendance sheet. */
+    public function ownsParticipant(Participant $participant): bool
+    {
+        return $participant->participantable_type === self::class
+            && (int) $participant->participantable_id === (int) $this->id;
+    }
+
+    /** Add a person to this session's attendance sheet with the next Sr. No. */
+    public function addAttendee(array $attributes): Participant
+    {
+        $nextSr = ((int) $this->participants()->max('sr_no')) + 1;
+
+        return $this->participants()->create(array_merge($attributes, ['sr_no' => $nextSr]));
+    }
 }

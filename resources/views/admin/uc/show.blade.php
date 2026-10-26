@@ -46,6 +46,10 @@
                 <span class="stat-value">{{ number_format($stats['bridging_the_gap']) }}</span>
                 <span class="stat-label">Bridging Gap</span>
             </div>
+            <div class="overview-stat">
+                <span class="stat-value">{{ number_format($stats['iit_members'] ?? 0) }}</span>
+                <span class="stat-label">IIT Members</span>
+            </div>
         </div>
     </div>
 
@@ -170,6 +174,14 @@
                     <line x1="14" y1="1" x2="14" y2="4"/>
                 </svg>
                 Bridging The Gap
+            </button>
+            <button class="tab-btn" data-tab="iit_members">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <polyline points="16 11 18 13 22 9"/>
+                </svg>
+                IIT Members
             </button>
             <button class="tab-btn" data-tab="child_line_list">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

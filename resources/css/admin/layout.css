@@ -329,6 +329,10 @@ body {
 /* ===== Main Content Area ===== */
 .main-wrapper {
     flex: 1;
+    /* Flex items default to min-width:auto, which lets a wide table stretch the
+       whole page; 0 keeps the page at viewport width so tables scroll in their
+       own .table-container / .table-wrapper / .table-scroll box. */
+    min-width: 0;
     margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
