@@ -32,6 +32,16 @@ class BridgingTheGapController extends Controller
             'all_keys' => array_keys($request->all()),
         ]);
 
+        // A retry of a submit we already stored: hand back that record rather
+        // than letting the duplicate unique_id hit the index as a 500.
+        if ($existing = $this->alreadySubmitted(BridgingTheGap::class, $validated['unique_id'] ?? null, ['participants', 'teamMembers.participant'])) {
+            return response()->json([
+                'message' => 'Bridging The Gap record created successfully.',
+                'data' => $existing,
+                'team_members_saved' => $existing->teamMembers->count(),
+            ], 201);
+        }
+
         $validated = $request->validate([
             'date' => 'required|string',
             'venue' => 'required|string',
@@ -137,6 +147,7 @@ class BridgingTheGapController extends Controller
     public function show(BridgingTheGap $bridgingTheGap): JsonResponse
     {
         $bridgingTheGap->load(['participants', 'teamMembers.participant']);
+
         return response()->json($bridgingTheGap);
     }
 

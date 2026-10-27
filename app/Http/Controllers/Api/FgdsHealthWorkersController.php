@@ -46,6 +46,15 @@ class FgdsHealthWorkersController extends Controller
             'participants.*.gender' => 'nullable|string|in:Male,Female',
         ]);
 
+        // A retry of a submit we already stored: hand back that record rather
+        // than letting the duplicate unique_id hit the index as a 500.
+        if ($existing = $this->alreadySubmitted(FgdsHealthWorkers::class, $validated['unique_id'] ?? null, ['participants'])) {
+            return response()->json([
+                'message' => 'FGDs-Health Workers record created successfully',
+                'data' => $existing,
+            ], 201);
+        }
+
         // Validate participant counts match actual participant data
         $participantsData = $validated['participants'];
         $actualMales = collect($participantsData)->where('gender', 'Male')->count();

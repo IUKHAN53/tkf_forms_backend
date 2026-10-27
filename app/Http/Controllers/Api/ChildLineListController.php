@@ -52,6 +52,15 @@ class ChildLineListController extends Controller
             'unique_id' => 'nullable|string',
         ]);
 
+        // A retry of a submit we already stored: hand back that record rather
+        // than letting the duplicate unique_id hit the index as a 500.
+        if ($existing = $this->alreadySubmitted(ChildLineList::class, $validated['unique_id'] ?? null, [])) {
+            return response()->json([
+                'message' => 'Child line list entry created successfully',
+                'data' => $existing,
+            ], 201);
+        }
+
         $validated['user_id'] = $request->user()->id;
         $validated['ip_address'] = $request->ip();
         $validated['submitted_at'] = $validated['submitted_at'] ?? now();
